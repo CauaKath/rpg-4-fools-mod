@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "rpg4fools",
+	"version": "${version}",
+	"name": "RPG4Fools",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/rpg4fools/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.abakath.rpg4fools.RPG4Fools"
+		],
+		"client": [
+			"net.abakath.rpg4fools.RPG4FoolsClient"
+		],
+		"fabric-datagen": [
+			"net.abakath.rpg4fools.RPG4FoolsDataGenerator"
+		]
+	},
+	"mixins": [
+		"rpg4fools.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.11",
+		"minecraft": "~1.20.6",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

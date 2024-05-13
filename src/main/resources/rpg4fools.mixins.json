@@ -1,0 +1,11 @@
+{
+	"required": true,
+	"package": "net.abakath.rpg4fools.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+      "RPG4FoolsMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
