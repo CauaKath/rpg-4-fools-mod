@@ -1,6 +1,7 @@
 package net.abakath.rpg4fools.client;
 
 import net.abakath.rpg4fools.RPG4Fools;
+import net.abakath.rpg4fools.enums.Months;
 import net.abakath.rpg4fools.models.Scale;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
@@ -12,6 +13,9 @@ import java.util.Map;
 
 public class SeasonsHudOverlay implements HudRenderCallback {
   private static final Identifier DAY_CYCLE = new Identifier(RPG4Fools.MOD_ID, "textures/gui/cycle.png");
+  private Months month;
+  private int year;
+  private int day;
 
   @Override
   public void onHudRender(DrawContext drawContext, float tickDelta) {
