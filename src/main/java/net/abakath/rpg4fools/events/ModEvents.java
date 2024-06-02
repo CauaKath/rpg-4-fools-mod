@@ -1,13 +1,12 @@
 package net.abakath.rpg4fools.events;
 
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 public class ModEvents {
 
   public static void registerEvents() {
-    // register tick handler
-    ClientTickEvents.START_CLIENT_TICK.register(new TickHandler());
+    ServerTickEvents.START_SERVER_TICK.register(new TickHandler());
   }
 
 }

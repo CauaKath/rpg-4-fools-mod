@@ -4,5 +4,14 @@ public enum Season {
     SPRING,
     SUMMER,
     AUTUMN,
-    WINTER
+    WINTER;
+
+    public String getName() {
+        return switch (this) {
+            case SPRING -> "Spring";
+            case SUMMER -> "Summer";
+            case AUTUMN -> "Autumn";
+            case WINTER -> "Winter";
+        };
+    }
 }

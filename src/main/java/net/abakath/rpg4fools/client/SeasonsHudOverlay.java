@@ -3,6 +3,7 @@ package net.abakath.rpg4fools.client;
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.enums.Months;
 import net.abakath.rpg4fools.models.Scale;
+import net.abakath.rpg4fools.utils.IEntityDataSaver;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -13,9 +14,6 @@ import java.util.Map;
 
 public class SeasonsHudOverlay implements HudRenderCallback {
   private static final Identifier DAY_CYCLE = new Identifier(RPG4Fools.MOD_ID, "textures/gui/cycle.png");
-  private Months month;
-  private int year;
-  private int day;
 
   @Override
   public void onHudRender(DrawContext drawContext, float tickDelta) {
@@ -34,8 +32,19 @@ public class SeasonsHudOverlay implements HudRenderCallback {
     int widthScale = defaultScale.getWidth();
     int heightScale = defaultScale.getHeight();
 
-    drawContext.drawTexture(DAY_CYCLE, x, 8, 0, 0, widthScale, heightScale, widthScale, heightScale);
+    assert client != null;
+    assert client.player != null;
+    int year = ((IEntityDataSaver) client.player).getPersistentData().getInt("rpg4fools.year");
+    int month = ((IEntityDataSaver) client.player).getPersistentData().getInt("rpg4fools.month");
+    int day = ((IEntityDataSaver) client.player).getPersistentData().getInt("rpg4fools.day");
+
+//    drawContext.drawTexture(DAY_CYCLE, x, 8, 0, 0, widthScale, heightScale, widthScale, heightScale);
+    drawContext.drawText(client.textRenderer, "Year: " + year, x + 4, 8, 0xFFFFFF, true);
+    drawContext.drawText(client.textRenderer, "Month: " + Months.values()[month].getName(), x + 4, 16, 0xFFFFFF, true);
+    drawContext.drawText(client.textRenderer, "Day: " + day, x + 4, 24, 0xFFFFFF, true);
+    drawContext.drawText(client.textRenderer, "Season: " + Months.values()[month].getSeason().getName(), x + 4, 32, 0xFFFFFF, true);
   }
+
 
   private Scale getScale(Integer guiScale) {
     Map<Integer, Scale> scaleMap = new HashMap<>();
