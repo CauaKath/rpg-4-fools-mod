@@ -14,8 +14,8 @@ public enum Months {
     NOVEMBER(Season.SPRING, "November"),
     DECEMBER(Season.SPRING, "December");
 
-    private Season season;
-    private String name;
+    private final Season season;
+    private final String name;
 
     Months(Season season, String name) {
         this.season = season;

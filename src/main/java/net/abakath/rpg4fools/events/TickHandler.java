@@ -7,6 +7,7 @@ import net.abakath.rpg4fools.utils.IEntityDataSaver;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
+import org.jetbrains.annotations.NotNull;
 
 public class TickHandler implements ServerTickEvents.StartTick {
     private static final int DAY_DURATION = 24000;
@@ -23,16 +24,22 @@ public class TickHandler implements ServerTickEvents.StartTick {
                 return;
             }
 
-            int totalDays = (int)  Math.floor(((double) time / DAY_DURATION));
-            int year = (int) Math.ceil((double) (totalDays + 1) / YEAR_DURATION);
-            int month = (int) Math.floor((double) (totalDays / MONTH_DURATION) - ((year - 1) * MONTHS_IN_YEAR));
-            int day = totalDays - ((month * MONTH_DURATION) - 1) - ((year - 1) * YEAR_DURATION);
-
-            DayData dayData = new DayData(year, Months.values()[month], day);
+            DayData dayData = getDayData(time);
             server.getPlayerManager().getPlayerList().forEach(player -> {
                 DayData.setPlayerDayData((IEntityDataSaver) player, dayData);
                 ServerPlayNetworking.send(player, new SeasonUpdateS2CPacket(dayData));
             });
         }
+    }
+
+    @NotNull
+    private static DayData getDayData(long time) {
+        int totalDays = (int)  Math.floor(((double) time / DAY_DURATION));
+        int year = (int) Math.ceil((double) (totalDays + 1) / YEAR_DURATION);
+        int month = (int) Math.floor((double) (totalDays / MONTH_DURATION) - ((year - 1) * MONTHS_IN_YEAR));
+        int day = totalDays - ((month * MONTH_DURATION) - 1) - ((year - 1) * YEAR_DURATION);
+        boolean newDay = time % DAY_DURATION == 0;
+
+        return new DayData(year, Months.values()[month], day, newDay);
     }
 }

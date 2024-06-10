@@ -1,61 +1,59 @@
 package net.abakath.rpg4fools.client;
 
-import net.abakath.rpg4fools.RPG4Fools;
+import net.abakath.rpg4fools.enums.Holiday;
 import net.abakath.rpg4fools.enums.Months;
-import net.abakath.rpg4fools.models.Scale;
 import net.abakath.rpg4fools.utils.IEntityDataSaver;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.util.Identifier;
-
-import java.util.HashMap;
-import java.util.Map;
+import net.minecraft.text.Text;
 
 public class SeasonsHudOverlay implements HudRenderCallback {
-  private static final Identifier DAY_CYCLE = new Identifier(RPG4Fools.MOD_ID, "textures/gui/cycle.png");
+  private static final int seasonOverlayScale = 16;
 
   @Override
   public void onHudRender(DrawContext drawContext, float tickDelta) {
     int x = 0;
-    Scale defaultScale = new Scale(40, 32);
+    int y = 0;
 
     MinecraftClient client = MinecraftClient.getInstance();
     if (client != null) {
       int width = client.getWindow().getScaledWidth();
+      int height = client.getWindow().getScaledHeight();
 
-      Integer guiScale = client.options.getGuiScale().getValue();
-      defaultScale = this.getScale(guiScale);
-      x = width - defaultScale.getWidth() - 8;
+      x = (width / 2) - (seasonOverlayScale / 2);
+      y = height - (seasonOverlayScale * 3);
     }
-
-    int widthScale = defaultScale.getWidth();
-    int heightScale = defaultScale.getHeight();
 
     assert client != null;
     assert client.player != null;
     int year = ((IEntityDataSaver) client.player).getPersistentData().getInt("rpg4fools.year");
     int month = ((IEntityDataSaver) client.player).getPersistentData().getInt("rpg4fools.month");
     int day = ((IEntityDataSaver) client.player).getPersistentData().getInt("rpg4fools.day");
+    boolean newDay = ((IEntityDataSaver) client.player).getPersistentData().getBoolean("rpg4fools.newDay");
 
-//    drawContext.drawTexture(DAY_CYCLE, x, 8, 0, 0, widthScale, heightScale, widthScale, heightScale);
-    drawContext.drawText(client.textRenderer, "Year: " + year, x + 4, 8, 0xFFFFFF, true);
-    drawContext.drawText(client.textRenderer, "Month: " + Months.values()[month].getName(), x + 4, 16, 0xFFFFFF, true);
-    drawContext.drawText(client.textRenderer, "Day: " + day, x + 4, 24, 0xFFFFFF, true);
-    drawContext.drawText(client.textRenderer, "Season: " + Months.values()[month].getSeason().getName(), x + 4, 32, 0xFFFFFF, true);
+    Months currentMonth = Months.values()[month];
+    Holiday holiday = Holiday.getHoliday(day, (month + 1));
+
+    if (holiday != null) {
+      drawContext.drawTexture(holiday.getHolidayTexture(), x, y, 0, 0, seasonOverlayScale, seasonOverlayScale, seasonOverlayScale, seasonOverlayScale);
+    } else {
+      drawContext.drawTexture(currentMonth.getSeason().getSeasonTexture(), x, y, 0, 0, seasonOverlayScale, seasonOverlayScale, seasonOverlayScale, seasonOverlayScale);
+    }
+
+    if (newDay) {
+      // TODO: Add text transition animation
+      drawContext.drawText(client.textRenderer, getNewDayText(day, currentMonth, year), x + (seasonOverlayScale * 4), y + 8, 0xFFFFFF, true);
+    }
+
+//    drawContext.drawText(client.textRenderer, "Year: " + year, x + (seasonOverlayScale * 4), 8, 0xFFFFFF, true);
+//    drawContext.drawText(client.textRenderer, "Month: " + currentMonth.getName(), x + (seasonOverlayScale * 4), 16, 0xFFFFFF, true);
+//    drawContext.drawText(client.textRenderer, "Day: " + day, x + (seasonOverlayScale * 4), 24, 0xFFFFFF, true);
+//    drawContext.drawText(client.textRenderer, "Season: " + currentMonth.getSeason().getName(), x + (seasonOverlayScale * 4), 32, 0xFFFFFF, true);
   }
 
-
-  private Scale getScale(Integer guiScale) {
-    Map<Integer, Scale> scaleMap = new HashMap<>();
-
-    // TODO: Adjust scales
-    scaleMap.put(0, new Scale(40, 32));
-    scaleMap.put(1, new Scale(60, 48));
-    scaleMap.put(2, new Scale(80, 64));
-    scaleMap.put(3, new Scale(100, 80));
-    scaleMap.put(4, new Scale(120, 96));
-
-    return scaleMap.get(guiScale);
+  private Text getNewDayText(int day, Months currentMonth, int year) {
+    // Example: Day 1 of January, Year 1
+    return Text.of("Day " + day + " of " + currentMonth.getName() + ", Year " + year);
   }
 }
