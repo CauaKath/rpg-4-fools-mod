@@ -8,20 +8,20 @@ public class DayData {
   private final int year;
   private final Months month;
   private final int day;
-  private final boolean newDay;
+  private final long dayTime;
 
-  public DayData(int year, Months month, int day, boolean newDay) {
+  public DayData(int year, Months month, int day, long newDay) {
     this.year = year;
     this.month = month;
     this.day = day;
-    this.newDay = newDay;
+    this.dayTime = newDay;
   }
 
-  public DayData(int year, int month, int day, boolean newDay) {
+  public DayData(int year, int month, int day, long newDay) {
     this.year = year;
     this.month = Months.values()[month];
     this.day = day;
-    this.newDay = newDay;
+    this.dayTime = newDay;
   }
 
   public int getYear() {
@@ -36,8 +36,8 @@ public class DayData {
     return day;
   }
 
-  public boolean isNewDay() {
-    return newDay;
+  public long getDayTime() {
+    return dayTime;
   }
 
   public static void setPlayerDayData(IEntityDataSaver player, DayData dayData) {
@@ -45,7 +45,7 @@ public class DayData {
     nbt.putInt("rpg4fools.year", dayData.getYear());
     nbt.putInt("rpg4fools.month", dayData.getMonth().ordinal());
     nbt.putInt("rpg4fools.day", dayData.getDay());
-    nbt.putBoolean("rpg4fools.newDay", dayData.isNewDay());
+    nbt.putLong("rpg4fools.dayTime", dayData.getDayTime());
   }
 
 }

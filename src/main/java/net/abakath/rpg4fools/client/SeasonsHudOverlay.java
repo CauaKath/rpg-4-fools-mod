@@ -9,51 +9,104 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 
 public class SeasonsHudOverlay implements HudRenderCallback {
-  private static final int seasonOverlayScale = 16;
+  private static final int SEASON_OVERLAY_SCALE = 16;
 
   @Override
   public void onHudRender(DrawContext drawContext, float tickDelta) {
-    int x = 0;
-    int y = 0;
-
     MinecraftClient client = MinecraftClient.getInstance();
-    if (client != null) {
-      int width = client.getWindow().getScaledWidth();
-      int height = client.getWindow().getScaledHeight();
-
-      x = (width / 2) - (seasonOverlayScale / 2);
-      y = height - (seasonOverlayScale * 3);
-    }
 
     assert client != null;
+    int width = client.getWindow().getScaledWidth();
+    int height = client.getWindow().getScaledHeight();
+
+    int x = getHalf(width) - getHalf(SEASON_OVERLAY_SCALE);
+    int y = height - (SEASON_OVERLAY_SCALE * 3);
+
     assert client.player != null;
-    int year = ((IEntityDataSaver) client.player).getPersistentData().getInt("rpg4fools.year");
-    int month = ((IEntityDataSaver) client.player).getPersistentData().getInt("rpg4fools.month");
-    int day = ((IEntityDataSaver) client.player).getPersistentData().getInt("rpg4fools.day");
-    boolean newDay = ((IEntityDataSaver) client.player).getPersistentData().getBoolean("rpg4fools.newDay");
+    IEntityDataSaver playerData = (IEntityDataSaver) client.player;
+
+    int year = playerData.getPersistentData().getInt("rpg4fools.year");
+    int month = playerData.getPersistentData().getInt("rpg4fools.month");
+    int day = playerData.getPersistentData().getInt("rpg4fools.day");
+    long dayTime = playerData.getPersistentData().getLong("rpg4fools.dayTime");
 
     Months currentMonth = Months.values()[month];
     Holiday holiday = Holiday.getHoliday(day, (month + 1));
 
     if (holiday != null) {
-      drawContext.drawTexture(holiday.getHolidayTexture(), x, y, 0, 0, seasonOverlayScale, seasonOverlayScale, seasonOverlayScale, seasonOverlayScale);
+      drawContext.drawTexture(holiday.getHolidayTexture(), x, y, 0, 0, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE);
     } else {
-      drawContext.drawTexture(currentMonth.getSeason().getSeasonTexture(), x, y, 0, 0, seasonOverlayScale, seasonOverlayScale, seasonOverlayScale, seasonOverlayScale);
+      drawContext.drawTexture(currentMonth.getSeason().getSeasonTexture(), x, y, 0, 0, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE);
     }
+
+    boolean newDay = isNewDay(dayTime);
 
     if (newDay) {
-      // TODO: Add text transition animation
-      drawContext.drawText(client.textRenderer, getNewDayText(day, currentMonth, year), x + (seasonOverlayScale * 4), y + 8, 0xFFFFFF, true);
-    }
+      Text dayText = getNewDayText(day, currentMonth, year);
+      int textWidth = client.textRenderer.getWidth(dayText);
 
-//    drawContext.drawText(client.textRenderer, "Year: " + year, x + (seasonOverlayScale * 4), 8, 0xFFFFFF, true);
-//    drawContext.drawText(client.textRenderer, "Month: " + currentMonth.getName(), x + (seasonOverlayScale * 4), 16, 0xFFFFFF, true);
-//    drawContext.drawText(client.textRenderer, "Day: " + day, x + (seasonOverlayScale * 4), 24, 0xFFFFFF, true);
-//    drawContext.drawText(client.textRenderer, "Season: " + currentMonth.getSeason().getName(), x + (seasonOverlayScale * 4), 32, 0xFFFFFF, true);
+      drawContext.drawText(client.textRenderer, dayText, (getHalf(width) - getHalf(textWidth)), (SEASON_OVERLAY_SCALE * 2), getColor(dayTime), true);
+
+      if (holiday != null) {
+        Text holidayText = getHolidayText(holiday);
+        int holidayTextWidth = client.textRenderer.getWidth(holidayText);
+
+        drawContext.drawText(client.textRenderer, holidayText, (getHalf(width) - getHalf(holidayTextWidth)), (SEASON_OVERLAY_SCALE * 3), getColor(dayTime), true);
+      }
+
+      if (currentMonth.getSeason().isNewSeason(day, currentMonth)) {
+        Text seasonText = getNewSeasonText(currentMonth);
+        int seasonTextWidth = client.textRenderer.getWidth(seasonText);
+
+        drawContext.drawText(client.textRenderer, seasonText, (getHalf(width) - getHalf(seasonTextWidth)), (SEASON_OVERLAY_SCALE * 3), getColor(dayTime), true);
+      }
+    }
   }
 
   private Text getNewDayText(int day, Months currentMonth, int year) {
     // Example: Day 1 of January, Year 1
     return Text.of("Day " + day + " of " + currentMonth.getName() + ", Year " + year);
+  }
+
+  private Text getNewSeasonText(Months currentMonth) {
+    return switch (currentMonth.getSeason()) {
+      case SPRING -> Text.of("The ice melted and the flowers starts to blossom...");
+      case SUMMER -> Text.of("The sun starts to shine brighter...");
+      case AUTUMN -> Text.of("The leaves begins to paint the ground...");
+      case WINTER -> Text.of("The cold breeze has finally arrived... Hello, Winter!");
+    };
+  }
+
+  private Text getHolidayText(Holiday holiday) {
+    return switch (holiday) {
+      case CHRISTMAS -> Text.of("Merry Christmas!");
+      case HALLOWEEN -> Text.of("Trick or threat? Happy Halloween!");
+    };
+  }
+
+  private int getHalf(int value) {
+    return value / 2;
+  }
+
+  private boolean isNewDay(long dayTime) {
+    long calc = dayTime % 24000;
+
+    return calc >= 0 && calc <= 48;
+  }
+
+  public int getColor(long dayTime) {
+    return switch ((int) (dayTime % 24000)) {
+      case 0, 1, 2, 46, 47, 48 -> 0x20FFFFFF;
+      case 3, 4, 5, 43, 44, 45 -> 0x40FFFFFF;
+      case 6, 7, 8, 40, 41, 42 -> 0x60FFFFFF;
+      case 9, 10, 11, 37, 38, 39 -> 0x80FFFFFF;
+      case 12, 13, 14, 34, 35, 36 -> 0xA0FFFFFF;
+      case 15, 16, 17, 31, 32, 33 -> 0xC0FFFFFF;
+      case 18, 19, 20, 28, 29, 30 -> 0xD0FFFFFF;
+      case 21, 22, 26, 27 -> 0xE0FFFFFF;
+      case 23, 24, 25 -> 0xF0FFFFFF;
+
+      default -> 0x000000;
+    };
   }
 }

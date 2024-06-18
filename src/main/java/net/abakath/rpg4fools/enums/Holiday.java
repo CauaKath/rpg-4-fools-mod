@@ -4,7 +4,7 @@ import net.minecraft.util.Identifier;
 
 public enum Holiday {
   CHRISTMAS("Christmas", 25, 12),
-  HALLOWEEN("Halloween", 30, 10);
+  HALLOWEEN("Halloween", 28, 10);
 
   private final String name;
   private final int day;

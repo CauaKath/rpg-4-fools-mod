@@ -18,9 +18,9 @@ public class SeasonUpdateS2CPacket implements CustomPayload {
       buffer.writeInt(data.getYear());
       buffer.writeInt(data.getMonth().ordinal());
       buffer.writeInt(data.getDay());
-      buffer.writeBoolean(data.isNewDay());
+      buffer.writeLong(data.getDayTime());
     });
-  }, buf -> new SeasonUpdateS2CPacket(buf.readNullable(buffer -> new DayData(buffer.readInt(), buffer.readInt(), buffer.readInt(), buffer.readBoolean()))));
+  }, buf -> new SeasonUpdateS2CPacket(buf.readNullable(buffer -> new DayData(buffer.readInt(), buffer.readInt(), buffer.readInt(), buffer.readLong()))));
 
   public SeasonUpdateS2CPacket(DayData dayData) {
     this.dayData = dayData;
@@ -31,7 +31,7 @@ public class SeasonUpdateS2CPacket implements CustomPayload {
     player.getPersistentData().putInt("rpg4fools.year", packet.dayData.getYear());
     player.getPersistentData().putInt("rpg4fools.month", packet.dayData.getMonth().ordinal());
     player.getPersistentData().putInt("rpg4fools.day", packet.dayData.getDay());
-    player.getPersistentData().putBoolean("rpg4fools.newDay", packet.dayData.isNewDay());
+    player.getPersistentData().putLong("rpg4fools.dayTime", packet.dayData.getDayTime());
   }
 
   @Override

@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class TickHandler implements ServerTickEvents.StartTick {
     private static final int DAY_DURATION = 24000;
-    private static final int MONTH_DURATION = 30;
+    private static final int MONTH_DURATION = 28;
     private static final int MONTHS_IN_YEAR = 12;
     private static final int YEAR_DURATION = MONTH_DURATION * MONTHS_IN_YEAR;
 
@@ -38,8 +38,7 @@ public class TickHandler implements ServerTickEvents.StartTick {
         int year = (int) Math.ceil((double) (totalDays + 1) / YEAR_DURATION);
         int month = (int) Math.floor((double) (totalDays / MONTH_DURATION) - ((year - 1) * MONTHS_IN_YEAR));
         int day = totalDays - ((month * MONTH_DURATION) - 1) - ((year - 1) * YEAR_DURATION);
-        boolean newDay = time % DAY_DURATION == 0;
 
-        return new DayData(year, Months.values()[month], day, newDay);
+        return new DayData(year, Months.values()[month], day, time);
     }
 }
