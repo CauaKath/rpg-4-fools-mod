@@ -1,6 +1,7 @@
 package net.abakath.rpg4fools;
 
 import net.abakath.rpg4fools.events.ModEvents;
+import net.abakath.rpg4fools.networking.ModMessages;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
@@ -13,6 +14,6 @@ public class RPG4Fools implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModEvents.registerEvents();
-		LOGGER.info("Hello Fabric world!");
+		ModMessages.registerS2CPackets();
 	}
 }
