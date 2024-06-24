@@ -5,8 +5,10 @@ import net.abakath.rpg4fools.enums.Months;
 import net.abakath.rpg4fools.utils.IEntityDataSaver;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
+import net.minecraft.world.World;
 
 public class SeasonsHudOverlay implements HudRenderCallback {
   private static final int SEASON_OVERLAY_SCALE = 16;
@@ -16,6 +18,11 @@ public class SeasonsHudOverlay implements HudRenderCallback {
     MinecraftClient client = MinecraftClient.getInstance();
 
     assert client != null;
+    assert client.world != null;
+    if (!client.world.getRegistryKey().equals(World.OVERWORLD)) {
+      return;
+    }
+
     int width = client.getWindow().getScaledWidth();
     int height = client.getWindow().getScaledHeight();
 
@@ -43,24 +50,25 @@ public class SeasonsHudOverlay implements HudRenderCallback {
 
     if (newDay) {
       Text dayText = getNewDayText(day, currentMonth, year);
-      int textWidth = client.textRenderer.getWidth(dayText);
-
-      drawContext.drawText(client.textRenderer, dayText, (getHalf(width) - getHalf(textWidth)), (SEASON_OVERLAY_SCALE * 2), getColor(dayTime), true);
+      drawCenteredText(drawContext, dayText, width, (SEASON_OVERLAY_SCALE * 2), getColor(dayTime));
 
       if (holiday != null) {
         Text holidayText = getHolidayText(holiday);
-        int holidayTextWidth = client.textRenderer.getWidth(holidayText);
-
-        drawContext.drawText(client.textRenderer, holidayText, (getHalf(width) - getHalf(holidayTextWidth)), (SEASON_OVERLAY_SCALE * 3), getColor(dayTime), true);
+        drawCenteredText(drawContext, holidayText, width, (SEASON_OVERLAY_SCALE * 3), getColor(dayTime));
       }
 
       if (currentMonth.getSeason().isNewSeason(day, currentMonth)) {
         Text seasonText = getNewSeasonText(currentMonth);
-        int seasonTextWidth = client.textRenderer.getWidth(seasonText);
-
-        drawContext.drawText(client.textRenderer, seasonText, (getHalf(width) - getHalf(seasonTextWidth)), (SEASON_OVERLAY_SCALE * 3), getColor(dayTime), true);
+        drawCenteredText(drawContext, seasonText, width, (SEASON_OVERLAY_SCALE * 3), getColor(dayTime));
       }
     }
+  }
+
+  private void drawCenteredText(DrawContext drawContext, Text text, int x, int y, int color) {
+    TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+    int textWidth = textRenderer.getWidth(text);
+
+    drawContext.drawText(textRenderer, text, getHalf(x) - getHalf(textWidth), y, color, true);
   }
 
   private Text getNewDayText(int day, Months currentMonth, int year) {

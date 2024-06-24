@@ -1,7 +1,6 @@
 package net.abakath.rpg4fools.enums;
 
 import net.abakath.rpg4fools.RPG4Fools;
-import net.abakath.rpg4fools.models.DayData;
 import net.minecraft.util.Identifier;
 
 public enum Season {
