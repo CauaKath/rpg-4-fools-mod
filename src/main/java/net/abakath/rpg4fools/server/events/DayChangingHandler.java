@@ -1,15 +1,16 @@
-package net.abakath.rpg4fools.events;
+package net.abakath.rpg4fools.server.events;
 
 import net.abakath.rpg4fools.enums.Months;
 import net.abakath.rpg4fools.models.DayData;
-import net.abakath.rpg4fools.networking.packets.SeasonUpdateS2CPacket;
+import net.abakath.rpg4fools.network.packets.s2c.SeasonUpdatePacket;
+import net.abakath.rpg4fools.server.SeasonData;
 import net.abakath.rpg4fools.utils.IEntityDataSaver;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 
-public class TickHandler implements ServerTickEvents.StartTick {
+public class DayChangingHandler implements ServerTickEvents.StartTick {
     private static final int DAY_DURATION = 24000;
     private static final int MONTH_DURATION = 28;
     private static final int MONTHS_IN_YEAR = 12;
@@ -25,9 +26,13 @@ public class TickHandler implements ServerTickEvents.StartTick {
             }
 
             DayData dayData = getDayData(time);
+            SeasonData seasonData = SeasonData.getServerState(server);
+
+            seasonData.season = dayData.getMonth().getSeason();
+
             server.getPlayerManager().getPlayerList().forEach(player -> {
                 DayData.setPlayerDayData((IEntityDataSaver) player, dayData);
-                ServerPlayNetworking.send(player, new SeasonUpdateS2CPacket(dayData));
+                ServerPlayNetworking.send(player, new SeasonUpdatePacket(dayData));
             });
         }
     }
