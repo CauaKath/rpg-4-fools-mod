@@ -1,6 +1,6 @@
 package net.abakath.rpg4fools.server.events;
 
-import net.abakath.rpg4fools.enums.Season;
+import net.abakath.rpg4fools.enums.SubSeason;
 import net.abakath.rpg4fools.server.SeasonData;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -29,7 +29,7 @@ public class SeasonColorsHandler implements ServerTickEvents.StartTick {
   );
 
   private MinecraftServer serverInstance = null;
-  private Season season = null;
+  private SubSeason season = null;
 
   @Override
   public void onStartTick(MinecraftServer server) {
@@ -39,9 +39,9 @@ public class SeasonColorsHandler implements ServerTickEvents.StartTick {
 
     this.serverInstance = server;
 
-    Season oldSeason = this.season;
+    SubSeason oldSeason = this.season;
     SeasonData seasonData = SeasonData.getServerState(server);
-    Season newSeason = seasonData.season;
+    SubSeason newSeason = seasonData.subSeason;
 
     World overworld = server.getWorld(World.OVERWORLD);
     assert overworld != null;
@@ -108,11 +108,14 @@ public class SeasonColorsHandler implements ServerTickEvents.StartTick {
   }
 
   private float getSeasonSaturation(SeasonData seasonData) {
-    return switch (seasonData.season) {
-      case WINTER -> 0.5f;
-      case AUTUMN -> 0.8f;
-      case SPRING -> 1.0f;
-      case SUMMER -> 1.5f;
+    return switch (seasonData.subSeason) {
+      case MID_WINTER -> 0.5f;
+      case EARLY_WINTER, LATE_WINTER -> 0.7f;
+      case LATE_AUTUMN, EARLY_SPRING -> 0.8f;
+      case MID_SPRING, MID_AUTUMN -> 1.0f;
+      case LATE_SPRING, EARLY_AUTUMN -> 1.2f;
+      case EARLY_SUMMER, LATE_SUMMER -> 1.3f;
+      case MID_SUMMER -> 1.5f;
     };
   }
 

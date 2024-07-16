@@ -43,7 +43,7 @@ public class SeasonsHudOverlay implements HudRenderCallback {
     if (holiday != null) {
       drawContext.drawTexture(holiday.getHolidayTexture(), x, y, 0, 0, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE);
     } else {
-      drawContext.drawTexture(currentMonth.getSeason().getSeasonTexture(), x, y, 0, 0, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE);
+      drawContext.drawTexture(currentMonth.getSubSeason().getSeason().getSeasonTexture(), x, y, 0, 0, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE, SEASON_OVERLAY_SCALE);
     }
 
     boolean newDay = isNewDay(dayTime);
@@ -57,7 +57,7 @@ public class SeasonsHudOverlay implements HudRenderCallback {
         drawCenteredText(drawContext, holidayText, width, (SEASON_OVERLAY_SCALE * 3), getColor(dayTime));
       }
 
-      if (currentMonth.getSeason().isNewSeason(day, currentMonth)) {
+      if (currentMonth.getSubSeason().getSeason().isNewSeason(day, currentMonth)) {
         Text seasonText = getNewSeasonText(currentMonth);
         drawCenteredText(drawContext, seasonText, width, (SEASON_OVERLAY_SCALE * 3), getColor(dayTime));
       }
@@ -77,7 +77,7 @@ public class SeasonsHudOverlay implements HudRenderCallback {
   }
 
   private Text getNewSeasonText(Months currentMonth) {
-    return switch (currentMonth.getSeason()) {
+    return switch (currentMonth.getSubSeason().getSeason()) {
       case SPRING -> Text.of("The ice melted and the flowers starts to blossom...");
       case SUMMER -> Text.of("The sun starts to shine brighter...");
       case AUTUMN -> Text.of("The leaves begins to paint the ground...");

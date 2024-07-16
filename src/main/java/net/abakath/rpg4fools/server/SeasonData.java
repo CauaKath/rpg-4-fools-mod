@@ -1,7 +1,7 @@
 package net.abakath.rpg4fools.server;
 
 import net.abakath.rpg4fools.RPG4Fools;
-import net.abakath.rpg4fools.enums.Season;
+import net.abakath.rpg4fools.enums.SubSeason;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
@@ -13,7 +13,7 @@ import java.util.Objects;
 
 public class SeasonData extends PersistentState {
   public final String KEY = "season";
-  public Season season;
+  public SubSeason subSeason;
 
   private static final Type<SeasonData> type = new Type<>(
           SeasonData::new,
@@ -24,14 +24,14 @@ public class SeasonData extends PersistentState {
   public static SeasonData createFromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
     SeasonData seasonData = new SeasonData();
 
-    seasonData.season = Season.values()[nbt.getInt("season")];
+    seasonData.subSeason = SubSeason.values()[nbt.getInt("season")];
 
     return seasonData;
   }
 
   @Override
   public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-    nbt.putInt(KEY, season.ordinal());
+    nbt.putInt(KEY, subSeason.ordinal());
     return nbt;
   }
 
