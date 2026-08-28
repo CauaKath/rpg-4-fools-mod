@@ -6,6 +6,7 @@ import net.abakath.rpg4fools.world.CurrentSeason;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.SweetBerryBushBlock;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
@@ -39,13 +40,30 @@ public class BlockStateRandomTickMixin {
       return;
     }
 
-    // Berry bushes are in the crops tag but are not supposed to die; they go dormant instead, which
-    // is a later change. Until then they keep growing rather than being killed by this hook.
+    boolean inSeason = CropSeasons.isInSeason(state, CurrentSeason.season());
+
+    // Bushes are the one crop that comes back, so they swap between two blocks instead of dying.
     if (state.isOf(Blocks.SWEET_BERRY_BUSH)) {
+      if (!inSeason) {
+        world.setBlockState(pos, ModBlocks.DORMANT_SWEET_BERRY_BUSH.getDefaultState());
+        info.cancel();
+      }
+
       return;
     }
 
-    if (CropSeasons.isInSeason(state, CurrentSeason.season())) {
+    if (state.isOf(ModBlocks.DORMANT_SWEET_BERRY_BUSH)) {
+      if (inSeason) {
+        // Age 1 is leafy with no fruit, so the bush picks up where a fresh one would rather than
+        // handing back the berries it lost going dormant.
+        world.setBlockState(pos, Blocks.SWEET_BERRY_BUSH.getDefaultState().with(SweetBerryBushBlock.AGE, 1));
+      }
+
+      info.cancel();
+      return;
+    }
+
+    if (inSeason) {
       return;
     }
 

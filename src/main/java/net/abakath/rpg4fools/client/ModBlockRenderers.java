@@ -19,6 +19,10 @@ public final class ModBlockRenderers {
   }
 
   public static void register() {
-    BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.DEAD_CROP, RenderLayer.getCutout());
+    BlockRenderLayerMap.INSTANCE.putBlocks(
+            RenderLayer.getCutout(),
+            ModBlocks.DEAD_CROP,
+            ModBlocks.DORMANT_SWEET_BERRY_BUSH
+    );
   }
 }
