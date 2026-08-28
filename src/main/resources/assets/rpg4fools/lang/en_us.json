@@ -1,4 +1,6 @@
 {
+  "message.rpg4fools.cannot_grow": "%s cannot grow in %s",
+  "message.rpg4fools.cannot_plant": "%s cannot be planted in %s",
   "tooltip.rpg4fools.hold_shift": "Hold Shift for seasons",
   "tooltip.rpg4fools.seasons": "Seasons: %s"
 }

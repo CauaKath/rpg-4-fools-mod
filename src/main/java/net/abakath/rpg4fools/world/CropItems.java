@@ -27,6 +27,23 @@ import java.util.Optional;
 public class CropItems {
   private static final Map<Item, Block> PRODUCE = createProduce();
 
+  /**
+   * The crop this item would plant, or empty if placing it does not plant a crop.
+   *
+   * <p>Narrower than {@link #cropFor} on purpose. That one maps produce as well, and produce is not
+   * a seed: Items.PUMPKIN maps to the stem that grew it, so gating placement on it would refuse a
+   * pumpkin block as though it were a crop being sown.
+   */
+  public static Optional<BlockState> plantedBy(ItemStack stack) {
+    if (!(stack.getItem() instanceof BlockItem blockItem)) {
+      return Optional.empty();
+    }
+
+    BlockState planted = blockItem.getBlock().getDefaultState();
+
+    return CropSeasons.isCrop(planted) ? Optional.of(planted) : Optional.empty();
+  }
+
   /** The crop this item belongs to, or empty if the item has nothing to do with farming. */
   public static Optional<BlockState> cropFor(ItemStack stack) {
     Item item = stack.getItem();
