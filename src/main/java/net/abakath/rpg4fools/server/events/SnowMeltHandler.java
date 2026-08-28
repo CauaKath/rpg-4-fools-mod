@@ -1,5 +1,6 @@
 package net.abakath.rpg4fools.server.events;
 
+import net.abakath.rpg4fools.world.SeasonSnow;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.Blocks;
 import net.minecraft.server.MinecraftServer;
@@ -75,15 +76,19 @@ public class SnowMeltHandler implements ServerTickEvents.StartTick {
     BlockPos top = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING, new BlockPos(x, 0, z));
     Biome biome = world.getBiome(top).value();
 
-    // Still snowing here, so nothing is out of season. This is also what protects the biomes that
-    // are frozen year round: their precipitation never stops being SNOW.
-    if (biome.getPrecipitation(top) == Biome.Precipitation.SNOW) {
+    if (!SeasonSnow.shouldThaw(biome.getTemperature())) {
       return;
     }
 
     // Only snow layers, never SNOW_BLOCK, so anything a player built out of snow survives.
     if (world.getBlockState(top).isOf(Blocks.SNOW)) {
       world.removeBlock(top, false);
+      return;
+    }
+
+    // Ice survives the midsummer thaw. Clearing a snowy plains of its cover for a month is the
+    // intent; draining a frozen ocean and stranding whatever was standing on it is not.
+    if (SeasonSnow.isMidsummerThaw()) {
       return;
     }
 

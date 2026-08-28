@@ -56,4 +56,41 @@ public final class SeasonSnow {
   public static boolean isSnowSeason() {
     return snowLineTemperature() > VANILLA_SNOW_TEMPERATURE;
   }
+
+  /**
+   * Biomes at or below this never thaw, whatever the season. Snowy taiga sits at -0.5 and the peaks
+   * at -0.7, so those stay frozen year round, while snowy plains and snowy beach sit at 0.0 and
+   * above and can lose their cover at the height of summer.
+   */
+  private static final float PERMAFROST_TEMPERATURE = -0.15f;
+
+  /**
+   * Whether snow lying at a biome of this temperature should be melting right now.
+   *
+   * <p>Snowy biomes are supposed to be white. Their precipitation never stops being snow, so the
+   * ordinary rule below already leaves them alone all year, which is what keeps their existing
+   * cover intact through the season cycle.
+   *
+   * <p>Midsummer is the one exception, and only for the milder of them. A snowy plains losing its
+   * cover for a month reads as a thaw; frozen peaks doing the same would just look broken.
+   */
+  public static boolean shouldThaw(float biomeTemperature) {
+    if (subSeason == SubSeason.MID_SUMMER) {
+      return biomeTemperature > PERMAFROST_TEMPERATURE;
+    }
+
+    // Anything at or below the current snow line is actively being snowed on, so it is not thawing.
+    // For a snowy biome that condition holds in every season, which is the year round protection.
+    return biomeTemperature > snowLineTemperature();
+  }
+
+  /**
+   * True when the thaw is the midsummer exception rather than the ordinary end of winter.
+   *
+   * <p>The caller uses this to leave ice alone: clearing a snowy plains of its snow for a month is
+   * the intent, draining a frozen ocean is not.
+   */
+  public static boolean isMidsummerThaw() {
+    return subSeason == SubSeason.MID_SUMMER;
+  }
 }
