@@ -30,8 +30,9 @@ public final class SeasonAtmosphere {
   private static final float NO_STRENGTH_TEMPERATURE = 1.5f;
 
   /**
-   * Shift used to key the biome cache. 2 gives a 4 block cell, fine enough that the blended value
-   * moves smoothly as the player walks rather than stepping once per chunk section.
+   * Shift used to key the biome cache. 2 gives a 4 block cell. It does not need to be finer than
+   * that: FogTransition eases between whatever this reports, so continuity comes from the easing
+   * rather than from resampling more often.
    */
   private static final int CACHE_CELL_SHIFT = 2;
 
@@ -42,7 +43,7 @@ public final class SeasonAtmosphere {
   private static final int CAVE_FADE_BOTTOM = 40;
 
   /** Horizontal reach of the blend kernel, in blocks. */
-  private static final int SAMPLE_RADIUS = 24;
+  private static final int SAMPLE_RADIUS = 40;
 
   /**
    * Horizontal offsets of the sample grid, in blocks. Five per axis rather than three: crossing a
@@ -175,6 +176,21 @@ public final class SeasonAtmosphere {
     }
 
     return (float) (CAVE_FADE_TOP - y) / (CAVE_FADE_TOP - CAVE_FADE_BOTTOM);
+  }
+
+  /**
+   * Drops every cached lookup. Must run whenever the client joins or leaves a world.
+   *
+   * <p>Biome tags arrive from the server as part of the join handshake. A family resolved before
+   * they land falls back to DEFAULT, and because the result is memoised per registry entry that
+   * wrong answer would stick for the rest of the session, leaving the world with vanilla fog until
+   * something happened to replace the entries.
+   */
+  public static void clearCaches() {
+    cachedAggregateCellKey = Long.MIN_VALUE;
+    cachedAggregate = null;
+    BiomeAtmosphere.clearCache();
+    FogTransition.reset();
   }
 
   private static BiomeAggregate aggregateFor(WorldView world, BlockPos pos) {

@@ -55,11 +55,19 @@ public class BackgroundRendererFogDistanceMixin {
 
     ResolvedAtmosphere atmosphere = SeasonAtmosphere.resolve(world, BlockPos.ofFloored(camera.getPos()));
 
-    if (atmosphere.fogPresence() <= 0.0f) {
-      return;
-    }
+    // Eased rather than applied straight. The biome blend moves in steps as samples cross a border,
+    // and with a swamp at 24 blocks against a forest at 146 a single step is a visible jump. Note
+    // this runs even at zero presence, so leaving a biome eases back to vanilla instead of snapping.
+    float vanillaStart = RenderSystem.getShaderFogStart();
+    float vanillaEnd = RenderSystem.getShaderFogEnd();
 
-    RenderSystem.setShaderFogStart(atmosphere.fogStart(viewDistance));
-    RenderSystem.setShaderFogEnd(atmosphere.fogEnd(viewDistance));
+    float start = FogTransition.update(
+            atmosphere.fogStart(vanillaStart, vanillaEnd),
+            atmosphere.fogEnd(vanillaEnd),
+            System.nanoTime()
+    );
+
+    RenderSystem.setShaderFogStart(start);
+    RenderSystem.setShaderFogEnd(FogTransition.getEnd());
   }
 }

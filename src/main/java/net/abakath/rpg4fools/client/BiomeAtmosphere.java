@@ -24,7 +24,7 @@ import java.util.Map;
  */
 @Environment(EnvType.CLIENT)
 public enum BiomeAtmosphere {
-  SWAMP(ConventionalBiomeTags.IS_SWAMP, 0x5F7A22, 0.55f, 0.20f, 1.00f, 2.0f, 24.0f),
+  SWAMP(ConventionalBiomeTags.IS_SWAMP, 0x42561A, 0.55f, 0.20f, 1.00f, 2.0f, 24.0f),
   SNOWY(ConventionalBiomeTags.IS_SNOWY, 0xC8DCFF, 0.45f, 0.90f, 0.95f, 5.0f, 40.0f),
   TAIGA(ConventionalBiomeTags.IS_TAIGA, 0xA8C0D0, 0.35f, 1.00f, 0.75f, 8.0f, 55.0f),
   JUNGLE(ConventionalBiomeTags.IS_JUNGLE, 0x4E8C3A, 0.40f, 0.35f, 0.85f, 4.0f, 30.0f),
@@ -121,7 +121,13 @@ public enum BiomeAtmosphere {
     }
 
     BiomeAtmosphere resolved = match(entry);
-    CACHE.put(entry, resolved);
+
+    // DEFAULT is deliberately not memoised. It is also what a lookup returns when the biome tags
+    // have not synced yet, and caching that would freeze a swamp as fogless for the rest of the
+    // session. Re-checking costs a few tag lookups; getting it wrong permanently costs the feature.
+    if (resolved != DEFAULT) {
+      CACHE.put(entry, resolved);
+    }
 
     return resolved;
   }

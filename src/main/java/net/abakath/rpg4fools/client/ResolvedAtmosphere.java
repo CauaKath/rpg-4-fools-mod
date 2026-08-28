@@ -11,7 +11,8 @@ import net.minecraft.util.math.Vec3d;
  * <p>Fog distances are absolute, in blocks, rather than factors on the view distance. A factor
  * means the same biome feels completely different at render distance 8 and render distance 32,
  * and it also cannot express "you can see 24 blocks in a swamp" at all. The presence value decides
- * how far to move from the vanilla distance towards the biome's target.
+ * how far to move from vanilla's own distances towards the biome's target, so presence zero returns
+ * vanilla exactly.
  *
  * <p>Every multiplication that produces these numbers happens here or in
  * {@link SeasonAtmosphere#resolve}, never in a mixin.
@@ -38,31 +39,43 @@ public record ResolvedAtmosphere(
    */
   private static final float SKY_BLEND_SCALE = 0.35f;
 
-  /** Where vanilla starts its terrain fog, as a fraction of where it ends. */
-  private static final float VANILLA_START_RATIO = 0.75f;
-
-  /** Distance in blocks where the fog should be fully opaque, given vanilla's view distance. */
-  public float fogEnd(float viewDistance) {
-    float blended = lerp(viewDistance, fogTargetEnd, fogPresence);
+  /**
+   * Distance in blocks where the fog should be fully opaque.
+   *
+   * @param vanillaEnd where vanilla put its own fog end this frame
+   */
+  public float fogEnd(float vanillaEnd) {
+    float blended = lerp(vanillaEnd, fogTargetEnd, fogPresence);
 
     // Never push the fog further out than vanilla would. At a low render distance the biome target
     // can be the larger of the two, and thinning the fog is not what any of these families mean.
-    return Math.min(viewDistance, blended);
+    return Math.min(vanillaEnd, blended);
   }
 
   /**
-   * Distance in blocks where the fog should begin, given vanilla's view distance.
+   * Distance in blocks where the fog should begin.
    *
-   * <p>Derived as a ratio of where the fog ends rather than interpolated from vanilla's own start.
-   * Interpolating both ends independently let the start lag far behind: a swamp reaching an end of
-   * 41 blocks still began at 16, which reads as a wall ahead rather than as thick air around you.
-   * Tying the ratio to the biome keeps the gradient proportional at any density.
+   * <p>Derived as a ratio of where the fog ends rather than interpolated on its own. Interpolating
+   * both ends independently let the start lag far behind: a swamp reaching an end of 41 blocks
+   * still began at 16, which reads as a wall ahead rather than as thick air around you.
+   *
+   * <p>Both ratios are measured against vanilla's actual values rather than assumed, so at zero
+   * presence this returns exactly what vanilla asked for and a biome with no fog of its own is left
+   * untouched.
+   *
+   * @param vanillaStart where vanilla put its own fog start this frame
+   * @param vanillaEnd   where vanilla put its own fog end this frame
    */
-  public float fogStart(float viewDistance) {
-    float targetRatio = fogTargetEnd <= 0.0f ? VANILLA_START_RATIO : fogTargetStart / fogTargetEnd;
-    float ratio = lerp(VANILLA_START_RATIO, targetRatio, fogPresence);
+  public float fogStart(float vanillaStart, float vanillaEnd) {
+    if (vanillaEnd <= 0.0f || fogTargetEnd <= 0.0f) {
+      return vanillaStart;
+    }
 
-    return fogEnd(viewDistance) * ratio;
+    float vanillaRatio = vanillaStart / vanillaEnd;
+    float targetRatio = fogTargetStart / fogTargetEnd;
+    float ratio = lerp(vanillaRatio, targetRatio, fogPresence);
+
+    return fogEnd(vanillaEnd) * ratio;
   }
 
   /** Applies the biome tint and then the season grade to a packed fog colour. */
