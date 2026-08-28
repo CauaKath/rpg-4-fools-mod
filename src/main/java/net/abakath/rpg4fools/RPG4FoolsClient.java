@@ -2,6 +2,7 @@ package net.abakath.rpg4fools;
 
 import net.abakath.rpg4fools.client.ClientModMessages;
 import net.abakath.rpg4fools.client.particle.MistParticle;
+import net.abakath.rpg4fools.client.particle.MistSpawner;
 import net.abakath.rpg4fools.client.SeasonColorProviders;
 import net.abakath.rpg4fools.client.SeasonsHudOverlay;
 import net.abakath.rpg4fools.init.ModParticles;
@@ -18,5 +19,6 @@ public class RPG4FoolsClient implements ClientModInitializer {
     SeasonColorProviders.register();
 
     ParticleFactoryRegistry.getInstance().register(ModParticles.MIST, MistParticle.Factory::new);
+    MistSpawner.register();
   }
 }
