@@ -2,13 +2,16 @@ package net.abakath.rpg4fools.network.packets.s2c;
 
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.models.DayData;
-import net.abakath.rpg4fools.utils.IEntityDataSaver;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
+/**
+ * Sends the current in game date to a player. This class is loaded on both sides, so it must not
+ * reference any client only type. The receiving side lives in
+ * {@link net.abakath.rpg4fools.client.ClientModMessages}.
+ */
 public class SeasonUpdatePacket implements CustomPayload {
   public DayData dayData;
 
@@ -24,14 +27,6 @@ public class SeasonUpdatePacket implements CustomPayload {
 
   public SeasonUpdatePacket(DayData dayData) {
     this.dayData = dayData;
-  }
-
-  public static void receive(SeasonUpdatePacket packet, ClientPlayNetworking.Context context) {
-    IEntityDataSaver player = (IEntityDataSaver) context.player();
-    player.getPersistentData().putInt("rpg4fools.year", packet.dayData.getYear());
-    player.getPersistentData().putInt("rpg4fools.month", packet.dayData.getMonth().ordinal());
-    player.getPersistentData().putInt("rpg4fools.day", packet.dayData.getDay());
-    player.getPersistentData().putLong("rpg4fools.dayTime", packet.dayData.getDayTime());
   }
 
   @Override
