@@ -28,7 +28,7 @@ public class DayChangingHandler implements ServerTickEvents.StartTick {
             DayData dayData = getDayData(time);
             SeasonData seasonData = SeasonData.getServerState(server);
 
-            seasonData.subSeason = dayData.getMonth().getSubSeason();
+            seasonData.setSubSeason(dayData.getMonth().getSubSeason());
 
             server.getPlayerManager().getPlayerList().forEach(player -> {
                 DayData.setPlayerDayData((IEntityDataSaver) player, dayData);
