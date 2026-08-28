@@ -34,6 +34,12 @@ public final class SeasonAtmosphere {
    */
   private static final int CACHE_CELL_SHIFT = 2;
 
+  /** At or above this Y the cave atmosphere never applies, even with no sky overhead. */
+  private static final int CAVE_FADE_TOP = 60;
+
+  /** At or below this Y the cave atmosphere applies in full. */
+  private static final int CAVE_FADE_BOTTOM = 40;
+
   /** Horizontal reach of the blend kernel, in blocks. */
   private static final int SAMPLE_RADIUS = 24;
 
@@ -90,14 +96,57 @@ public final class SeasonAtmosphere {
 
     float seasonDistanceFactor = getFogDistanceFactor(aggregate.effectiveStrength());
     float fogDistanceFactor = aggregate.baseDensity() * seasonDistanceFactor;
+    float fogStartFactor = getFogStartFactor(aggregate.effectiveStrength());
+
+    float caveFactor = caveFactor(world, pos);
+
+    if (caveFactor <= 0.0f) {
+      return new ResolvedAtmosphere(
+              aggregate.tintColor(),
+              aggregate.colorBlend(),
+              fogDistanceFactor,
+              fogStartFactor,
+              aggregate.effectiveStrength()
+      );
+    }
+
+    CaveAtmosphere cave = CaveAtmosphere.of(world.getBiome(pos));
 
     return new ResolvedAtmosphere(
-            aggregate.tintColor(),
-            aggregate.colorBlend(),
-            fogDistanceFactor,
-            getFogStartFactor(aggregate.effectiveStrength()),
-            aggregate.effectiveStrength()
+            ColorMath.lerpRgb(aggregate.tintColor(), cave.getTintColor(), caveFactor),
+            lerp(aggregate.colorBlend(), cave.getColorBlend(), caveFactor),
+            lerp(fogDistanceFactor, cave.getDensity(), caveFactor),
+            lerp(fogStartFactor, cave.getStartFactor(), caveFactor),
+            lerp(aggregate.effectiveStrength(), 0.0f, caveFactor)
     );
+  }
+
+  /**
+   * How much the cave atmosphere applies here, from 0 at the surface to 1 deep underground.
+   *
+   * <p>Sky visibility alone is not enough, or standing inside a house would read as a cave. The Y
+   * band on top of it also gives the transition somewhere to happen, so walking down a mineshaft
+   * fades into the cave atmosphere instead of snapping to it.
+   *
+   * <p>Deliberately outside the biome cache: this depends on exact Y and on sky access, both of
+   * which change far faster than the 4 block cache cell.
+   */
+  private static float caveFactor(WorldView world, BlockPos pos) {
+    if (world == null || pos == null || world.isSkyVisible(pos)) {
+      return 0.0f;
+    }
+
+    int y = pos.getY();
+
+    if (y >= CAVE_FADE_TOP) {
+      return 0.0f;
+    }
+
+    if (y <= CAVE_FADE_BOTTOM) {
+      return 1.0f;
+    }
+
+    return (float) (CAVE_FADE_TOP - y) / (CAVE_FADE_TOP - CAVE_FADE_BOTTOM);
   }
 
   private static BiomeAggregate aggregateFor(WorldView world, BlockPos pos) {
