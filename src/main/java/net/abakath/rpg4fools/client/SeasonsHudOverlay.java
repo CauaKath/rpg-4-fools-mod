@@ -18,6 +18,11 @@ public class SeasonsHudOverlay implements HudRenderCallback {
     MinecraftClient client = MinecraftClient.getInstance();
 
     assert client != null;
+    assert client.player != null;
+    if (client.player.isInCreativeMode() || client.player.isSpectator()) {
+      return;
+    }
+
     assert client.world != null;
     if (!client.world.getRegistryKey().equals(World.OVERWORLD)) {
       return;
@@ -29,7 +34,6 @@ public class SeasonsHudOverlay implements HudRenderCallback {
     int x = getHalf(width) - getHalf(SEASON_OVERLAY_SCALE);
     int y = height - (SEASON_OVERLAY_SCALE * 3);
 
-    assert client.player != null;
     IEntityDataSaver playerData = (IEntityDataSaver) client.player;
 
     int year = playerData.getPersistentData().getInt("rpg4fools.year");
