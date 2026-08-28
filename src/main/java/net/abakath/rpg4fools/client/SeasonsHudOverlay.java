@@ -13,6 +13,18 @@ import net.minecraft.world.World;
 public class SeasonsHudOverlay implements HudRenderCallback {
   private static final int SEASON_OVERLAY_SCALE = 16;
 
+  /** Length of a Minecraft day in ticks. */
+  private static final int DAY_DURATION = 24000;
+
+  /** How long the day change message stays on screen, in ticks. 160 ticks is 8 seconds. */
+  private static final int MESSAGE_DURATION = 160;
+
+  /** Ticks spent fading in at the start and fading out at the end. */
+  private static final int MESSAGE_FADE_DURATION = 20;
+
+  private static final int MIN_TEXT_ALPHA = 0x20;
+  private static final int MAX_TEXT_ALPHA = 0xFF;
+
   @Override
   public void onHudRender(DrawContext drawContext, float tickDelta) {
     MinecraftClient client = MinecraftClient.getInstance();
@@ -101,24 +113,30 @@ public class SeasonsHudOverlay implements HudRenderCallback {
   }
 
   private boolean isNewDay(long dayTime) {
-    long calc = dayTime % 24000;
+    long tickOfDay = dayTime % DAY_DURATION;
 
-    return calc >= 0 && calc <= 48;
+    return tickOfDay >= 0 && tickOfDay <= MESSAGE_DURATION;
   }
 
+  /**
+   * Alpha ramp for the day change message: fade in, hold at full opacity, fade out.
+   *
+   * <p>The alpha floor is deliberate. TextRenderer treats a colour whose alpha is below 0x04 as
+   * "no alpha given" and forces it to fully opaque, so fading all the way to zero would flash the
+   * text at full brightness on the first and last tick.
+   */
   public int getColor(long dayTime) {
-    return switch ((int) (dayTime % 24000)) {
-      case 0, 1, 2, 46, 47, 48 -> 0x20FFFFFF;
-      case 3, 4, 5, 43, 44, 45 -> 0x40FFFFFF;
-      case 6, 7, 8, 40, 41, 42 -> 0x60FFFFFF;
-      case 9, 10, 11, 37, 38, 39 -> 0x80FFFFFF;
-      case 12, 13, 14, 34, 35, 36 -> 0xA0FFFFFF;
-      case 15, 16, 17, 31, 32, 33 -> 0xC0FFFFFF;
-      case 18, 19, 20, 28, 29, 30 -> 0xD0FFFFFF;
-      case 21, 22, 26, 27 -> 0xE0FFFFFF;
-      case 23, 24, 25 -> 0xF0FFFFFF;
+    int tickOfDay = (int) (dayTime % DAY_DURATION);
 
-      default -> 0x000000;
-    };
+    if (tickOfDay < 0 || tickOfDay > MESSAGE_DURATION) {
+      return 0;
+    }
+
+    int ticksFromEdge = Math.min(tickOfDay, MESSAGE_DURATION - tickOfDay);
+    float fade = Math.min(1.0f, (float) ticksFromEdge / MESSAGE_FADE_DURATION);
+
+    int alpha = MIN_TEXT_ALPHA + Math.round((MAX_TEXT_ALPHA - MIN_TEXT_ALPHA) * fade);
+
+    return (alpha << 24) | 0xFFFFFF;
   }
 }
