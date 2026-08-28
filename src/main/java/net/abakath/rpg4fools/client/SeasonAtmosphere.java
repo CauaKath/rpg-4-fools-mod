@@ -28,15 +28,34 @@ public final class SeasonAtmosphere {
    */
   private static final float NO_STRENGTH_TEMPERATURE = 1.5f;
 
-  /** Shift in chunk section units used to key the biome cache. */
-  private static final int SECTION_SHIFT = 4;
+  /**
+   * Shift used to key the biome cache. 2 gives a 4 block cell, fine enough that the blended value
+   * moves smoothly as the player walks rather than stepping once per chunk section.
+   */
+  private static final int CACHE_CELL_SHIFT = 2;
+
+  /** Horizontal reach of the blend kernel, in blocks. */
+  private static final int SAMPLE_RADIUS = 24;
 
   /**
-   * Single entry cache for the biome strength lookup. The fog hooks run per frame, and a biome
-   * lookup per frame is wasteful when the camera has not moved out of its chunk section. Only ever
-   * touched from the render thread.
+   * Horizontal offsets of the sample grid, in blocks. Five per axis rather than three: crossing a
+   * taiga into a desert then moves the strength in steps of 0.2 instead of 0.33, which is the
+   * difference between a visible step in the fog and a gradual change.
    */
-  private static long cachedSectionKey = Long.MIN_VALUE;
+  private static final int[] SAMPLE_OFFSETS = {
+          -SAMPLE_RADIUS,
+          -SAMPLE_RADIUS / 2,
+          0,
+          SAMPLE_RADIUS / 2,
+          SAMPLE_RADIUS
+  };
+
+  /**
+   * Single entry cache for the biome strength lookup. The fog hooks run per frame and the blend
+   * costs 25 biome lookups, so it is recomputed only when the camera leaves its cache cell. Only
+   * ever touched from the render thread.
+   */
+  private static long cachedCellKey = Long.MIN_VALUE;
   private static float cachedStrength = 1.0f;
 
   /** Scratch buffer for the colour conversion, kept per thread to stay allocation free. */
@@ -48,25 +67,44 @@ public final class SeasonAtmosphere {
   /**
    * How much of the seasonal effect applies here, from 0 (hot biome, no effect) to 1 (cold biome,
    * full effect).
+   *
+   * <p>Averaged over a 5x5 horizontal grid rather than sampled at a single point. A single sample
+   * makes the fog snap the instant the camera crosses a biome border, which is very visible walking
+   * from a taiga into a desert. Averaging spreads that change over the width of the kernel.
    */
   public static float getSeasonStrength(WorldView world, BlockPos pos) {
     if (world == null || pos == null) {
       return 1.0f;
     }
 
-    long sectionKey = sectionKey(pos);
+    long cellKey = cacheCellKey(pos);
 
-    if (sectionKey == cachedSectionKey) {
+    if (cellKey == cachedCellKey) {
       return cachedStrength;
     }
 
-    Biome biome = world.getBiome(pos).value();
-    float strength = strengthForTemperature(biome.getTemperature());
+    float strength = blendedStrength(world, pos);
 
-    cachedSectionKey = sectionKey;
+    cachedCellKey = cellKey;
     cachedStrength = strength;
 
     return strength;
+  }
+
+  private static float blendedStrength(WorldView world, BlockPos pos) {
+    BlockPos.Mutable samplePos = new BlockPos.Mutable();
+    float total = 0.0f;
+
+    for (int offsetX : SAMPLE_OFFSETS) {
+      for (int offsetZ : SAMPLE_OFFSETS) {
+        samplePos.set(pos.getX() + offsetX, pos.getY(), pos.getZ() + offsetZ);
+
+        Biome biome = world.getBiome(samplePos).value();
+        total += strengthForTemperature(biome.getTemperature());
+      }
+    }
+
+    return total / (SAMPLE_OFFSETS.length * SAMPLE_OFFSETS.length);
   }
 
   static float strengthForTemperature(float temperature) {
@@ -181,10 +219,10 @@ public final class SeasonAtmosphere {
     return from + (to - from) * t;
   }
 
-  private static long sectionKey(BlockPos pos) {
-    long x = pos.getX() >> SECTION_SHIFT;
-    long y = pos.getY() >> SECTION_SHIFT;
-    long z = pos.getZ() >> SECTION_SHIFT;
+  private static long cacheCellKey(BlockPos pos) {
+    long x = pos.getX() >> CACHE_CELL_SHIFT;
+    long y = pos.getY() >> CACHE_CELL_SHIFT;
+    long z = pos.getZ() >> CACHE_CELL_SHIFT;
 
     return (x & 0x3FFFFF) << 42 | (y & 0xFFFFF) << 22 | (z & 0x3FFFFF);
   }
