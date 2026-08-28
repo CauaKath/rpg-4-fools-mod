@@ -72,5 +72,6 @@ jobs:
           name: ${{ steps.version.outputs.tag }}
           generate_release_notes: true
           prerelease: false
+          make_latest: true
           fail_on_unmatched_files: true
           files: build/libs/*.jar
