@@ -77,7 +77,7 @@ public final class SeasonAtmosphere {
    *
    * @param effectiveStrength family season sensitivity multiplied by the temperature curve
    */
-  private record BiomeAggregate(int tintColor, float colorBlend, float baseDensity, float effectiveStrength) {
+  private record BiomeAggregate(int tintColor, float colorBlend, float baseDensity, float effectiveStrength, float mistDensity) {
   }
 
   /**
@@ -106,7 +106,8 @@ public final class SeasonAtmosphere {
               aggregate.colorBlend(),
               fogDistanceFactor,
               fogStartFactor,
-              aggregate.effectiveStrength()
+              aggregate.effectiveStrength(),
+              surfaceMistDensity(aggregate)
       );
     }
 
@@ -117,8 +118,26 @@ public final class SeasonAtmosphere {
             lerp(aggregate.colorBlend(), cave.getColorBlend(), caveFactor),
             lerp(fogDistanceFactor, cave.getDensity(), caveFactor),
             lerp(fogStartFactor, cave.getStartFactor(), caveFactor),
-            lerp(aggregate.effectiveStrength(), 0.0f, caveFactor)
+            lerp(aggregate.effectiveStrength(), 0.0f, caveFactor),
+            lerp(surfaceMistDensity(aggregate), cave.getMistDensity(), caveFactor)
     );
+  }
+
+  /**
+   * Mist at the surface: the family baseline plus what the season adds.
+   *
+   * <p>The season adds rather than multiplies on purpose. An open biome sits at a zero baseline, so
+   * multiplying would leave it clear all year. Adding is what gives plains a thin cold haze in
+   * winter while keeping it completely clear in summer.
+   */
+  private static float surfaceMistDensity(BiomeAggregate aggregate) {
+    float t = ClientSeasonState.getProgress();
+    AtmosphereTint current = AtmosphereTint.of(ClientSeasonState.getSubSeason());
+    AtmosphereTint next = current.next();
+
+    float boost = lerp(current.getMistBoost(), next.getMistBoost(), t);
+
+    return ColorMath.clamp01(aggregate.mistDensity() + boost * aggregate.effectiveStrength());
   }
 
   /**
@@ -151,7 +170,7 @@ public final class SeasonAtmosphere {
 
   private static BiomeAggregate aggregateFor(WorldView world, BlockPos pos) {
     if (world == null || pos == null) {
-      return new BiomeAggregate(0xFFFFFF, 0.0f, 1.0f, 1.0f);
+      return new BiomeAggregate(0xFFFFFF, 0.0f, 1.0f, 1.0f, 0.0f);
     }
 
     long cellKey = cacheCellKey(pos);
@@ -181,6 +200,7 @@ public final class SeasonAtmosphere {
     float totalBlend = 0.0f;
     float totalBaseDensity = 0.0f;
     float totalStrength = 0.0f;
+    float totalMist = 0.0f;
 
     for (int offsetX : SAMPLE_OFFSETS) {
       for (int offsetZ : SAMPLE_OFFSETS) {
@@ -197,6 +217,7 @@ public final class SeasonAtmosphere {
         totalBlend += family.getColorBlend();
         totalBaseDensity += family.getBaseDensity();
         totalStrength += family.getSeasonSensitivity() * strengthForTemperature(entry.value().getTemperature());
+        totalMist += family.getMistDensity();
       }
     }
 
@@ -210,7 +231,8 @@ public final class SeasonAtmosphere {
             tintColor,
             totalBlend / samples,
             totalBaseDensity / samples,
-            totalStrength / samples
+            totalStrength / samples,
+            totalMist / samples
     );
   }
 

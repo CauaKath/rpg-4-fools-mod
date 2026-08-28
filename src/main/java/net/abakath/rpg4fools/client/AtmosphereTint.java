@@ -24,18 +24,18 @@ import net.fabricmc.api.Environment;
  */
 @Environment(EnvType.CLIENT)
 public enum AtmosphereTint {
-  EARLY_SPRING(SubSeason.EARLY_SPRING, 2.0f, 0.90f, 1.02f, 0.92f, 0.88f),
-  MID_SPRING(SubSeason.MID_SPRING, 0.0f, 0.98f, 1.04f, 1.00f, 1.00f),
-  LATE_SPRING(SubSeason.LATE_SPRING, -2.0f, 1.02f, 1.04f, 1.03f, 1.04f),
-  EARLY_SUMMER(SubSeason.EARLY_SUMMER, -4.0f, 1.06f, 1.03f, 1.04f, 1.05f),
-  MID_SUMMER(SubSeason.MID_SUMMER, -6.0f, 1.10f, 1.02f, 1.05f, 1.06f),
-  LATE_SUMMER(SubSeason.LATE_SUMMER, -8.0f, 1.06f, 1.00f, 1.02f, 1.02f),
-  EARLY_AUTUMN(SubSeason.EARLY_AUTUMN, -12.0f, 1.00f, 0.98f, 0.95f, 0.88f),
-  MID_AUTUMN(SubSeason.MID_AUTUMN, -16.0f, 0.94f, 0.95f, 0.88f, 0.72f),
-  LATE_AUTUMN(SubSeason.LATE_AUTUMN, -14.0f, 0.82f, 0.92f, 0.78f, 0.55f),
-  EARLY_WINTER(SubSeason.EARLY_WINTER, -8.0f, 0.66f, 0.92f, 0.68f, 0.42f),
-  MID_WINTER(SubSeason.MID_WINTER, -2.0f, 0.55f, 0.95f, 0.60f, 0.35f),
-  LATE_WINTER(SubSeason.LATE_WINTER, 0.0f, 0.70f, 0.98f, 0.75f, 0.50f);
+  EARLY_SPRING(SubSeason.EARLY_SPRING, 2.0f, 0.90f, 1.02f, 0.92f, 0.88f, 0.10f),
+  MID_SPRING(SubSeason.MID_SPRING, 0.0f, 0.98f, 1.04f, 1.00f, 1.00f, 0.02f),
+  LATE_SPRING(SubSeason.LATE_SPRING, -2.0f, 1.02f, 1.04f, 1.03f, 1.04f, 0.00f),
+  EARLY_SUMMER(SubSeason.EARLY_SUMMER, -4.0f, 1.06f, 1.03f, 1.04f, 1.05f, 0.00f),
+  MID_SUMMER(SubSeason.MID_SUMMER, -6.0f, 1.10f, 1.02f, 1.05f, 1.06f, 0.00f),
+  LATE_SUMMER(SubSeason.LATE_SUMMER, -8.0f, 1.06f, 1.00f, 1.02f, 1.02f, 0.00f),
+  EARLY_AUTUMN(SubSeason.EARLY_AUTUMN, -12.0f, 1.00f, 0.98f, 0.95f, 0.88f, 0.05f),
+  MID_AUTUMN(SubSeason.MID_AUTUMN, -16.0f, 0.94f, 0.95f, 0.88f, 0.72f, 0.15f),
+  LATE_AUTUMN(SubSeason.LATE_AUTUMN, -14.0f, 0.82f, 0.92f, 0.78f, 0.55f, 0.28f),
+  EARLY_WINTER(SubSeason.EARLY_WINTER, -8.0f, 0.66f, 0.92f, 0.68f, 0.42f, 0.40f),
+  MID_WINTER(SubSeason.MID_WINTER, -2.0f, 0.55f, 0.95f, 0.60f, 0.35f, 0.45f),
+  LATE_WINTER(SubSeason.LATE_WINTER, 0.0f, 0.70f, 0.98f, 0.75f, 0.50f, 0.32f);
 
   private static final float DEGREES_IN_CIRCLE = 360.0f;
 
@@ -45,19 +45,22 @@ public enum AtmosphereTint {
   private final float brightnessFactor;
   private final float fogDistanceFactor;
   private final float fogStartFactor;
+  private final float mistBoost;
 
   AtmosphereTint(SubSeason subSeason,
                  float hueShiftDegrees,
                  float saturationFactor,
                  float brightnessFactor,
                  float fogDistanceFactor,
-                 float fogStartFactor) {
+                 float fogStartFactor,
+                 float mistBoost) {
     this.subSeason = subSeason;
     this.hueShiftDegrees = hueShiftDegrees;
     this.saturationFactor = saturationFactor;
     this.brightnessFactor = brightnessFactor;
     this.fogDistanceFactor = fogDistanceFactor;
     this.fogStartFactor = fogStartFactor;
+    this.mistBoost = mistBoost;
   }
 
   public SubSeason getSubSeason() {
@@ -82,6 +85,15 @@ public enum AtmosphereTint {
 
   public float getFogStartFactor() {
     return fogStartFactor;
+  }
+
+  /**
+   * Mist this sub season adds on top of a family's baseline, rather than multiplies. That is what
+   * lets an open biome sitting at zero baseline still get a thin cold haze in winter while staying
+   * completely clear in summer.
+   */
+  public float getMistBoost() {
+    return mistBoost;
   }
 
   public static AtmosphereTint of(SubSeason subSeason) {

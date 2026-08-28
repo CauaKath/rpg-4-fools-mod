@@ -19,6 +19,7 @@ import net.minecraft.util.math.Vec3d;
  * @param fogStartFactor     factor on the vanilla fog start, already compensated for the distance
  *                           factor the density hook applies
  * @param seasonStrength     how strongly the season applies here, used for the colour grade
+ * @param mistDensity        how much suspended mist to draw here, 0 to 1
  */
 @Environment(EnvType.CLIENT)
 public record ResolvedAtmosphere(
@@ -26,7 +27,8 @@ public record ResolvedAtmosphere(
         float colorBlend,
         float fogDistanceFactor,
         float fogStartFactor,
-        float seasonStrength
+        float seasonStrength,
+        float mistDensity
 ) {
   /**
    * The sky takes the biome tint at a reduced weight. A swamp should feel humid and green near the
