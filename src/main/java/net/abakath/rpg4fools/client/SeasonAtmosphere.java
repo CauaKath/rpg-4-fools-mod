@@ -3,6 +3,7 @@ package net.abakath.rpg4fools.client;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
 
@@ -99,6 +100,32 @@ public final class SeasonAtmosphere {
             hsb[1] * saturationFactor,
             hsb[2] * brightnessFactor
     );
+  }
+
+  /**
+   * Vec3d flavour of {@link #gradeSkyColor(int, float)}, for the sky colour hook. Each component is
+   * a 0..1 channel rather than a packed int.
+   */
+  public static Vec3d gradeSkyColor(Vec3d color, float strength) {
+    int graded = gradeSkyColor(toPackedRgb(color), strength);
+
+    return new Vec3d(
+            ((graded >> 16) & 0xFF) / 255.0,
+            ((graded >> 8) & 0xFF) / 255.0,
+            (graded & 0xFF) / 255.0
+    );
+  }
+
+  private static int toPackedRgb(Vec3d color) {
+    int r = channelToByte(color.x);
+    int g = channelToByte(color.y);
+    int b = channelToByte(color.z);
+
+    return (r << 16) | (g << 8) | b;
+  }
+
+  private static int channelToByte(double channel) {
+    return (int) Math.round(ColorMath.clamp01((float) channel) * 255.0f);
   }
 
   /**

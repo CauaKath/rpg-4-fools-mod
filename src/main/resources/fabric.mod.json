@@ -26,7 +26,11 @@
 		]
 	},
 	"mixins": [
-		"rpg4fools.mixins.json"
+		"rpg4fools.mixins.json",
+		{
+			"config": "rpg4fools.client.mixins.json",
+			"environment": "client"
+		}
 	],
 	"depends": {
 		"fabricloader": ">=0.15.11",
