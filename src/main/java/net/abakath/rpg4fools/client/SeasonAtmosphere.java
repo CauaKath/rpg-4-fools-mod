@@ -2,6 +2,7 @@ package net.abakath.rpg4fools.client;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldView;
@@ -58,6 +59,14 @@ public final class SeasonAtmosphere {
   private static long cachedCellKey = Long.MIN_VALUE;
   private static float cachedStrength = 1.0f;
 
+  /**
+   * The aggregate keeps its own cache slot rather than sharing the scalar one. While both APIs are
+   * live they are called independently, and a shared key would let one path advance the key while
+   * the other still held a value for the previous cell.
+   */
+  private static long cachedAggregateCellKey = Long.MIN_VALUE;
+  private static BiomeAggregate cachedAggregate = null;
+
   /** Scratch buffer for the colour conversion, kept per thread to stay allocation free. */
   private static final ThreadLocal<float[]> HSB_SCRATCH = ThreadLocal.withInitial(() -> new float[3]);
 
@@ -105,6 +114,107 @@ public final class SeasonAtmosphere {
     }
 
     return total / (SAMPLE_OFFSETS.length * SAMPLE_OFFSETS.length);
+  }
+
+  /**
+   * The biome half of the atmosphere, averaged over the sample grid. Cached on its own because it
+   * depends only on where the player is, never on the date. Keeping the season out of the cache
+   * means a sub season change can never serve a stale value.
+   *
+   * @param effectiveStrength family season sensitivity multiplied by the temperature curve
+   */
+  private record BiomeAggregate(int tintColor, float colorBlend, float baseDensity, float effectiveStrength) {
+  }
+
+  /**
+   * Resolves the finished atmosphere at a position.
+   *
+   * <p>This is the single place the three density inputs compose. A family's base density applies
+   * year round, its season sensitivity scales the temperature curve, and the resulting strength
+   * drives the season factors from {@link AtmosphereTint}.
+   *
+   * <p>Note that the base density cancels out of the start factor: the density hook scales the view
+   * distance vanilla computes both the start and the end from, so the start only needs the ratio
+   * between them.
+   */
+  public static ResolvedAtmosphere resolve(WorldView world, BlockPos pos) {
+    BiomeAggregate aggregate = aggregateFor(world, pos);
+
+    float seasonDistanceFactor = getFogDistanceFactor(aggregate.effectiveStrength());
+    float fogDistanceFactor = aggregate.baseDensity() * seasonDistanceFactor;
+
+    return new ResolvedAtmosphere(
+            aggregate.tintColor(),
+            aggregate.colorBlend(),
+            fogDistanceFactor,
+            getFogStartFactor(aggregate.effectiveStrength()),
+            aggregate.effectiveStrength()
+    );
+  }
+
+  private static BiomeAggregate aggregateFor(WorldView world, BlockPos pos) {
+    if (world == null || pos == null) {
+      return new BiomeAggregate(0xFFFFFF, 0.0f, 1.0f, 1.0f);
+    }
+
+    long cellKey = cacheCellKey(pos);
+
+    if (cellKey == cachedAggregateCellKey && cachedAggregate != null) {
+      return cachedAggregate;
+    }
+
+    BiomeAggregate aggregate = blendAggregate(world, pos);
+
+    cachedAggregateCellKey = cellKey;
+    cachedAggregate = aggregate;
+
+    return aggregate;
+  }
+
+  /**
+   * Averages the biome profile over the sample grid. Colours average per channel and the numeric
+   * factors average directly, so crossing a biome border ramps rather than snapping.
+   */
+  private static BiomeAggregate blendAggregate(WorldView world, BlockPos pos) {
+    BlockPos.Mutable samplePos = new BlockPos.Mutable();
+
+    float totalRed = 0.0f;
+    float totalGreen = 0.0f;
+    float totalBlue = 0.0f;
+    float totalBlend = 0.0f;
+    float totalBaseDensity = 0.0f;
+    float totalStrength = 0.0f;
+
+    for (int offsetX : SAMPLE_OFFSETS) {
+      for (int offsetZ : SAMPLE_OFFSETS) {
+        samplePos.set(pos.getX() + offsetX, pos.getY(), pos.getZ() + offsetZ);
+
+        RegistryEntry<Biome> entry = world.getBiome(samplePos);
+        BiomeAtmosphere family = BiomeAtmosphere.of(entry);
+
+        int tint = family.getTintColor();
+        totalRed += (tint >> 16) & 0xFF;
+        totalGreen += (tint >> 8) & 0xFF;
+        totalBlue += tint & 0xFF;
+
+        totalBlend += family.getColorBlend();
+        totalBaseDensity += family.getBaseDensity();
+        totalStrength += family.getSeasonSensitivity() * strengthForTemperature(entry.value().getTemperature());
+      }
+    }
+
+    int samples = SAMPLE_OFFSETS.length * SAMPLE_OFFSETS.length;
+
+    int tintColor = (Math.round(totalRed / samples) << 16)
+            | (Math.round(totalGreen / samples) << 8)
+            | Math.round(totalBlue / samples);
+
+    return new BiomeAggregate(
+            tintColor,
+            totalBlend / samples,
+            totalBaseDensity / samples,
+            totalStrength / samples
+    );
   }
 
   static float strengthForTemperature(float temperature) {

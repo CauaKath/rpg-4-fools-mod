@@ -2,6 +2,7 @@ package net.abakath.rpg4fools.client;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * Allocation free HSB helpers for packed 0xRRGGBB ints.
@@ -117,6 +118,35 @@ public final class ColorMath {
     }
 
     return (r << 16) | (g << 8) | b;
+  }
+
+  /** Linearly interpolates two packed 0xRRGGBB colours, per channel. */
+  public static int lerpRgb(int from, int to, float t) {
+    float amount = clamp01(t);
+
+    int r = Math.round(((from >> 16) & 0xFF) + (((to >> 16) & 0xFF) - ((from >> 16) & 0xFF)) * amount);
+    int g = Math.round(((from >> 8) & 0xFF) + (((to >> 8) & 0xFF) - ((from >> 8) & 0xFF)) * amount);
+    int b = Math.round((from & 0xFF) + ((to & 0xFF) - (from & 0xFF)) * amount);
+
+    return (r << 16) | (g << 8) | b;
+  }
+
+  /** Packs a Vec3d whose components are 0..1 channels into a 0xRRGGBB int. */
+  public static int packRgb(Vec3d color) {
+    int r = Math.round(clamp01((float) color.x) * 255.0f);
+    int g = Math.round(clamp01((float) color.y) * 255.0f);
+    int b = Math.round(clamp01((float) color.z) * 255.0f);
+
+    return (r << 16) | (g << 8) | b;
+  }
+
+  /** Unpacks a 0xRRGGBB int into a Vec3d of 0..1 channels. */
+  public static Vec3d unpackRgb(int rgb) {
+    return new Vec3d(
+            ((rgb >> 16) & 0xFF) / 255.0,
+            ((rgb >> 8) & 0xFF) / 255.0,
+            (rgb & 0xFF) / 255.0
+    );
   }
 
   public static float clamp01(float value) {
