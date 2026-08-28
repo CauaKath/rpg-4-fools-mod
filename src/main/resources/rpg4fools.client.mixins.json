@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "ClientWorldSkyColorMixin",
-    "BackgroundRendererFogColorMixin"
+    "BackgroundRendererFogColorMixin",
+    "BackgroundRendererFogDensityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
