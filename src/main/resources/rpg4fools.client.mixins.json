@@ -3,7 +3,8 @@
   "package": "net.abakath.rpg4fools.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "ClientWorldSkyColorMixin"
+    "ClientWorldSkyColorMixin",
+    "BackgroundRendererFogColorMixin"
   ],
   "injectors": {
     "defaultRequire": 1
