@@ -1,6 +1,7 @@
 package net.abakath.rpg4fools.mixin.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.abakath.rpg4fools.client.FogTransition;
 import net.abakath.rpg4fools.client.ResolvedAtmosphere;
 import net.abakath.rpg4fools.client.SeasonAtmosphere;
 import net.minecraft.client.MinecraftClient;
