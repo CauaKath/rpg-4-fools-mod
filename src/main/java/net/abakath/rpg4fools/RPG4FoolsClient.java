@@ -1,6 +1,7 @@
 package net.abakath.rpg4fools;
 
 import net.abakath.rpg4fools.client.ClientModMessages;
+import net.abakath.rpg4fools.client.CropSeasonTooltip;
 import net.abakath.rpg4fools.client.SeasonAtmosphere;
 import net.abakath.rpg4fools.client.SeasonColorProviders;
 import net.abakath.rpg4fools.client.SeasonsHudOverlay;
@@ -15,6 +16,7 @@ public class RPG4FoolsClient implements ClientModInitializer {
 
     ClientModMessages.registerS2CReceivers();
     SeasonColorProviders.register();
+    CropSeasonTooltip.register();
 
     // Biome tags arrive as part of the join handshake. Anything resolved before they land falls
     // back to DEFAULT, and the atmosphere memoises per registry entry, so that wrong answer would
