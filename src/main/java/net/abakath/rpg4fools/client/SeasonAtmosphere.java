@@ -144,6 +144,34 @@ public final class SeasonAtmosphere {
     return applyStrength(lerp(current.getFogDistanceFactor(), next.getFogDistanceFactor(), t), strength);
   }
 
+  /**
+   * Multiplier to apply to the fog start so the net result is the table's fogStartFactor relative
+   * to the vanilla fog start. Pulled in harder than {@link #getFogDistanceFactor(float)} in the
+   * cold months, so the haze fills the air around the player instead of sitting as a band on the
+   * horizon.
+   */
+  public static float getFogStartFactor(float strength) {
+    if (strength <= 0.0f) {
+      return 1.0f;
+    }
+
+    float t = ClientSeasonState.getProgress();
+    AtmosphereTint current = AtmosphereTint.of(ClientSeasonState.getSubSeason());
+    AtmosphereTint next = current.next();
+
+    float startFactor = applyStrength(lerp(current.getFogStartFactor(), next.getFogStartFactor(), t), strength);
+    float distanceFactor = getFogDistanceFactor(strength);
+
+    if (distanceFactor <= 0.0f) {
+      return startFactor;
+    }
+
+    // The fog density hook has already scaled the view distance vanilla computed this start from,
+    // so divide that back out. Both table columns then read as a plain fraction of the vanilla
+    // value and can be tuned independently of each other.
+    return startFactor / distanceFactor;
+  }
+
   /** Eases a multiplier towards 1, which is the neutral value, as strength drops towards 0. */
   private static float applyStrength(float factor, float strength) {
     return lerp(1.0f, factor, strength);
