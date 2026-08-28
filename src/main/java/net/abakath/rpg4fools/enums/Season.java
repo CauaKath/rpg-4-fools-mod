@@ -29,10 +29,10 @@ public enum Season {
 
     public boolean isNewSeason(int day, Months month) {
         return switch (this) {
-            case SPRING -> month == Months.OCTOBER && day == 1;
-            case SUMMER -> month == Months.JANUARY && day == 1;
-            case AUTUMN -> month == Months.APRIL && day == 1;
-            case WINTER -> month == Months.JULY && day == 1;
+            case SPRING -> month == Months.JANUARY && day == 1;
+            case SUMMER -> month == Months.APRIL && day == 1;
+            case AUTUMN -> month == Months.JULY && day == 1;
+            case WINTER -> month == Months.OCTOBER && day == 1;
         };
     }
 }
