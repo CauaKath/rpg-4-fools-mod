@@ -1,6 +1,5 @@
 package net.abakath.rpg4fools.client;
 
-import net.abakath.rpg4fools.enums.SubSeason;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
@@ -50,7 +49,7 @@ public final class SeasonColorProviders {
       if (world == null || pos == null) {
         return -1;
       }
-      return adjustSaturation(BiomeColors.getGrassColor(world, pos), getSeasonSaturation());
+      return applySeasonTint(BiomeColors.getGrassColor(world, pos));
     }, GRASS_BLOCKS);
 
     // TODO: Add coloring to flowers, vines and more
@@ -59,7 +58,7 @@ public final class SeasonColorProviders {
       if (world == null || pos == null) {
         return -1;
       }
-      return adjustSaturation(BiomeColors.getFoliageColor(world, pos), getSeasonSaturation());
+      return applySeasonTint(BiomeColors.getFoliageColor(world, pos));
     }, FOLIAGE_BLOCKS);
 
     ColorProviderRegistry.ITEM.register((stack, tintIndex) -> 0x91BD59, Items.GRASS_BLOCK, Items.SHORT_GRASS, Items.TALL_GRASS, Items.FERN, Items.LARGE_FERN);
@@ -72,11 +71,32 @@ public final class SeasonColorProviders {
     }, FOLIAGE_BLOCKS);
   }
 
-  private static int adjustSaturation(int rgb, float saturationFactor) {
+  /**
+   * Grades a biome colour by the current season. The tint is interpolated between the current sub
+   * season and the next one across the month, so the year reads as a gradual shift rather than
+   * twelve hard steps.
+   */
+  private static int applySeasonTint(int rgb) {
+    SeasonTint current = SeasonTint.of(ClientSeasonState.getSubSeason());
+    SeasonTint next = current.next();
+    float t = ClientSeasonState.getProgress();
+
+    float hueShift = lerp(current.getHueShift(), next.getHueShift(), t);
+    float saturationFactor = lerp(current.getSaturationFactor(), next.getSaturationFactor(), t);
+    float brightnessFactor = lerp(current.getBrightnessFactor(), next.getBrightnessFactor(), t);
+
     float[] hsb = HSB_SCRATCH.get();
     ColorMath.rgbToHsb(rgb, hsb);
 
-    return ColorMath.hsbToRgb(hsb[0], hsb[1] * saturationFactor, hsb[2]);
+    return ColorMath.hsbToRgb(
+            hsb[0] + hueShift,
+            hsb[1] * saturationFactor,
+            hsb[2] * brightnessFactor
+    );
+  }
+
+  private static float lerp(float from, float to, float t) {
+    return from + (to - from) * t;
   }
 
   private static int getDefaultFoliageColor(Block block) {
@@ -91,17 +111,4 @@ public final class SeasonColorProviders {
     }
   }
 
-  private static float getSeasonSaturation() {
-    SubSeason subSeason = ClientSeasonState.getSubSeason();
-
-    return switch (subSeason) {
-      case MID_WINTER -> 0.5f;
-      case EARLY_WINTER, LATE_WINTER -> 0.7f;
-      case LATE_AUTUMN, EARLY_SPRING -> 0.8f;
-      case MID_SPRING, MID_AUTUMN -> 1.0f;
-      case LATE_SPRING, EARLY_AUTUMN -> 1.2f;
-      case EARLY_SUMMER, LATE_SUMMER -> 1.3f;
-      case MID_SUMMER -> 1.5f;
-    };
-  }
 }

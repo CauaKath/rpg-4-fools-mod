@@ -32,7 +32,7 @@ public final class ClientModMessages {
       player.getPersistentData().putInt("rpg4fools.day", packet.dayData.getDay());
       player.getPersistentData().putLong("rpg4fools.dayTime", packet.dayData.getDayTime());
 
-      ClientSeasonState.update(packet.dayData.getMonth().ordinal());
+      ClientSeasonState.update(packet.dayData.getMonth().ordinal(), packet.dayData.getDay());
     });
   }
 }
