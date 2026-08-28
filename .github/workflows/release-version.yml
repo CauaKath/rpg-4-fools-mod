@@ -1,0 +1,76 @@
+name: Create versioned release
+
+# Publishes a real, immutable release whenever mod_version in gradle.properties
+# is bumped. The rolling "latest" release in release.yml is left untouched.
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read mod version
+        id: version
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^mod_version=//p' gradle.properties | tr -d '[:space:]')"
+          if [ -z "$version" ]; then
+            echo "::error::mod_version not found in gradle.properties"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "Resolved version $version"
+
+      - name: Check whether the tag already exists
+        id: check
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG is already published, skipping the release."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Tag $TAG does not exist yet, a release will be published."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate Gradle wrapper
+        if: steps.check.outputs.exists == 'false'
+        uses: gradle/wrapper-validation-action@v2
+
+      - name: Setup JDK 21
+        if: steps.check.outputs.exists == 'false'
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'microsoft'
+
+      - name: Make Gradle wrapper executable
+        if: steps.check.outputs.exists == 'false'
+        run: chmod +x ./gradlew
+
+      - name: Build
+        if: steps.check.outputs.exists == 'false'
+        run: ./gradlew build
+
+      - name: Publish release
+        if: steps.check.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          prerelease: false
+          fail_on_unmatched_files: true
+          files: build/libs/*.jar
