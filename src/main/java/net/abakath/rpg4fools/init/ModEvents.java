@@ -1,6 +1,7 @@
 package net.abakath.rpg4fools.init;
 
 
+import net.abakath.rpg4fools.server.LoadedChunks;
 import net.abakath.rpg4fools.server.events.CropTagValidator;
 import net.abakath.rpg4fools.server.events.DayChangingHandler;
 import net.abakath.rpg4fools.server.events.SeasonPlantingGate;
@@ -12,6 +13,7 @@ public class ModEvents {
     ServerTickEvents.START_SERVER_TICK.register(new DayChangingHandler());
     ServerTickEvents.START_SERVER_TICK.register(new SnowMeltHandler());
 
+    LoadedChunks.register();
     CropTagValidator.register();
     SeasonPlantingGate.register();
   }

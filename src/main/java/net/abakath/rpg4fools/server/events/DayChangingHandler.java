@@ -1,6 +1,7 @@
 package net.abakath.rpg4fools.server.events;
 
 import net.abakath.rpg4fools.enums.Months;
+import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.models.DayData;
 import net.abakath.rpg4fools.network.packets.s2c.SeasonUpdatePacket;
 import net.abakath.rpg4fools.server.SeasonData;
@@ -16,6 +17,15 @@ public class DayChangingHandler implements ServerTickEvents.StartTick {
     private static final int MONTH_DURATION = 28;
     private static final int MONTHS_IN_YEAR = 12;
     private static final int YEAR_DURATION = MONTH_DURATION * MONTHS_IN_YEAR;
+
+    /**
+     * The season as of the last tick, for spotting the moment it turns.
+     *
+     * <p>Null until the first tick, which deliberately skips the sweep on start up: nothing has
+     * changed yet, and a full pass over every loaded chunk is not something to do while a server is
+     * still coming up.
+     */
+    private Season lastSeason = null;
 
     @Override
     public void onStartTick(MinecraftServer server) {
@@ -34,6 +44,12 @@ public class DayChangingHandler implements ServerTickEvents.StartTick {
             // The precipitation mixin reads this on both sides. The server half is set here rather
             // than read back from SeasonData, so the hot path never touches persistent state.
             CurrentSeason.set(dayData.getMonth().getSubSeason());
+
+            Season season = dayData.getMonth().getSubSeason().getSeason();
+            if (lastSeason != null && lastSeason != season) {
+                SeasonChangeSweep.run(server, season);
+            }
+            lastSeason = season;
 
             server.getPlayerManager().getPlayerList().forEach(player -> {
                 DayData.setPlayerDayData((IEntityDataSaver) player, dayData);
