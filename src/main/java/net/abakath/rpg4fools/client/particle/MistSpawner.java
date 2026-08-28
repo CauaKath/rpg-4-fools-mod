@@ -2,6 +2,7 @@ package net.abakath.rpg4fools.client.particle;
 
 import net.abakath.rpg4fools.client.ResolvedAtmosphere;
 import net.abakath.rpg4fools.client.SeasonAtmosphere;
+import net.abakath.rpg4fools.client.WeatherMist;
 import net.abakath.rpg4fools.init.ModParticles;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -24,8 +25,16 @@ import net.minecraft.world.World;
  */
 @Environment(EnvType.CLIENT)
 public final class MistSpawner {
-  /** Puffs alive at full density. The real cost here is overdraw, so this is the number to tune. */
-  private static final int MAX_PARTICLES = 220;
+  /** Puffs alive at density 1. The real cost here is overdraw, so this is the number to tune. */
+  private static final int MAX_PARTICLES = 180;
+
+  /**
+   * Ceiling on density. Deliberately above 1 so weather has somewhere to go: several biomes already
+   * sit near 1 in winter, and clamping there would erase the difference between a cold biome and a
+   * cold biome mid snowfall, which is the effect worth having. Worst case population is therefore
+   * MAX_PARTICLES times this.
+   */
+  private static final float MAX_DENSITY = 1.5f;
 
   /**
    * Average puff lifetime in ticks, matching MistParticle. Population settles at spawn rate times
@@ -75,7 +84,7 @@ public final class MistSpawner {
     BlockPos cameraPos = player.getBlockPos();
     ResolvedAtmosphere atmosphere = SeasonAtmosphere.resolve(world, cameraPos);
 
-    float density = atmosphere.mistDensity();
+    float density = Math.min(MAX_DENSITY, atmosphere.mistDensity() * WeatherMist.multiplierAt(world, cameraPos));
     if (density < MIN_DENSITY) {
       return;
     }
