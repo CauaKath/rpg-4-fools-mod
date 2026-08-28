@@ -9,9 +9,8 @@ import net.abakath.rpg4fools.enums.SubSeason;
  * the client for weather rendering, so the lookup is deliberately a single volatile read and one
  * float comparison.
  *
- * <p>Held statically rather than passed around because both sides need it and neither has a handle
- * on the other's season state: the server owns SeasonData, the client owns ClientSeasonState. Both
- * write here. In single player they share a JVM and write the same value, which is harmless.
+ * <p>The season itself lives in {@link CurrentSeason}; this class only answers what that season
+ * does to snow.
  */
 public final class SeasonSnow {
   /**
@@ -20,19 +19,7 @@ public final class SeasonSnow {
    */
   private static final float VANILLA_SNOW_TEMPERATURE = 0.15f;
 
-  private static volatile SubSeason subSeason = SubSeason.EARLY_SPRING;
-
   private SeasonSnow() {
-  }
-
-  public static void setSubSeason(SubSeason current) {
-    if (current != null) {
-      subSeason = current;
-    }
-  }
-
-  public static SubSeason getSubSeason() {
-    return subSeason;
   }
 
   /**
@@ -43,7 +30,7 @@ public final class SeasonSnow {
    * and is deliberately above every value here.
    */
   public static float snowLineTemperature() {
-    return switch (subSeason) {
+    return switch (CurrentSeason.get()) {
       case LATE_AUTUMN -> 0.30f;
       case EARLY_WINTER -> 0.60f;
       case MID_WINTER -> 0.90f;
@@ -75,7 +62,7 @@ public final class SeasonSnow {
    * cover for a month reads as a thaw; frozen peaks doing the same would just look broken.
    */
   public static boolean shouldThaw(float biomeTemperature) {
-    if (subSeason == SubSeason.MID_SUMMER) {
+    if (CurrentSeason.get() == SubSeason.MID_SUMMER) {
       return biomeTemperature > PERMAFROST_TEMPERATURE;
     }
 
@@ -91,6 +78,6 @@ public final class SeasonSnow {
    * the intent, draining a frozen ocean is not.
    */
   public static boolean isMidsummerThaw() {
-    return subSeason == SubSeason.MID_SUMMER;
+    return CurrentSeason.get() == SubSeason.MID_SUMMER;
   }
 }

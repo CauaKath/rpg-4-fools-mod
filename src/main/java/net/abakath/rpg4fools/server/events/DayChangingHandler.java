@@ -4,7 +4,7 @@ import net.abakath.rpg4fools.enums.Months;
 import net.abakath.rpg4fools.models.DayData;
 import net.abakath.rpg4fools.network.packets.s2c.SeasonUpdatePacket;
 import net.abakath.rpg4fools.server.SeasonData;
-import net.abakath.rpg4fools.world.SeasonSnow;
+import net.abakath.rpg4fools.world.CurrentSeason;
 import net.abakath.rpg4fools.utils.IEntityDataSaver;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -33,7 +33,7 @@ public class DayChangingHandler implements ServerTickEvents.StartTick {
 
             // The precipitation mixin reads this on both sides. The server half is set here rather
             // than read back from SeasonData, so the hot path never touches persistent state.
-            SeasonSnow.setSubSeason(dayData.getMonth().getSubSeason());
+            CurrentSeason.set(dayData.getMonth().getSubSeason());
 
             server.getPlayerManager().getPlayerList().forEach(player -> {
                 DayData.setPlayerDayData((IEntityDataSaver) player, dayData);

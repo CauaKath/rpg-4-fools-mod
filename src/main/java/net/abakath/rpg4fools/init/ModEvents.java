@@ -3,6 +3,7 @@ package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.server.events.CropTagValidator;
 import net.abakath.rpg4fools.server.events.DayChangingHandler;
+import net.abakath.rpg4fools.server.events.SeasonPlantingGate;
 import net.abakath.rpg4fools.server.events.SnowMeltHandler;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
@@ -12,5 +13,6 @@ public class ModEvents {
     ServerTickEvents.START_SERVER_TICK.register(new SnowMeltHandler());
 
     CropTagValidator.register();
+    SeasonPlantingGate.register();
   }
 }
