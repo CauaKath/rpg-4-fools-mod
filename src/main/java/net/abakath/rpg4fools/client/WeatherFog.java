@@ -7,7 +7,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
 /**
- * How much the current weather thickens the mist.
+ * How much the current weather thickens the fog.
  *
  * <p>Snow counts for more than rain. Snow falling through already freezing air is the case the mod
  * is trying to sell, so a snowy biome mid blizzard is the densest the mist ever gets.
@@ -16,7 +16,7 @@ import net.minecraft.world.biome.Biome;
  * boolean, so the mist thickens as the storm rolls in instead of switching on.
  */
 @Environment(EnvType.CLIENT)
-public final class WeatherMist {
+public final class WeatherFog {
   /** Multiplier at full rain, for biomes where the precipitation falls as water. */
   private static final float RAIN_MULTIPLIER = 1.30f;
 
@@ -26,11 +26,11 @@ public final class WeatherMist {
   /** Extra on top during a thunderstorm. */
   private static final float THUNDER_MULTIPLIER = 1.15f;
 
-  private WeatherMist() {
+  private WeatherFog() {
   }
 
   /**
-   * Multiplier to apply to the mist density, 1 in clear weather.
+   * Multiplier to apply to the fog presence, 1 in clear weather.
    *
    * @param rainGradient    0 to 1, how far into rain or snow the sky is
    * @param thunderGradient 0 to 1, how far into a thunderstorm
@@ -46,7 +46,7 @@ public final class WeatherMist {
   }
 
   /**
-   * Reads the weather at a position and returns the mist multiplier for it.
+   * Reads the weather at a position and returns the fog multiplier for it.
    *
    * <p>Precipitation type comes from the biome rather than from the world, since whether it snows
    * is a property of where you are standing, not of the sky.

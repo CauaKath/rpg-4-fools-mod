@@ -1,7 +1,6 @@
 package net.abakath.rpg4fools;
 
 import net.abakath.rpg4fools.init.ModEvents;
-import net.abakath.rpg4fools.init.ModParticles;
 import net.abakath.rpg4fools.init.ModMessages;
 import net.fabricmc.api.ModInitializer;
 
@@ -15,7 +14,6 @@ public class RPG4Fools implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		ModParticles.registerParticles();
 		ModEvents.registerEvents();
 		ModMessages.registerS2CPackets();
 	}

@@ -19,23 +19,23 @@ import net.minecraft.world.biome.BiomeKeys;
  */
 @Environment(EnvType.CLIENT)
 public enum CaveAtmosphere {
-  DRIPSTONE(0x6B5B4A, 0.55f, 0.62f, 0.50f, 0.55f),
-  LUSH(0x4A7A3A, 0.50f, 0.68f, 0.55f, 0.65f),
-  DEEP_DARK(0x0E1418, 0.75f, 0.42f, 0.30f, 0.80f),
-  GENERIC(0x2A2E36, 0.45f, 0.72f, 0.60f, 0.45f);
+  DRIPSTONE(0x6B5B4A, 0.55f, 0.95f, 4.0f, 24.0f),
+  LUSH(0x4A7A3A, 0.50f, 0.95f, 5.0f, 28.0f),
+  DEEP_DARK(0x0E1418, 0.75f, 1.00f, 1.0f, 12.0f),
+  GENERIC(0x2A2E36, 0.45f, 0.95f, 3.0f, 20.0f);
 
   private final int tintColor;
   private final float colorBlend;
-  private final float density;
-  private final float startFactor;
-  private final float mistDensity;
+  private final float fogPresence;
+  private final float fogStart;
+  private final float fogEnd;
 
-  CaveAtmosphere(int tintColor, float colorBlend, float density, float startFactor, float mistDensity) {
+  CaveAtmosphere(int tintColor, float colorBlend, float fogPresence, float fogStart, float fogEnd) {
     this.tintColor = tintColor;
     this.colorBlend = colorBlend;
-    this.density = density;
-    this.startFactor = startFactor;
-    this.mistDensity = mistDensity;
+    this.fogPresence = fogPresence;
+    this.fogStart = fogStart;
+    this.fogEnd = fogEnd;
   }
 
   public int getTintColor() {
@@ -46,18 +46,18 @@ public enum CaveAtmosphere {
     return colorBlend;
   }
 
-  public float getDensity() {
-    return density;
+  public float getFogPresence() {
+    return fogPresence;
   }
 
-  /** Factor on the vanilla fog start. Lower brings the mist right up to the player. */
-  public float getStartFactor() {
-    return startFactor;
+  /** Distance in blocks where the fog begins. */
+  public float getFogStart() {
+    return fogStart;
   }
 
-  /** How much suspended mist this cave carries. Not affected by the season. */
-  public float getMistDensity() {
-    return mistDensity;
+  /** Distance in blocks where the fog is opaque. */
+  public float getFogEnd() {
+    return fogEnd;
   }
 
   public static CaveAtmosphere of(RegistryEntry<Biome> entry) {

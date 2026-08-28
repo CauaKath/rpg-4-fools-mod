@@ -5,8 +5,7 @@
   "client": [
     "ClientWorldSkyColorMixin",
     "BackgroundRendererFogColorMixin",
-    "BackgroundRendererFogDensityMixin",
-    "BackgroundRendererFogStartMixin"
+    "BackgroundRendererFogDistanceMixin"
   ],
   "injectors": {
     "defaultRequire": 1
