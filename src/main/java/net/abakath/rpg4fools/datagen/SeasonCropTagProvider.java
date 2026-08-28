@@ -2,6 +2,7 @@ package net.abakath.rpg4fools.datagen;
 
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.init.ModBlockTags;
+import net.abakath.rpg4fools.init.ModBlocks;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.block.Block;
@@ -72,6 +73,10 @@ public class SeasonCropTagProvider extends FabricTagProvider.BlockTagProvider {
     // both halves of one melon patch.
     put(seasons, Blocks.ATTACHED_MELON_STEM, Season.SUMMER);
     put(seasons, Blocks.ATTACHED_PUMPKIN_STEM, Season.SUMMER, Season.AUTUMN);
+
+    // The dormant bush keeps the live bush's seasons. The hook reads them to decide when to revive
+    // it, and an untagged block reads as growing in every season, which would revive it in winter.
+    put(seasons, ModBlocks.DORMANT_SWEET_BERRY_BUSH, Season.SUMMER, Season.AUTUMN);
 
     return seasons;
   }

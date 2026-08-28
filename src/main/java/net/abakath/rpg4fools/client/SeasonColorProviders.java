@@ -1,5 +1,6 @@
 package net.abakath.rpg4fools.client;
 
+import net.abakath.rpg4fools.init.ModBlocks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
@@ -31,6 +32,12 @@ public final class SeasonColorProviders {
   private static final int SPRUCE_FOLIAGE_COLOR = 0x619961;
   private static final int MANGROVE_FOLIAGE_COLOR = 0x92C648;
   private static final int LILY_PAD_COLOR = 0x208030;
+
+  /**
+   * Brown for a dormant berry bush. Not season graded: the bush is brown because it is dormant, and
+   * letting the season shift that colour would blur the one signal the block exists to give.
+   */
+  private static final int DORMANT_BUSH_COLOR = 0x7A6338;
 
   /** Blocks vanilla tints from the biome grass colour. */
   private static final Block[] GRASS_BLOCKS = {
@@ -65,7 +72,19 @@ public final class SeasonColorProviders {
   public static void register() {
     registerBiomeTintedBlocks();
     registerFixedColorBlocks();
+    registerDormantBush();
     registerItems();
+  }
+
+  /**
+   * The dormant bush reuses the vanilla bush texture and browns it, rather than shipping art or
+   * borrowing the dead bush sprite, which would make it indistinguishable from a dead crop.
+   */
+  private static void registerDormantBush() {
+    ColorProviderRegistry.BLOCK.register(
+            (state, world, pos, tintIndex) -> tintIndex == TINTED_LAYER ? DORMANT_BUSH_COLOR : -1,
+            ModBlocks.DORMANT_SWEET_BERRY_BUSH
+    );
   }
 
   private static void registerBiomeTintedBlocks() {
