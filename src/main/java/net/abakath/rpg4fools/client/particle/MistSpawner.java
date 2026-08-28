@@ -26,7 +26,7 @@ import net.minecraft.world.World;
 @Environment(EnvType.CLIENT)
 public final class MistSpawner {
   /** Puffs alive at density 1. The real cost here is overdraw, so this is the number to tune. */
-  private static final int MAX_PARTICLES = 180;
+  private static final int MAX_PARTICLES = 260;
 
   /**
    * Ceiling on density. Deliberately above 1 so weather has somewhere to go: several biomes already
@@ -48,14 +48,24 @@ public final class MistSpawner {
   /** Horizontal reach of the spawn volume, in blocks. */
   private static final int SPAWN_RADIUS = 16;
 
-  /** Vertical reach of the spawn volume, in blocks. */
-  private static final int SPAWN_HEIGHT = 8;
+  /** How far below the player the spawn volume reaches. Kept short: below is usually ground. */
+  private static final int SPAWN_BELOW = 2;
+
+  /** How far above the player the spawn volume reaches. */
+  private static final int SPAWN_ABOVE = 10;
+
+  /**
+   * Placement attempts per puff before giving up. A rejected position used to waste the whole
+   * spawn, which cost roughly two thirds of the intended population in a swamp, where much of the
+   * volume is water or ground.
+   */
+  private static final int MAX_PLACEMENT_TRIES = 5;
 
   /** Below this density nothing spawns at all, so clear biomes cost nothing. */
   private static final float MIN_DENSITY = 0.02f;
 
-  private static final float BASE_ALPHA = 0.10f;
-  private static final float BASE_SCALE = 3.0f;
+  private static final float BASE_ALPHA = 0.45f;
+  private static final float BASE_SCALE = 4.5f;
 
   private MistSpawner() {
   }
@@ -114,13 +124,25 @@ public final class MistSpawner {
                                 float density) {
     Random random = world.getRandom();
 
-    double x = cameraPos.getX() + 0.5 + (random.nextDouble() - 0.5) * 2.0 * SPAWN_RADIUS;
-    double y = cameraPos.getY() + 0.5 + (random.nextDouble() - 0.5) * 2.0 * SPAWN_HEIGHT;
-    double z = cameraPos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 2.0 * SPAWN_RADIUS;
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    boolean placed = false;
 
-    BlockPos spawnPos = BlockPos.ofFloored(x, y, z);
+    // Retry instead of discarding the spawn. A single attempt threw away most of the intended
+    // population wherever the air is not clear, which is exactly the biomes the mist is for.
+    for (int attempt = 0; attempt < MAX_PLACEMENT_TRIES; attempt++) {
+      x = cameraPos.getX() + 0.5 + (random.nextDouble() - 0.5) * 2.0 * SPAWN_RADIUS;
+      y = cameraPos.getY() + 0.5 - SPAWN_BELOW + random.nextDouble() * (SPAWN_BELOW + SPAWN_ABOVE);
+      z = cameraPos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 2.0 * SPAWN_RADIUS;
 
-    if (!world.getBlockState(spawnPos).isAir()) {
+      if (world.getBlockState(BlockPos.ofFloored(x, y, z)).isAir()) {
+        placed = true;
+        break;
+      }
+    }
+
+    if (!placed) {
       return;
     }
 
