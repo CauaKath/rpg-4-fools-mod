@@ -26,20 +26,29 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class BiomePrecipitationMixin {
   @Inject(method = "getPrecipitation", at = @At("RETURN"), cancellable = true)
   private void rpg4fools$applyWinterSnowLine(BlockPos pos, CallbackInfoReturnable<Biome.Precipitation> cir) {
-    if (cir.getReturnValue() != Biome.Precipitation.RAIN) {
+    Biome.Precipitation vanilla = cir.getReturnValue();
+
+    // NONE means the biome has no precipitation at all. That is what keeps desert, savanna and
+    // badlands dry without naming any of them, so it is never overridden in either direction.
+    if (vanilla == Biome.Precipitation.NONE) {
       return;
     }
 
-    if (!SeasonSnow.isSnowSeason()) {
+    float temperature = ((Biome) (Object) this).getTemperature();
+
+    if (vanilla == Biome.Precipitation.RAIN) {
+      if (SeasonSnow.isSnowSeason() && temperature <= SeasonSnow.snowLineTemperature()) {
+        cir.setReturnValue(Biome.Precipitation.SNOW);
+      }
+
       return;
     }
 
-    Biome biome = (Biome) (Object) this;
-
-    if (biome.getTemperature() > SeasonSnow.snowLineTemperature()) {
-      return;
+    // The inverse case. Without it a mild snowy biome would keep snowing right through the
+    // midsummer thaw, so the melt pass would be clearing ground that the next snowfall covers
+    // straight back up.
+    if (SeasonSnow.shouldThaw(temperature)) {
+      cir.setReturnValue(Biome.Precipitation.RAIN);
     }
-
-    cir.setReturnValue(Biome.Precipitation.SNOW);
   }
 }
