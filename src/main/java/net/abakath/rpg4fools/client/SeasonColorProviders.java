@@ -9,8 +9,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.color.world.BiomeColors;
 import net.minecraft.item.Items;
 
-import java.awt.Color;
-
 /**
  * Registers the season aware block and item tints.
  *
@@ -37,6 +35,12 @@ public final class SeasonColorProviders {
           Blocks.FERN,
           Blocks.LARGE_FERN
   };
+
+  /**
+   * Chunk building runs on several worker threads, so the scratch buffer used by the colour
+   * conversion is per thread. This keeps the tint path free of allocations.
+   */
+  private static final ThreadLocal<float[]> HSB_SCRATCH = ThreadLocal.withInitial(() -> new float[3]);
 
   private SeasonColorProviders() {
   }
@@ -69,12 +73,10 @@ public final class SeasonColorProviders {
   }
 
   private static int adjustSaturation(int rgb, float saturationFactor) {
-    Color color = new Color(rgb);
-    float[] hsbVals = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+    float[] hsb = HSB_SCRATCH.get();
+    ColorMath.rgbToHsb(rgb, hsb);
 
-    hsbVals[1] = Math.min(1.0f, hsbVals[1] * saturationFactor);
-
-    return Color.HSBtoRGB(hsbVals[0], hsbVals[1], hsbVals[2]);
+    return ColorMath.hsbToRgb(hsb[0], hsb[1] * saturationFactor, hsb[2]);
   }
 
   private static int getDefaultFoliageColor(Block block) {
