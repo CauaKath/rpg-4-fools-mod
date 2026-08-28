@@ -1,10 +1,16 @@
-# Automatically build the project and run any configured tests for every push
-# and submitted pull request. This can help catch issues that only occur on
-# certain platforms or Java versions, and provides a first line of defence
-# against bad commits.
+# Automatically build the project and run any configured tests for every
+# submitted pull request and every push to master. This can help catch issues
+# that only occur on certain platforms or Java versions, and provides a first
+# line of defence against bad commits.
 
 name: build
-on: [pull_request, push]
+# Runs on pull requests and on master. Plain `push` would also fire for every
+# feature-branch push, building the same commit twice whenever a PR is open.
+on:
+  pull_request:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
