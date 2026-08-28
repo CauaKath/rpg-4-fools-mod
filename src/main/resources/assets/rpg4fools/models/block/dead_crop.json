@@ -1,6 +1,6 @@
 {
-  "parent": "minecraft:block/cross",
+  "parent": "minecraft:block/crop",
   "textures": {
-    "cross": "minecraft:block/dead_bush"
+    "crop": "rpg4fools:block/dead_crop"
   }
 }
