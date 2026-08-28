@@ -4,6 +4,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
 
@@ -77,26 +78,34 @@ public final class SeasonAtmosphere {
    *
    * @param effectiveStrength family season sensitivity multiplied by the temperature curve
    */
-  private record BiomeAggregate(int tintColor, float colorBlend, float baseDensity, float effectiveStrength, float mistDensity) {
+  /**
+   * The biome half of the atmosphere, averaged over the sample grid. Cached on its own because it
+   * depends only on where the player is, never on the date. Keeping the season out of the cache
+   * means a sub season change can never serve a stale value.
+   *
+   * @param effectiveStrength family season sensitivity multiplied by the temperature curve
+   */
+  private record BiomeAggregate(int tintColor, float colorBlend, float effectiveStrength,
+                                float fogPresence, float fogStart, float fogEnd) {
   }
 
   /**
    * Resolves the finished atmosphere at a position.
    *
-   * <p>This is the single place the three density inputs compose. A family's base density applies
-   * year round, its season sensitivity scales the temperature curve, and the resulting strength
-   * drives the season factors from {@link AtmosphereTint}.
-   *
-   * <p>Note that the base density cancels out of the start factor: the density hook scales the view
-   * distance vanilla computes both the start and the end from, so the start only needs the ratio
-   * between them.
+   * <p>This is the single place the fog inputs compose: a family's presence, what the season adds
+   * to it, what the weather takes off the distances, and whether a cave overrides all of it.
    */
   public static ResolvedAtmosphere resolve(WorldView world, BlockPos pos) {
     BiomeAggregate aggregate = aggregateFor(world, pos);
 
-    float seasonDistanceFactor = getFogDistanceFactor(aggregate.effectiveStrength());
-    float fogDistanceFactor = aggregate.baseDensity() * seasonDistanceFactor;
-    float fogStartFactor = getFogStartFactor(aggregate.effectiveStrength());
+    float surfacePresence = surfaceFogPresence(aggregate);
+
+    // Weather tightens the fog by pulling the target distances in, not by raising presence. Several
+    // families already sit at presence 1, so a multiplier there would clamp, and a snowy biome mid
+    // snowfall would look identical to the same biome under a clear sky.
+    float weather = world instanceof World ? WeatherFog.multiplierAt((World) world, pos) : 1.0f;
+    float surfaceStart = aggregate.fogStart() / weather;
+    float surfaceEnd = aggregate.fogEnd() / weather;
 
     float caveFactor = caveFactor(world, pos);
 
@@ -104,10 +113,10 @@ public final class SeasonAtmosphere {
       return new ResolvedAtmosphere(
               aggregate.tintColor(),
               aggregate.colorBlend(),
-              fogDistanceFactor,
-              fogStartFactor,
               aggregate.effectiveStrength(),
-              surfaceMistDensity(aggregate)
+              surfacePresence,
+              surfaceStart,
+              surfaceEnd
       );
     }
 
@@ -116,28 +125,28 @@ public final class SeasonAtmosphere {
     return new ResolvedAtmosphere(
             ColorMath.lerpRgb(aggregate.tintColor(), cave.getTintColor(), caveFactor),
             lerp(aggregate.colorBlend(), cave.getColorBlend(), caveFactor),
-            lerp(fogDistanceFactor, cave.getDensity(), caveFactor),
-            lerp(fogStartFactor, cave.getStartFactor(), caveFactor),
             lerp(aggregate.effectiveStrength(), 0.0f, caveFactor),
-            lerp(surfaceMistDensity(aggregate), cave.getMistDensity(), caveFactor)
+            lerp(surfacePresence, cave.getFogPresence(), caveFactor),
+            lerp(surfaceStart, cave.getFogStart(), caveFactor),
+            lerp(surfaceEnd, cave.getFogEnd(), caveFactor)
     );
   }
 
   /**
-   * Mist at the surface: the family baseline plus what the season adds.
+   * Fog presence at the surface: the family baseline plus what the season adds.
    *
    * <p>The season adds rather than multiplies on purpose. An open biome sits at a zero baseline, so
-   * multiplying would leave it clear all year. Adding is what gives plains a thin cold haze in
-   * winter while keeping it completely clear in summer.
+   * multiplying would leave it clear all year. Adding is what gives plains thin cold fog in winter
+   * while keeping it completely clear in summer.
    */
-  private static float surfaceMistDensity(BiomeAggregate aggregate) {
+  private static float surfaceFogPresence(BiomeAggregate aggregate) {
     float t = ClientSeasonState.getProgress();
     AtmosphereTint current = AtmosphereTint.of(ClientSeasonState.getSubSeason());
     AtmosphereTint next = current.next();
 
-    float boost = lerp(current.getMistBoost(), next.getMistBoost(), t);
+    float boost = lerp(current.getFogPresenceBoost(), next.getFogPresenceBoost(), t);
 
-    return ColorMath.clamp01(aggregate.mistDensity() + boost * aggregate.effectiveStrength());
+    return ColorMath.clamp01(aggregate.fogPresence() + boost * aggregate.effectiveStrength());
   }
 
   /**
@@ -148,7 +157,7 @@ public final class SeasonAtmosphere {
    * fades into the cave atmosphere instead of snapping to it.
    *
    * <p>Deliberately outside the biome cache: this depends on exact Y and on sky access, both of
-   * which change far faster than the 4 block cache cell.
+   * which change far faster than the cache cell.
    */
   private static float caveFactor(WorldView world, BlockPos pos) {
     if (world == null || pos == null || world.isSkyVisible(pos)) {
@@ -170,7 +179,7 @@ public final class SeasonAtmosphere {
 
   private static BiomeAggregate aggregateFor(WorldView world, BlockPos pos) {
     if (world == null || pos == null) {
-      return new BiomeAggregate(0xFFFFFF, 0.0f, 1.0f, 1.0f, 0.0f);
+      return new BiomeAggregate(0xFFFFFF, 0.0f, 1.0f, 0.0f, 20.0f, 90.0f);
     }
 
     long cellKey = cacheCellKey(pos);
@@ -189,7 +198,7 @@ public final class SeasonAtmosphere {
 
   /**
    * Averages the biome profile over the sample grid. Colours average per channel and the numeric
-   * factors average directly, so crossing a biome border ramps rather than snapping.
+   * values average directly, so crossing a biome border ramps rather than snapping.
    */
   private static BiomeAggregate blendAggregate(WorldView world, BlockPos pos) {
     BlockPos.Mutable samplePos = new BlockPos.Mutable();
@@ -198,9 +207,10 @@ public final class SeasonAtmosphere {
     float totalGreen = 0.0f;
     float totalBlue = 0.0f;
     float totalBlend = 0.0f;
-    float totalBaseDensity = 0.0f;
     float totalStrength = 0.0f;
-    float totalMist = 0.0f;
+    float totalPresence = 0.0f;
+    float totalFogStart = 0.0f;
+    float totalFogEnd = 0.0f;
 
     for (int offsetX : SAMPLE_OFFSETS) {
       for (int offsetZ : SAMPLE_OFFSETS) {
@@ -215,9 +225,10 @@ public final class SeasonAtmosphere {
         totalBlue += tint & 0xFF;
 
         totalBlend += family.getColorBlend();
-        totalBaseDensity += family.getBaseDensity();
         totalStrength += family.getSeasonSensitivity() * strengthForTemperature(entry.value().getTemperature());
-        totalMist += family.getMistDensity();
+        totalPresence += family.getFogPresence();
+        totalFogStart += family.getFogStart();
+        totalFogEnd += family.getFogEnd();
       }
     }
 
@@ -230,9 +241,10 @@ public final class SeasonAtmosphere {
     return new BiomeAggregate(
             tintColor,
             totalBlend / samples,
-            totalBaseDensity / samples,
             totalStrength / samples,
-            totalMist / samples
+            totalPresence / samples,
+            totalFogStart / samples,
+            totalFogEnd / samples
     );
   }
 
@@ -267,50 +279,6 @@ public final class SeasonAtmosphere {
             hsb[1] * saturationFactor,
             hsb[2] * brightnessFactor
     );
-  }
-
-  /**
-   * How far the player can see this season, as a factor on the vanilla fog distance. Below 1 pulls
-   * the fog in.
-   */
-  public static float getFogDistanceFactor(float strength) {
-    if (strength <= 0.0f) {
-      return 1.0f;
-    }
-
-    float t = ClientSeasonState.getProgress();
-    AtmosphereTint current = AtmosphereTint.of(ClientSeasonState.getSubSeason());
-    AtmosphereTint next = current.next();
-
-    return applyStrength(lerp(current.getFogDistanceFactor(), next.getFogDistanceFactor(), t), strength);
-  }
-
-  /**
-   * Multiplier to apply to the fog start so the net result is the table's fogStartFactor relative
-   * to the vanilla fog start. Pulled in harder than {@link #getFogDistanceFactor(float)} in the
-   * cold months, so the haze fills the air around the player instead of sitting as a band on the
-   * horizon.
-   */
-  public static float getFogStartFactor(float strength) {
-    if (strength <= 0.0f) {
-      return 1.0f;
-    }
-
-    float t = ClientSeasonState.getProgress();
-    AtmosphereTint current = AtmosphereTint.of(ClientSeasonState.getSubSeason());
-    AtmosphereTint next = current.next();
-
-    float startFactor = applyStrength(lerp(current.getFogStartFactor(), next.getFogStartFactor(), t), strength);
-    float distanceFactor = getFogDistanceFactor(strength);
-
-    if (distanceFactor <= 0.0f) {
-      return startFactor;
-    }
-
-    // The fog density hook has already scaled the view distance vanilla computed this start from,
-    // so divide that back out. Both table columns then read as a plain fraction of the vanilla
-    // value and can be tuned independently of each other.
-    return startFactor / distanceFactor;
   }
 
   /** Eases a multiplier towards 1, which is the neutral value, as strength drops towards 0. */

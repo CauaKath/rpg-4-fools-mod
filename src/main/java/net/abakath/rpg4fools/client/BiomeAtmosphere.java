@@ -24,21 +24,21 @@ import java.util.Map;
  */
 @Environment(EnvType.CLIENT)
 public enum BiomeAtmosphere {
-  SWAMP(ConventionalBiomeTags.IS_SWAMP, 0x5F7A22, 0.55f, 0.60f, 0.20f, 0.90f),
-  SNOWY(ConventionalBiomeTags.IS_SNOWY, 0xC8DCFF, 0.45f, 0.75f, 0.90f, 0.85f),
-  TAIGA(ConventionalBiomeTags.IS_TAIGA, 0xA8C0D0, 0.35f, 0.85f, 1.00f, 0.50f),
-  JUNGLE(ConventionalBiomeTags.IS_JUNGLE, 0x4E8C3A, 0.40f, 0.70f, 0.35f, 0.60f),
-  BADLANDS(ConventionalBiomeTags.IS_BADLANDS, 0xC8873F, 0.40f, 0.85f, 0.15f, 0.15f),
-  DESERT(ConventionalBiomeTags.IS_DESERT, 0xE0C88A, 0.30f, 1.00f, 0.10f, 0.00f),
-  SAVANNA(ConventionalBiomeTags.IS_SAVANNA, 0xC4B87A, 0.25f, 0.95f, 0.25f, 0.00f),
-  MOUNTAIN(ConventionalBiomeTags.IS_MOUNTAIN, 0xD0DCE8, 0.30f, 0.90f, 0.80f, 0.30f),
-  FOREST(ConventionalBiomeTags.IS_FOREST, 0x8FA870, 0.20f, 0.90f, 0.85f, 0.25f),
+  SWAMP(ConventionalBiomeTags.IS_SWAMP, 0x5F7A22, 0.55f, 0.20f, 1.00f, 2.0f, 24.0f),
+  SNOWY(ConventionalBiomeTags.IS_SNOWY, 0xC8DCFF, 0.45f, 0.90f, 0.95f, 5.0f, 40.0f),
+  TAIGA(ConventionalBiomeTags.IS_TAIGA, 0xA8C0D0, 0.35f, 1.00f, 0.75f, 8.0f, 55.0f),
+  JUNGLE(ConventionalBiomeTags.IS_JUNGLE, 0x4E8C3A, 0.40f, 0.35f, 0.85f, 4.0f, 30.0f),
+  BADLANDS(ConventionalBiomeTags.IS_BADLANDS, 0xC8873F, 0.40f, 0.15f, 0.20f, 20.0f, 110.0f),
+  DESERT(ConventionalBiomeTags.IS_DESERT, 0xE0C88A, 0.30f, 0.10f, 0.00f, 40.0f, 160.0f),
+  SAVANNA(ConventionalBiomeTags.IS_SAVANNA, 0xC4B87A, 0.25f, 0.25f, 0.00f, 30.0f, 140.0f),
+  MOUNTAIN(ConventionalBiomeTags.IS_MOUNTAIN, 0xD0DCE8, 0.30f, 0.80f, 0.55f, 12.0f, 80.0f),
+  FOREST(ConventionalBiomeTags.IS_FOREST, 0x8FA870, 0.20f, 0.85f, 0.45f, 15.0f, 90.0f),
 
   /**
    * Fallback for anything untagged, including plains. Blend of zero means the vanilla fog colour is
    * left exactly as it is, so an unrecognised biome still behaves like it does today.
    */
-  DEFAULT(null, 0xFFFFFF, 0.00f, 1.00f, 1.00f, 0.00f);
+  DEFAULT(null, 0xFFFFFF, 0.00f, 1.00f, 0.00f, 20.0f, 90.0f);
 
   /**
    * Memoises the family per biome entry. Tag matching walks every family in the worst case, and the
@@ -52,22 +52,25 @@ public enum BiomeAtmosphere {
   private final TagKey<Biome> tag;
   private final int tintColor;
   private final float colorBlend;
-  private final float baseDensity;
   private final float seasonSensitivity;
-  private final float mistDensity;
+  private final float fogPresence;
+  private final float fogStart;
+  private final float fogEnd;
 
   BiomeAtmosphere(TagKey<Biome> tag,
                   int tintColor,
                   float colorBlend,
-                  float baseDensity,
                   float seasonSensitivity,
-                  float mistDensity) {
+                  float fogPresence,
+                  float fogStart,
+                  float fogEnd) {
     this.tag = tag;
     this.tintColor = tintColor;
     this.colorBlend = colorBlend;
-    this.baseDensity = baseDensity;
     this.seasonSensitivity = seasonSensitivity;
-    this.mistDensity = mistDensity;
+    this.fogPresence = fogPresence;
+    this.fogStart = fogStart;
+    this.fogEnd = fogEnd;
   }
 
   /** Colour the vanilla fog colour is pulled towards. */
@@ -80,23 +83,31 @@ public enum BiomeAtmosphere {
     return colorBlend;
   }
 
-  /** Density factor that applies regardless of season. Below 1 pulls the fog in. */
-  public float getBaseDensity() {
-    return baseDensity;
-  }
-
   /** How strongly the season is allowed to move this family's density, from 0 to 1. */
   public float getSeasonSensitivity() {
     return seasonSensitivity;
   }
 
   /**
-   * How much suspended mist this family carries, from 0 to 1, before the season and the weather
-   * have their say. Open biomes sit at 0 on purpose: plains should only ever get mist because the
-   * season put it there, never as a baseline.
+   * How far this family pulls the fog in from vanilla, from 0 to 1, before the season and the
+   * weather have their say. Open biomes sit at 0 on purpose: plains should only ever get close fog
+   * because the season put it there, never as a baseline.
    */
-  public float getMistDensity() {
-    return mistDensity;
+  public float getFogPresence() {
+    return fogPresence;
+  }
+
+  /** Distance in blocks where the fog begins when presence is 1. */
+  public float getFogStart() {
+    return fogStart;
+  }
+
+  /**
+   * Distance in blocks where the fog is opaque when presence is 1. Absolute rather than a factor on
+   * the view distance, so 24 blocks is 24 blocks at render distance 8 or 32 alike.
+   */
+  public float getFogEnd() {
+    return fogEnd;
   }
 
   public static BiomeAtmosphere of(RegistryEntry<Biome> entry) {
