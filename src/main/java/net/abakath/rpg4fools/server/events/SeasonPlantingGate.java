@@ -57,20 +57,23 @@ public class SeasonPlantingGate {
   /**
    * Cancels the interaction, and says why on the action bar.
    *
-   * <p>The message is sent from the server side only. Both sides run this handler, and the client
-   * copy would otherwise print the same line a second time.
+   * <p>Sent from whichever side is running, which in practice means the client. Fabric only
+   * forwards a use to the server when the callback returns SUCCESS, so a FAIL from the client
+   * copy of this handler ends the interaction there and the server copy is never invoked. Guarding
+   * the message on the server side left it unreachable: the block was refused and nothing was said.
+   *
+   * <p>That also means it cannot print twice. Whichever side refuses first is the only side that
+   * gets to run.
    */
   private static ActionResult refuse(PlayerEntity player, World world, BlockState crop, Season season, String key) {
-    if (!world.isClient()) {
-      player.sendMessage(
-              Text.translatable(
-                      key,
-                      crop.getBlock().getName(),
-                      Text.literal(season.getName()).formatted(season.getColor())
-              ),
-              true
-      );
-    }
+    player.sendMessage(
+            Text.translatable(
+                    key,
+                    crop.getBlock().getName(),
+                    Text.literal(season.getName()).formatted(season.getColor())
+            ),
+            true
+    );
 
     return ActionResult.FAIL;
   }
