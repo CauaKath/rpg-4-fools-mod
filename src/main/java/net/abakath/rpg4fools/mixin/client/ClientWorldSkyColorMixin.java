@@ -1,5 +1,6 @@
 package net.abakath.rpg4fools.mixin.client;
 
+import net.abakath.rpg4fools.client.ResolvedAtmosphere;
 import net.abakath.rpg4fools.client.SeasonAtmosphere;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
@@ -31,11 +32,8 @@ public abstract class ClientWorldSkyColorMixin {
       return;
     }
 
-    float strength = SeasonAtmosphere.getSeasonStrength(world, BlockPos.ofFloored(cameraPos));
-    if (strength <= 0.0f) {
-      return;
-    }
+    ResolvedAtmosphere atmosphere = SeasonAtmosphere.resolve(world, BlockPos.ofFloored(cameraPos));
 
-    cir.setReturnValue(SeasonAtmosphere.gradeSkyColor(original, strength));
+    cir.setReturnValue(atmosphere.applyToSkyColor(original));
   }
 }

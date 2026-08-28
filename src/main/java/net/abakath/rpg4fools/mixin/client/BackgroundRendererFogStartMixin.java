@@ -1,5 +1,6 @@
 package net.abakath.rpg4fools.mixin.client;
 
+import net.abakath.rpg4fools.client.ResolvedAtmosphere;
 import net.abakath.rpg4fools.client.SeasonAtmosphere;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BackgroundRenderer;
@@ -46,11 +47,8 @@ public class BackgroundRendererFogStartMixin {
       return fogStart;
     }
 
-    float strength = SeasonAtmosphere.getSeasonStrength(world, BlockPos.ofFloored(camera.getPos()));
-    if (strength <= 0.0f) {
-      return fogStart;
-    }
+    ResolvedAtmosphere atmosphere = SeasonAtmosphere.resolve(world, BlockPos.ofFloored(camera.getPos()));
 
-    return fogStart * SeasonAtmosphere.getFogStartFactor(strength);
+    return fogStart * atmosphere.fogStartFactor();
   }
 }

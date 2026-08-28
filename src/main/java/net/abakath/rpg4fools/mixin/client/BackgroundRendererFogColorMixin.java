@@ -1,6 +1,7 @@
 package net.abakath.rpg4fools.mixin.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.abakath.rpg4fools.client.ResolvedAtmosphere;
 import net.abakath.rpg4fools.client.SeasonAtmosphere;
 import net.minecraft.client.render.BackgroundRenderer;
 import net.minecraft.client.render.Camera;
@@ -51,12 +52,9 @@ public class BackgroundRendererFogColorMixin {
       return;
     }
 
-    float strength = SeasonAtmosphere.getSeasonStrength(world, BlockPos.ofFloored(camera.getPos()));
-    if (strength <= 0.0f) {
-      return;
-    }
+    ResolvedAtmosphere atmosphere = SeasonAtmosphere.resolve(world, BlockPos.ofFloored(camera.getPos()));
 
-    int graded = SeasonAtmosphere.gradeSkyColor(packRgb(red, green, blue), strength);
+    int graded = atmosphere.applyToFogColor(packRgb(red, green, blue));
 
     red = ((graded >> 16) & 0xFF) / 255.0f;
     green = ((graded >> 8) & 0xFF) / 255.0f;

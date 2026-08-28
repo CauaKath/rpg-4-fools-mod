@@ -4,7 +4,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
 
@@ -56,14 +55,6 @@ public final class SeasonAtmosphere {
    * costs 25 biome lookups, so it is recomputed only when the camera leaves its cache cell. Only
    * ever touched from the render thread.
    */
-  private static long cachedCellKey = Long.MIN_VALUE;
-  private static float cachedStrength = 1.0f;
-
-  /**
-   * The aggregate keeps its own cache slot rather than sharing the scalar one. While both APIs are
-   * live they are called independently, and a shared key would let one path advance the key while
-   * the other still held a value for the previous cell.
-   */
   private static long cachedAggregateCellKey = Long.MIN_VALUE;
   private static BiomeAggregate cachedAggregate = null;
 
@@ -71,49 +62,6 @@ public final class SeasonAtmosphere {
   private static final ThreadLocal<float[]> HSB_SCRATCH = ThreadLocal.withInitial(() -> new float[3]);
 
   private SeasonAtmosphere() {
-  }
-
-  /**
-   * How much of the seasonal effect applies here, from 0 (hot biome, no effect) to 1 (cold biome,
-   * full effect).
-   *
-   * <p>Averaged over a 5x5 horizontal grid rather than sampled at a single point. A single sample
-   * makes the fog snap the instant the camera crosses a biome border, which is very visible walking
-   * from a taiga into a desert. Averaging spreads that change over the width of the kernel.
-   */
-  public static float getSeasonStrength(WorldView world, BlockPos pos) {
-    if (world == null || pos == null) {
-      return 1.0f;
-    }
-
-    long cellKey = cacheCellKey(pos);
-
-    if (cellKey == cachedCellKey) {
-      return cachedStrength;
-    }
-
-    float strength = blendedStrength(world, pos);
-
-    cachedCellKey = cellKey;
-    cachedStrength = strength;
-
-    return strength;
-  }
-
-  private static float blendedStrength(WorldView world, BlockPos pos) {
-    BlockPos.Mutable samplePos = new BlockPos.Mutable();
-    float total = 0.0f;
-
-    for (int offsetX : SAMPLE_OFFSETS) {
-      for (int offsetZ : SAMPLE_OFFSETS) {
-        samplePos.set(pos.getX() + offsetX, pos.getY(), pos.getZ() + offsetZ);
-
-        Biome biome = world.getBiome(samplePos).value();
-        total += strengthForTemperature(biome.getTemperature());
-      }
-    }
-
-    return total / (SAMPLE_OFFSETS.length * SAMPLE_OFFSETS.length);
   }
 
   /**
@@ -248,32 +196,6 @@ public final class SeasonAtmosphere {
             hsb[1] * saturationFactor,
             hsb[2] * brightnessFactor
     );
-  }
-
-  /**
-   * Vec3d flavour of {@link #gradeSkyColor(int, float)}, for the sky colour hook. Each component is
-   * a 0..1 channel rather than a packed int.
-   */
-  public static Vec3d gradeSkyColor(Vec3d color, float strength) {
-    int graded = gradeSkyColor(toPackedRgb(color), strength);
-
-    return new Vec3d(
-            ((graded >> 16) & 0xFF) / 255.0,
-            ((graded >> 8) & 0xFF) / 255.0,
-            (graded & 0xFF) / 255.0
-    );
-  }
-
-  private static int toPackedRgb(Vec3d color) {
-    int r = channelToByte(color.x);
-    int g = channelToByte(color.y);
-    int b = channelToByte(color.z);
-
-    return (r << 16) | (g << 8) | b;
-  }
-
-  private static int channelToByte(double channel) {
-    return (int) Math.round(ColorMath.clamp01((float) channel) * 255.0f);
   }
 
   /**
