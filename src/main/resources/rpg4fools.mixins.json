@@ -4,9 +4,10 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ModEntityDataSaverMixin",
-    "RPG4FoolsMixin"
+    "RPG4FoolsMixin",
+    "BiomePrecipitationMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-	}
+  }
 }

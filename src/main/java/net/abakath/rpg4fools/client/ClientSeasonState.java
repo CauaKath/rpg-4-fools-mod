@@ -2,6 +2,7 @@ package net.abakath.rpg4fools.client;
 
 import net.abakath.rpg4fools.enums.Months;
 import net.abakath.rpg4fools.enums.SubSeason;
+import net.abakath.rpg4fools.world.SeasonSnow;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -63,6 +64,10 @@ public final class ClientSeasonState {
     lastDay = day;
 
     subSeason = Months.values()[monthOrdinal].getSubSeason();
+
+    // Keeps the client half of the precipitation mixin in step, so rain renders as snow at the same
+    // moment the server starts laying it down.
+    SeasonSnow.setSubSeason(subSeason);
     progress = ColorMath.clamp01((float) (day - 1) / MONTH_DURATION);
 
     MinecraftClient client = MinecraftClient.getInstance();
