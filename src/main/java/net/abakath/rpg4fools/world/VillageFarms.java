@@ -4,6 +4,7 @@ import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.init.ModBlockTags;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.CropBlock;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -27,6 +28,7 @@ import net.minecraft.world.gen.structure.Structure;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * The village farm a block stands in, if it stands in one at all.
@@ -48,6 +50,17 @@ public final class VillageFarms {
    * three wide strip is simply a tidy way to divide them.
    */
   public static final int LANE_WIDTH = 3;
+
+  /**
+   * Crops a villager would never put in a farm plot.
+   *
+   * <p>Both are sniffer finds rather than field crops, and a village farm growing them would say
+   * something about the world that is not true. Torchflower has to be named because its crop block
+   * extends CropBlock like any grain, so nothing else about it stands out. Pitcher does not - it is
+   * a tall plant, and the pool's own filter drops it - but leaving it out of this list would make
+   * that exclusion look like an oversight rather than a decision.
+   */
+  private static final Set<Block> NOT_FARMED = Set.of(Blocks.TORCHFLOWER_CROP, Blocks.PITCHER_CROP);
 
   private VillageFarms() {
   }
@@ -100,7 +113,7 @@ public final class VillageFarms {
    *
    * <p>Read from the crops tag rather than a list of its own, so a datapack that retags a crop is
    * obeyed and the mod's own crops need no special mention. Narrowed to CropBlock, which drops the
-   * stems and the flower crops: neither is something a farm plot is replanted with.
+   * stems, and then to what a villager would actually sow, which drops the sniffer flowers.
    *
    * <p>Empty in winter, which is what leaves a village with the dead crops everyone else gets.
    */
@@ -117,7 +130,7 @@ public final class VillageFarms {
       Block block = entry.value();
       BlockState state = block.getDefaultState();
 
-      if (block instanceof CropBlock && CropSeasons.isInSeason(state, season)) {
+      if (block instanceof CropBlock && !NOT_FARMED.contains(block) && CropSeasons.isInSeason(state, season)) {
         crops.add(block);
       }
     }
