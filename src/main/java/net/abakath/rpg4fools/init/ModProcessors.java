@@ -1,7 +1,6 @@
 package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.RPG4Fools;
-import net.abakath.rpg4fools.world.FarmShaping;
 import net.abakath.rpg4fools.world.SeasonalFarmCrops;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -16,7 +15,6 @@ import net.minecraft.util.Identifier;
  */
 public final class ModProcessors {
   public static final StructureProcessorType<SeasonalFarmCrops> SEASONAL_FARM_CROPS = () -> SeasonalFarmCrops.CODEC;
-  public static final StructureProcessorType<FarmShaping> FARM_SHAPING = () -> FarmShaping.CODEC;
 
   private ModProcessors() {
   }
@@ -24,7 +22,5 @@ public final class ModProcessors {
   public static void registerProcessors() {
     Registry.register(Registries.STRUCTURE_PROCESSOR,
             new Identifier(RPG4Fools.MOD_ID, "seasonal_farm_crops"), SEASONAL_FARM_CROPS);
-    Registry.register(Registries.STRUCTURE_PROCESSOR,
-            new Identifier(RPG4Fools.MOD_ID, "farm_shaping"), FARM_SHAPING);
   }
 }
