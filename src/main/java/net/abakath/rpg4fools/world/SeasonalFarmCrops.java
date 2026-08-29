@@ -121,7 +121,7 @@ public class SeasonalFarmCrops extends StructureProcessor {
    * rotation has to be undone.
    */
   private static int laneOf(BlockPos placed, BlockPos origin, StructurePlacementData data) {
-    BlockPos local = StructureTemplate.transform(
+    BlockPos local = StructureTemplate.transformAround(
             placed.subtract(origin), BlockMirror.NONE, opposite(data.getRotation()), data.getPosition());
 
     return Math.floorDiv(local.getX(), LANE_WIDTH);
