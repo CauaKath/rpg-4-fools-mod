@@ -93,15 +93,17 @@ public class CropTransition {
    * a player a harvest for every season that turned.
    */
   private static boolean replant(ServerWorld world, BlockPos pos, Season season) {
-    List<Block> pool = VillageFarms.inSeason(season);
-
-    if (pool.isEmpty()) {
-      return false;
-    }
-
+    // Asked before the pool is built. Every dead crop in the world ticks now, and almost none of
+    // them stand in a village; that case should cost a chunk lookup and nothing else.
     Optional<VillageFarms.Lane> lane = VillageFarms.laneAt(world, pos);
 
     if (lane.isEmpty()) {
+      return false;
+    }
+
+    List<Block> pool = VillageFarms.inSeason(season);
+
+    if (pool.isEmpty()) {
       return false;
     }
 
