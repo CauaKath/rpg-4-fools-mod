@@ -20,8 +20,20 @@ public record CropDefinition(
         Set<Season> seasons,
         int nutrition,
         float saturation,
-        boolean thorny
+        boolean thorny,
+        int regrowAge
 ) {
+  /**
+   * Whether picking this crop leaves the plant standing.
+   *
+   * <p>Not a {@link Kind} of its own. A tomato that fruits twice is still sown on farmland, still
+   * has a seed and produce, still dies when its season ends; every place that asks about FARMLAND
+   * means it too. Regrowth is one more thing a farmland crop can do, so it is one more field.
+   */
+  public boolean regrows() {
+    return regrowAge > 0;
+  }
+
   public enum Kind {
     /** Sown on farmland, grows through eight ages, dies when its season ends. */
     FARMLAND,

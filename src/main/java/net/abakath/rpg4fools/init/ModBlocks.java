@@ -6,6 +6,7 @@ import net.abakath.rpg4fools.world.DeadCropBlock;
 import net.abakath.rpg4fools.world.DormantBerryBushBlock;
 import net.abakath.rpg4fools.world.ModBerryBushBlock;
 import net.abakath.rpg4fools.world.ModCropBlock;
+import net.abakath.rpg4fools.world.RegrowingCropBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.piston.PistonBehavior;
@@ -61,14 +62,17 @@ public class ModBlocks {
   static {
     for (CropDefinition definition : ModCrops.ALL) {
       if (definition.kind() == CropDefinition.Kind.FARMLAND) {
-        register(definition, LIVE, definition.blockName(), new ModCropBlock(
-                AbstractBlock.Settings.create()
-                        .ticksRandomly()
-                        .noCollision()
-                        .breakInstantly()
-                        .sounds(BlockSoundGroup.CROP)
-                        .pistonBehavior(PistonBehavior.DESTROY)
-        ));
+        AbstractBlock.Settings settings = AbstractBlock.Settings.create()
+                .ticksRandomly()
+                .noCollision()
+                .breakInstantly()
+                .sounds(BlockSoundGroup.CROP)
+                .pistonBehavior(PistonBehavior.DESTROY);
+
+        // Same crop in every way a farmland crop is asked about; the roster only decides whether
+        // picking it leaves the plant standing.
+        register(definition, LIVE, definition.blockName(),
+                definition.regrows() ? new RegrowingCropBlock(settings) : new ModCropBlock(settings));
         continue;
       }
 
