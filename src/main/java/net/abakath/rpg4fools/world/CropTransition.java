@@ -6,9 +6,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SweetBerryBushBlock;
 import net.minecraft.server.world.ServerWorld;
+import net.abakath.rpg4fools.server.PlantedCrops;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -18,10 +18,13 @@ import java.util.Optional;
  * that catches whatever was not loaded at the time. Both have to reach the same answer, so the rules
  * live here rather than in either of them.
  *
- * <p>A village farm is the one place a crop is put back rather than left to die. Villagers tend
- * those fields, so a season turning there reads as replanting: the lane comes back as something
- * that grows now, and a lane that died over winter is sown again in spring. Winter itself has
- * nothing to sow, so villages get the same dead crops as everyone else.
+ * <p>A crop the world planted is put back rather than left to die: it comes back as something that
+ * grows now, and a field that died over winter is sown again in spring. A crop a player planted is
+ * left exactly where it fell, because tending it is the player's business and a field that quietly
+ * replaced itself would take that decision away. {@link net.abakath.rpg4fools.server.PlantedCrops}
+ * is what tells the two apart.
+ *
+ * <p>Winter has nothing to sow, so everything browns over, tended or not.
  */
 public class CropTransition {
   /** Whether {@link #apply} has anything to say about this block, which is what the sweep scans for. */
@@ -36,10 +39,10 @@ public class CropTransition {
    * the game.
    */
   public static boolean apply(ServerWorld world, BlockPos pos, BlockState state, Season season) {
-    // Dead crops carry no crops tag, so they fall out of every rule below. A village is the one
-    // place they are worth looking at again: the villagers who tended the field are still there.
+    // Dead crops carry no crops tag, so they fall out of every rule below. They are still worth
+    // looking at: a field nobody planted comes back the season after it died.
     if (state.isOf(ModBlocks.DEAD_CROP)) {
-      return replant(world, pos, season);
+      return resow(world, pos, season);
     }
 
     if (!CropSeasons.isCrop(state)) {
@@ -75,7 +78,7 @@ public class CropTransition {
       return false;
     }
 
-    if (replant(world, pos, season)) {
+    if (resow(world, pos, season)) {
       return true;
     }
 
@@ -84,30 +87,26 @@ public class CropTransition {
   }
 
   /**
-   * Sows a village lane with something the season keeps alive, and reports whether it did.
+   * Sows this spot with something the season keeps alive, and reports whether it did.
    *
-   * <p>Says no for anything outside a village, and for every block in winter, when there is nothing
-   * to sow. Both cases fall through to the crop dying, which is what a farm without a farmer does.
+   * <p>Says no for anything a player planted, and for every block in winter, when there is nothing
+   * to sow. Both cases fall through to the crop dying, which is what an untended field does.
    *
-   * <p>Placed at age 0. The crop is freshly sown, and a lane that came back already ripe would hand
-   * a player a harvest for every season that turned.
+   * <p>Placed at age 0. The crop is freshly sown, and a field that came back already ripe would
+   * hand a player a harvest for every season that turned.
    */
-  private static boolean replant(ServerWorld world, BlockPos pos, Season season) {
-    // Asked before the pool is built. Every dead crop in the world ticks now, and almost none of
-    // them stand in a village; that case should cost a chunk lookup and nothing else.
-    Optional<VillageFarms.Lane> lane = VillageFarms.laneAt(world, pos);
-
-    if (lane.isEmpty()) {
+  private static boolean resow(ServerWorld world, BlockPos pos, Season season) {
+    if (PlantedCrops.get(world).planted(world, pos)) {
       return false;
     }
 
-    List<Block> pool = VillageFarms.inSeason(season);
+    Optional<Block> sown = Resowing.sownAt(pos, season);
 
-    if (pool.isEmpty()) {
+    if (sown.isEmpty()) {
       return false;
     }
 
-    world.setBlockState(pos, VillageFarms.sownIn(lane.get(), season, pool).getDefaultState());
+    world.setBlockState(pos, sown.get().getDefaultState());
     return true;
   }
 }
