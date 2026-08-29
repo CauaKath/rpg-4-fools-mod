@@ -3,7 +3,6 @@ package net.abakath.rpg4fools.server.events;
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.server.LoadedChunks;
-import net.abakath.rpg4fools.world.CropSeasons;
 import net.abakath.rpg4fools.world.CropTransition;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.MinecraftServer;
@@ -67,7 +66,7 @@ public final class SeasonChangeSweep {
     for (int index = 0; index < sections.length; index++) {
       ChunkSection section = sections[index];
 
-      if (section.isEmpty() || !section.hasAny(CropSeasons::isCrop)) {
+      if (section.isEmpty() || !section.hasAny(CropTransition::settles)) {
         continue;
       }
 
@@ -80,7 +79,7 @@ public final class SeasonChangeSweep {
           for (int x = 0; x < SECTION_SIZE; x++) {
             BlockState state = section.getBlockState(x, y, z);
 
-            if (CropSeasons.isCrop(state)) {
+            if (CropTransition.settles(state)) {
               crops.add(new BlockPos(startX + x, startY + y, startZ + z));
             }
           }
