@@ -333,7 +333,7 @@
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
-      "weight": 4
+      "weight": 2
     },
     {
       "element": {
@@ -342,7 +342,25 @@
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
-      "weight": 4
+      "weight": 2
+    },
+    {
+      "element": {
+        "location": "rpg4fools:village/plains/blob_small_farm",
+        "processors": "minecraft:farm_plains",
+        "projection": "terrain_matching",
+        "element_type": "minecraft:legacy_single_pool_element"
+      },
+      "weight": 2
+    },
+    {
+      "element": {
+        "location": "rpg4fools:village/plains/blob_large_farm",
+        "processors": "minecraft:farm_plains",
+        "projection": "terrain_matching",
+        "element_type": "minecraft:legacy_single_pool_element"
+      },
+      "weight": 2
     }
   ],
   "fallback": "minecraft:village/plains/terminators"

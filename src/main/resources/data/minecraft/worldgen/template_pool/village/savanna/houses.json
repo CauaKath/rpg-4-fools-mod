@@ -321,7 +321,7 @@
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
-      "weight": 7
+      "weight": 4
     },
     {
       "element": {
@@ -330,7 +330,25 @@
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
-      "weight": 7
+      "weight": 4
+    },
+    {
+      "element": {
+        "location": "rpg4fools:village/savanna/blob_small_farm",
+        "processors": "minecraft:farm_savanna",
+        "projection": "terrain_matching",
+        "element_type": "minecraft:legacy_single_pool_element"
+      },
+      "weight": 4
+    },
+    {
+      "element": {
+        "location": "rpg4fools:village/savanna/blob_large_farm",
+        "processors": "minecraft:farm_savanna",
+        "projection": "terrain_matching",
+        "element_type": "minecraft:legacy_single_pool_element"
+      },
+      "weight": 4
     }
   ],
   "fallback": "minecraft:village/savanna/terminators"

@@ -288,7 +288,7 @@
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
-      "weight": 9
+      "weight": 5
     },
     {
       "element": {
@@ -297,7 +297,25 @@
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
-      "weight": 10
+      "weight": 5
+    },
+    {
+      "element": {
+        "location": "rpg4fools:village/desert/blob_small_farm",
+        "processors": "minecraft:farm_desert",
+        "projection": "terrain_matching",
+        "element_type": "minecraft:legacy_single_pool_element"
+      },
+      "weight": 5
+    },
+    {
+      "element": {
+        "location": "rpg4fools:village/desert/blob_large_farm",
+        "processors": "minecraft:farm_desert",
+        "projection": "terrain_matching",
+        "element_type": "minecraft:legacy_single_pool_element"
+      },
+      "weight": 5
     }
   ],
   "fallback": "minecraft:village/desert/terminators"
