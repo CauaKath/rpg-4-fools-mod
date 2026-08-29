@@ -1,6 +1,8 @@
 package net.abakath.rpg4fools.server.events;
 
+import net.abakath.rpg4fools.world.CropHarvest;
 import net.abakath.rpg4fools.world.CropSeasons;
+import net.abakath.rpg4fools.world.RegrowingCropBlock;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -25,13 +27,15 @@ import java.util.List;
  * <p>Saves the break-and-replant dance without changing what a field yields: the drops come from
  * the crop's own loot table, so tools and Fortune still decide the numbers, and one seed is taken
  * back out of them to pay for the replant. Whether a crop can be picked this way is not a property
- * of the crop, so nothing is added to {@link net.abakath.rpg4fools.world.CropDefinition}; the crops
- * tag decides, the same authority {@link CropSeasons} and {@link SeasonPlantingGate} answer to.
+ * of the crop, so nothing is added to {@link net.abakath.rpg4fools.world.CropDefinition} for it;
+ * the crops tag decides, the same authority {@link CropSeasons} and {@link SeasonPlantingGate}
+ * answer to.
  *
  * <p>Only CropBlock qualifies. That is the shape this can put back - one age property counted from
  * zero - and it happens to exclude exactly the plants that would be wrong to reset: melon and
  * pumpkin stems, which are not what the player is harvesting, and berry bushes, which pick
- * themselves in {@link net.abakath.rpg4fools.world.ModBerryBushBlock}.
+ * themselves in {@link net.abakath.rpg4fools.world.ModBerryBushBlock}. Regrowing crops are a
+ * CropBlock and so have to be turned away by name.
  *
  * <p>Seasons are left alone deliberately. A crop is only mature while it is in season, since
  * {@link SeasonChangeSweep} kills the field the moment the season turns, so an out of season check
@@ -69,6 +73,13 @@ public class CropAutoReplant {
       return ActionResult.PASS;
     }
 
+    // A crop that fruits again is picked, not torn up, and it does that itself in onUse - the same
+    // division of labour the berry bushes already keep. Replanting one would throw away the plant
+    // this feature exists to leave standing.
+    if (crop instanceof RegrowingCropBlock) {
+      return ActionResult.PASS;
+    }
+
     if (!CropSeasons.isCrop(state)) {
       return ActionResult.PASS;
     }
@@ -85,9 +96,7 @@ public class CropAutoReplant {
 
     takeSeed(drops, crop.getPickStack(world, pos, state));
 
-    for (ItemStack drop : drops) {
-      give(player, drop);
-    }
+    CropHarvest.give(player, drops);
 
     BlockState sown = crop.withAge(0);
     world.setBlockState(pos, sown, Block.NOTIFY_LISTENERS);
@@ -119,15 +128,6 @@ public class CropAutoReplant {
       }
 
       return;
-    }
-  }
-
-  /** Straight to the inventory, and at the player's feet only when there is no room left. */
-  private static void give(PlayerEntity player, ItemStack stack) {
-    player.getInventory().insertStack(stack);
-
-    if (!stack.isEmpty()) {
-      player.dropItem(stack, false);
     }
   }
 }

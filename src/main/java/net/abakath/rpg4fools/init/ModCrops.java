@@ -17,27 +17,32 @@ import java.util.Set;
  * <p>Seasons follow the growing calendar loosely, the way the vanilla assignments in
  * {@link net.abakath.rpg4fools.datagen.SeasonCropTagProvider} do. Nothing grows in winter.
  *
+ * <p>The last number is the age a pick leaves the plant at, and zero means picking is not a thing
+ * this crop does: it is harvested by breaking it, as vanilla wheat is. Tomato and cucumber fruit
+ * more than once, dropping back to age 4 of 7, so a ripe plant is worth keeping in the ground for
+ * the rest of its season instead of tearing up.
+ *
  * <p>Only blackberry is thorny. A bush inherits the vanilla sweet berry bush's habit of hurting
  * whatever walks through it, which suits a bramble and does not suit a strawberry patch.
  */
 public final class ModCrops {
   public static final CropDefinition TOMATO = new CropDefinition(
-          "tomato", CropDefinition.Kind.FARMLAND, seasons(Season.SUMMER), 3, 0.3f, false);
+          "tomato", CropDefinition.Kind.FARMLAND, seasons(Season.SUMMER), 3, 0.3f, false, 4);
 
   public static final CropDefinition CUCUMBER = new CropDefinition(
-          "cucumber", CropDefinition.Kind.FARMLAND, seasons(Season.SUMMER), 2, 0.2f, false);
+          "cucumber", CropDefinition.Kind.FARMLAND, seasons(Season.SUMMER), 2, 0.2f, false, 4);
 
   public static final CropDefinition LETTUCE = new CropDefinition(
-          "lettuce", CropDefinition.Kind.FARMLAND, seasons(Season.SPRING, Season.AUTUMN), 2, 0.3f, false);
+          "lettuce", CropDefinition.Kind.FARMLAND, seasons(Season.SPRING, Season.AUTUMN), 2, 0.3f, false, 0);
 
   public static final CropDefinition STRAWBERRY = new CropDefinition(
-          "strawberry", CropDefinition.Kind.BUSH, seasons(Season.SPRING, Season.SUMMER), 2, 0.2f, false);
+          "strawberry", CropDefinition.Kind.BUSH, seasons(Season.SPRING, Season.SUMMER), 2, 0.2f, false, 0);
 
   public static final CropDefinition BLACKBERRY = new CropDefinition(
-          "blackberry", CropDefinition.Kind.BUSH, seasons(Season.SUMMER, Season.AUTUMN), 2, 0.1f, true);
+          "blackberry", CropDefinition.Kind.BUSH, seasons(Season.SUMMER, Season.AUTUMN), 2, 0.1f, true, 0);
 
   public static final CropDefinition BLUEBERRY = new CropDefinition(
-          "blueberry", CropDefinition.Kind.BUSH, seasons(Season.SUMMER), 2, 0.2f, false);
+          "blueberry", CropDefinition.Kind.BUSH, seasons(Season.SUMMER), 2, 0.2f, false, 0);
 
   /** Ordered, because the generated tag files follow this order and are committed. */
   public static final List<CropDefinition> ALL =
