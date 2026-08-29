@@ -25,8 +25,9 @@ import java.util.List;
  * Harvests a ripe crop on right click and sows it again in the same tick.
  *
  * <p>Saves the break-and-replant dance without changing what a field yields: the drops come from
- * the crop's own loot table, so tools and Fortune still decide the numbers, and one seed is taken
- * back out of them to pay for the replant. Whether a crop can be picked this way is not a property
+ * the crop's own loot table and land at the plant's feet the way breaking it would, so tools and
+ * Fortune still decide the numbers, and one seed is taken back out of them to pay for the
+ * replant. Whether a crop can be picked this way is not a property
  * of the crop, so nothing is added to {@link net.abakath.rpg4fools.world.CropDefinition} for it;
  * the crops tag decides, the same authority {@link CropSeasons} and {@link SeasonPlantingGate}
  * answer to.
@@ -96,7 +97,7 @@ public class CropAutoReplant {
 
     takeSeed(drops, crop.getPickStack(world, pos, state));
 
-    CropHarvest.give(player, drops);
+    CropHarvest.drop(world, pos, drops);
 
     BlockState sown = crop.withAge(0);
     world.setBlockState(pos, sown, Block.NOTIFY_LISTENERS);

@@ -67,7 +67,7 @@ public class RegrowingCropBlock extends ModCropBlock {
       return ActionResult.SUCCESS;
     }
 
-    CropHarvest.give(player, new ItemStack(produce(), 1 + serverWorld.random.nextInt(3)));
+    CropHarvest.drop(serverWorld, pos, new ItemStack(produce(), 1 + serverWorld.random.nextInt(3)));
 
     BlockState picked = pick(state);
     serverWorld.setBlockState(pos, picked, Block.NOTIFY_LISTENERS);

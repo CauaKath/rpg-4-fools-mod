@@ -1,31 +1,31 @@
 package net.abakath.rpg4fools.world;
 
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.util.List;
 
 /**
  * Where a right clicked harvest goes.
  *
- * <p>Straight into the inventory, which is the whole point of harvesting by hand: a player who
- * wanted items on the ground would have broken the plant. Two callers need the same answer - the
- * replanting hook for crops that are torn up, and the regrowing crop that is only picked - so it
- * lives here rather than in whichever one was written first.
+ * <p>On the ground at the plant's feet, exactly as breaking it would leave things. Harvesting by
+ * hand is meant to save the replanting, not to change what a harvest is, and a full inventory
+ * quietly swallowing the difference is the kind of thing that only shows up as missing crops.
+ *
+ * <p>Two callers need the same answer - the replanting hook for crops that are torn up, and the
+ * regrowing crop that is only picked - so it lives here rather than in whichever one was written
+ * first.
  */
 public class CropHarvest {
-  public static void give(PlayerEntity player, List<ItemStack> stacks) {
+  public static void drop(World world, BlockPos pos, List<ItemStack> stacks) {
     for (ItemStack stack : stacks) {
-      give(player, stack);
+      drop(world, pos, stack);
     }
   }
 
-  /** At the player's feet only when there is no room left. */
-  public static void give(PlayerEntity player, ItemStack stack) {
-    player.getInventory().insertStack(stack);
-
-    if (!stack.isEmpty()) {
-      player.dropItem(stack, false);
-    }
+  public static void drop(World world, BlockPos pos, ItemStack stack) {
+    Block.dropStack(world, pos, stack);
   }
 }
