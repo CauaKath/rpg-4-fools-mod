@@ -2,8 +2,8 @@ package net.abakath.rpg4fools.world;
 
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.init.ModBlocks;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.SweetBerryBushBlock;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -30,23 +30,25 @@ public class CropTransition {
     boolean inSeason = CropSeasons.isInSeason(state, season);
 
     // Bushes are the one crop that comes back, so they swap between two blocks instead of dying.
-    if (state.isOf(Blocks.SWEET_BERRY_BUSH)) {
+    Block dormant = DormantBushes.dormantOf(state.getBlock());
+    if (dormant != null) {
       if (inSeason) {
         return false;
       }
 
-      world.setBlockState(pos, ModBlocks.DORMANT_SWEET_BERRY_BUSH.getDefaultState());
+      world.setBlockState(pos, dormant.getDefaultState());
       return true;
     }
 
-    if (state.isOf(ModBlocks.DORMANT_SWEET_BERRY_BUSH)) {
+    Block live = DormantBushes.liveOf(state.getBlock());
+    if (live != null) {
       if (!inSeason) {
         return false;
       }
 
       // Age 1 is leafy with no fruit, so the bush picks up where a fresh one would rather than
       // handing back the berries it lost going dormant.
-      world.setBlockState(pos, Blocks.SWEET_BERRY_BUSH.getDefaultState().with(SweetBerryBushBlock.AGE, 1));
+      world.setBlockState(pos, live.getDefaultState().with(SweetBerryBushBlock.AGE, 1));
       return true;
     }
 

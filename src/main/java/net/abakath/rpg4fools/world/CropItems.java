@@ -1,5 +1,8 @@
 package net.abakath.rpg4fools.world;
 
+import net.abakath.rpg4fools.init.ModBlocks;
+import net.abakath.rpg4fools.init.ModCrops;
+import net.abakath.rpg4fools.init.ModItems;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -85,6 +88,14 @@ public class CropItems {
     // Grown flowers, whose block items place the finished plant rather than the crop stage.
     produce.put(Items.TORCHFLOWER, Blocks.TORCHFLOWER_CROP);
     produce.put(Items.PITCHER_PLANT, Blocks.PITCHER_CROP);
+
+    // The mod's own produce. A tomato is not its crop's BlockItem, so it needs the same treatment
+    // wheat and beetroot get. Bush berries are left out on purpose: they are BlockItems already.
+    for (CropDefinition definition : ModCrops.ALL) {
+      if (definition.kind() == CropDefinition.Kind.FARMLAND) {
+        produce.put(ModItems.produceItem(definition), ModBlocks.blockFor(definition));
+      }
+    }
 
     return produce;
   }

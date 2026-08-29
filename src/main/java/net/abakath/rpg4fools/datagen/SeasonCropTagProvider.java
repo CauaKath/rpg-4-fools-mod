@@ -3,6 +3,8 @@ package net.abakath.rpg4fools.datagen;
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.init.ModBlockTags;
 import net.abakath.rpg4fools.init.ModBlocks;
+import net.abakath.rpg4fools.init.ModCrops;
+import net.abakath.rpg4fools.world.CropDefinition;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.block.Block;
@@ -77,6 +79,16 @@ public class SeasonCropTagProvider extends FabricTagProvider.BlockTagProvider {
     // The dormant bush keeps the live bush's seasons. The hook reads them to decide when to revive
     // it, and an untagged block reads as growing in every season, which would revive it in winter.
     put(seasons, ModBlocks.DORMANT_SWEET_BERRY_BUSH, Season.SUMMER, Season.AUTUMN);
+
+    // The mod's own crops, from the same table that registers them. A crop cannot end up tagged
+    // without being registered, or registered without a season.
+    for (CropDefinition definition : ModCrops.ALL) {
+      seasons.put(ModBlocks.blockFor(definition), definition.seasons());
+
+      if (definition.kind() == CropDefinition.Kind.BUSH) {
+        seasons.put(ModBlocks.dormantFor(definition), definition.seasons());
+      }
+    }
 
     return seasons;
   }

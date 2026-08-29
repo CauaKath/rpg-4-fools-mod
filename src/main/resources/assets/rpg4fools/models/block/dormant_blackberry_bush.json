@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "rpg4fools:block/dormant_sweet_berry_bush"
+  }
+}
