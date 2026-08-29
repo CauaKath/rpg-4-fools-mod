@@ -11,6 +11,15 @@
     "minecraft:sweet_berry_bush",
     "minecraft:attached_melon_stem",
     "minecraft:attached_pumpkin_stem",
-    "rpg4fools:dormant_sweet_berry_bush"
+    "rpg4fools:dormant_sweet_berry_bush",
+    "rpg4fools:tomato_crop",
+    "rpg4fools:cucumber_crop",
+    "rpg4fools:lettuce_crop",
+    "rpg4fools:strawberry_bush",
+    "rpg4fools:dormant_strawberry_bush",
+    "rpg4fools:blackberry_bush",
+    "rpg4fools:dormant_blackberry_bush",
+    "rpg4fools:blueberry_bush",
+    "rpg4fools:dormant_blueberry_bush"
   ]
 }
