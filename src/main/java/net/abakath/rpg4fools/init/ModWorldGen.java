@@ -15,10 +15,15 @@ import net.minecraft.world.gen.feature.PlacedFeature;
 /**
  * Where the mod's bushes grow on their own.
  *
- * <p>The patches themselves are data, copied from the vanilla berry patch: a bush every 32 chunks
- * on grass, placed already fruiting. What cannot be data is which biomes they belong to, since a
- * datapack can only add a feature to a vanilla biome by replacing the whole biome file, and that
- * would overwrite everything else the biome does. Fabric's biome API adds them instead.
+ * <p>The patches themselves are data, copied from the vanilla berry patch: bushes on grass, placed
+ * already fruiting. Blueberry keeps the vanilla numbers, since it grows in the taiga next to the
+ * sweet berries it is copying. Strawberry and blackberry are quartered and thinned, because plains
+ * and forest are far bigger biomes than taiga and a vanilla rate there reads as a strawberry field
+ * rather than a lucky find.
+ *
+ * <p>What cannot be data is which biomes they belong to, since a datapack can only add a feature to
+ * a vanilla biome by replacing the whole biome file, and that would overwrite everything else the
+ * biome does. Fabric's biome API adds them instead.
  *
  * <p>One bush to a climate, so the biome tells you what you will find. Only blueberry shares ground
  * with vanilla sweet berries, which is the taiga's to begin with.
