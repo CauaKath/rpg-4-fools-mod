@@ -13,23 +13,24 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
 /**
- * A sweet berry bush waiting out a season it cannot fruit in.
+ * A berry bush waiting out a season it cannot fruit in.
  *
  * <p>Unlike every other crop a bush does not die, so this is a state it comes back from rather than
- * an ending. The season hook swaps the two blocks in both directions.
+ * an ending. {@link DormantBushes} pairs each live bush with its dormant form and the season hook
+ * swaps the two in both directions.
  *
- * <p>Extends the vanilla bush to keep its shape, its slowdown and its thorns: a dormant bush is
- * still a thicket to walk through. Only the parts that amount to producing berries are turned off.
+ * <p>Extends the mod's bush to keep its shape, its slowdown and whether it has thorns: a dormant
+ * bramble is still a bramble to walk through. Only the parts that amount to producing berries are
+ * turned off.
  */
-public class DormantSweetBerryBushBlock extends SweetBerryBushBlock {
+public class DormantBerryBushBlock extends ModBerryBushBlock {
   /**
-   * Typed to the parent block, because that is what SweetBerryBushBlock.getCodec returns and the
-   * return type is invariant. The factory still builds dormant bushes; only the declared type is
-   * the parent's.
+   * Typed to the vanilla bush, because that is what SweetBerryBushBlock.getCodec returns and the
+   * return type is invariant. The factory still builds dormant bushes.
    */
-  public static final MapCodec<SweetBerryBushBlock> CODEC = createCodec(DormantSweetBerryBushBlock::new);
+  public static final MapCodec<SweetBerryBushBlock> CODEC = createCodec(DormantBerryBushBlock::new);
 
-  public DormantSweetBerryBushBlock(Settings settings) {
+  public DormantBerryBushBlock(Settings settings) {
     super(settings);
   }
 
@@ -42,8 +43,8 @@ public class DormantSweetBerryBushBlock extends SweetBerryBushBlock {
    * Never grows on its own.
    *
    * <p>The block still random ticks, and deliberately so: the season hook runs at the head of the
-   * same tick and is the only thing that can bring the bush back. A block that stopped ticking
-   * would stay dormant forever.
+   * same tick and is the only thing that can bring the bush back. A block that stopped ticking would
+   * stay dormant forever.
    */
   @Override
   public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
@@ -63,7 +64,7 @@ public class DormantSweetBerryBushBlock extends SweetBerryBushBlock {
   public void grow(ServerWorld world, Random random, BlockPos pos, BlockState state) {
   }
 
-  /** Nothing to pick. Vanilla would hand over berries and reset the age. */
+  /** Nothing to pick. The live bush would hand over berries and reset the age. */
   @Override
   public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
     return ActionResult.PASS;
