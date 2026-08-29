@@ -7,7 +7,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.CropBlock;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryList;
@@ -22,11 +21,11 @@ import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.structure.Structure;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -53,18 +52,21 @@ public final class VillageFarms {
   private VillageFarms() {
   }
 
-  /** The village lane this position belongs to, or empty if it is not inside a village piece. */
+  /**
+   * The village lane this position belongs to, or empty if it is not inside a village piece.
+   *
+   * <p>Asked through the structure accessor rather than the chunk. A chunk only holds the starts of
+   * structures that begin inside it; every other chunk a village covers holds a reference to the
+   * one that does. A farm is hardly ever in the chunk its village started in, so reading the
+   * chunk's own starts finds nothing and the whole village reads as open country.
+   */
   public static Optional<Lane> laneAt(ServerWorld world, BlockPos pos) {
-    Map<Structure, StructureStart> starts = world.getChunk(pos).getStructureStarts();
+    StructureAccessor accessor = world.getStructureAccessor();
 
-    for (Map.Entry<Structure, StructureStart> entry : starts.entrySet()) {
-      if (!isVillage(world, entry.getKey())) {
-        continue;
-      }
+    for (RegistryEntry<Structure> village : villages(world)) {
+      StructureStart start = accessor.getStructureAt(pos, village.value());
 
-      StructureStart start = entry.getValue();
-
-      if (!start.hasChildren() || !start.getBoundingBox().contains(pos)) {
+      if (!start.hasChildren()) {
         continue;
       }
 
@@ -140,16 +142,18 @@ public final class VillageFarms {
   }
 
   /**
-   * Structures are a dynamic registry, so the world's own manager is the only place to ask. The
-   * village tag is what decides rather than the five village structure ids, so a datapack's own
-   * village is treated as one too.
+   * Every structure the village tag names.
+   *
+   * <p>Structures are a dynamic registry, so the world's own manager is the only place to ask. The
+   * tag is what decides rather than the five vanilla village ids, so a datapack's own village is
+   * treated as one too.
    */
-  private static boolean isVillage(ServerWorld world, Structure structure) {
+  private static Iterable<RegistryEntry<Structure>> villages(ServerWorld world) {
     Registry<Structure> registry = world.getRegistryManager().get(RegistryKeys.STRUCTURE);
 
-    return registry.getKey(structure)
-            .map(key -> registry.entryOf(key).isIn(StructureTags.VILLAGE))
-            .orElse(false);
+    return registry.getEntryList(StructureTags.VILLAGE)
+            .map(named -> (Iterable<RegistryEntry<Structure>>) named)
+            .orElse(List.of());
   }
 
   private static BlockRotation opposite(BlockRotation rotation) {
