@@ -5,6 +5,7 @@ import net.abakath.rpg4fools.init.ModEvents;
 import net.abakath.rpg4fools.init.ModItemGroups;
 import net.abakath.rpg4fools.init.ModItems;
 import net.abakath.rpg4fools.init.ModMessages;
+import net.abakath.rpg4fools.init.ModWorldGen;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
@@ -22,5 +23,6 @@ public class RPG4Fools implements ModInitializer {
 		ModItemGroups.registerItemGroups();
 		ModEvents.registerEvents();
 		ModMessages.registerS2CPackets();
+		ModWorldGen.registerFeatures();
 	}
 }
