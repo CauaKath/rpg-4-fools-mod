@@ -225,8 +225,8 @@
     {
       "element": {
         "location": "rpg4fools:village/taiga/small_farm",
-        "processors": "minecraft:farm_taiga",
-        "projection": "terrain_matching",
+        "processors": "rpg4fools:farm_taiga_lane",
+        "projection": "rigid",
         "element_type": "minecraft:legacy_single_pool_element"
       },
       "weight": 3
@@ -234,8 +234,8 @@
     {
       "element": {
         "location": "rpg4fools:village/taiga/large_farm",
-        "processors": "minecraft:farm_taiga",
-        "projection": "terrain_matching",
+        "processors": "rpg4fools:farm_taiga_lane",
+        "projection": "rigid",
         "element_type": "minecraft:legacy_single_pool_element"
       },
       "weight": 3
@@ -243,7 +243,7 @@
     {
       "element": {
         "location": "rpg4fools:village/taiga/blob_small_farm",
-        "processors": "minecraft:farm_taiga",
+        "processors": "rpg4fools:farm_taiga_blob",
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
@@ -252,7 +252,7 @@
     {
       "element": {
         "location": "rpg4fools:village/taiga/blob_large_farm",
-        "processors": "minecraft:farm_taiga",
+        "processors": "rpg4fools:farm_taiga_blob",
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },

@@ -317,8 +317,8 @@
     {
       "element": {
         "location": "rpg4fools:village/savanna/small_farm",
-        "processors": "minecraft:farm_savanna",
-        "projection": "terrain_matching",
+        "processors": "rpg4fools:farm_savanna_lane",
+        "projection": "rigid",
         "element_type": "minecraft:legacy_single_pool_element"
       },
       "weight": 4
@@ -326,8 +326,8 @@
     {
       "element": {
         "location": "rpg4fools:village/savanna/large_farm",
-        "processors": "minecraft:farm_savanna",
-        "projection": "terrain_matching",
+        "processors": "rpg4fools:farm_savanna_lane",
+        "projection": "rigid",
         "element_type": "minecraft:legacy_single_pool_element"
       },
       "weight": 4
@@ -335,7 +335,7 @@
     {
       "element": {
         "location": "rpg4fools:village/savanna/blob_small_farm",
-        "processors": "minecraft:farm_savanna",
+        "processors": "rpg4fools:farm_savanna_blob",
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
@@ -344,7 +344,7 @@
     {
       "element": {
         "location": "rpg4fools:village/savanna/blob_large_farm",
-        "processors": "minecraft:farm_savanna",
+        "processors": "rpg4fools:farm_savanna_blob",
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },

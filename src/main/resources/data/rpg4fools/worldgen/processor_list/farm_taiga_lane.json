@@ -1,0 +1,50 @@
+{
+  "processors": [
+    {
+      "processor_type": "rpg4fools:farm_shaping",
+      "tolerance": 0,
+      "erosion": 0.0,
+      "fences": 1.0
+    },
+    {
+      "processor_type": "rpg4fools:seasonal_farm_crops"
+    },
+    {
+      "processor_type": "minecraft:rule",
+      "rules": [
+        {
+          "input_predicate": {
+            "block": "minecraft:wheat",
+            "predicate_type": "minecraft:random_block_match",
+            "probability": 0.3
+          },
+          "location_predicate": {
+            "predicate_type": "minecraft:always_true"
+          },
+          "output_state": {
+            "Name": "minecraft:pumpkin_stem",
+            "Properties": {
+              "age": "0"
+            }
+          }
+        },
+        {
+          "input_predicate": {
+            "block": "minecraft:wheat",
+            "predicate_type": "minecraft:random_block_match",
+            "probability": 0.2
+          },
+          "location_predicate": {
+            "predicate_type": "minecraft:always_true"
+          },
+          "output_state": {
+            "Name": "minecraft:potatoes",
+            "Properties": {
+              "age": "0"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

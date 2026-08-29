@@ -35,24 +35,28 @@ BIOMES = {
         'border': ('minecraft:oak_log', {'axis': 'y'}),
         'ground': None,
         'final_state': 'minecraft:oak_log',
+        'fence': ('minecraft:oak_fence', None),
         'pool': 'minecraft:village/plains/streets',
     },
     'savanna': {
         'border': ('minecraft:acacia_log', {'axis': 'y'}),
         'ground': None,
         'final_state': 'minecraft:acacia_log',
+        'fence': ('minecraft:acacia_fence', None),
         'pool': 'minecraft:empty',
     },
     'taiga': {
         'border': ('minecraft:spruce_log', {'axis': 'y'}),
         'ground': None,
         'final_state': 'minecraft:spruce_log',
+        'fence': ('minecraft:spruce_fence', None),
         'pool': 'minecraft:empty',
     },
     'snowy': {
         'border': ('minecraft:spruce_log', {'axis': 'y'}),
         'ground': {'minecraft:grass_block': ('minecraft:grass_block', {'snowy': 'true'})},
         'final_state': 'minecraft:spruce_log',
+        'fence': ('minecraft:spruce_fence', None),
         'pool': 'minecraft:empty',
     },
     'desert': {
@@ -62,6 +66,7 @@ BIOMES = {
             'minecraft:grass_block': ('minecraft:sand', None),
         },
         'final_state': 'minecraft:cut_sandstone',
+        'fence': ('minecraft:sandstone_wall', None),
         'pool': 'minecraft:empty',
     },
 }
@@ -147,7 +152,29 @@ def blob_field(shape):
             # A pond rather than a channel. Every plot still wants water within four blocks, which
             # one pond covers on the small field and two on the large.
             pond = any(math.hypot(dx - px, dz - pz) < 1.3 for px, pz in shape['ponds'])
-            field[(x, z)] = 'water' if pond else 'crop'
+
+            if pond:
+                field[(x, z)] = 'water'
+                continue
+
+            # The outer ring is marked rather than shaped: unwatered soil and unsprouted wheat,
+            # which FarmShaping reads as "this cell may go". The template is then the largest the
+            # farm can be instead of the shape every one of them has.
+            outline = distance > edge(math.atan2(dz, dx), shape['radius']) - 1.15
+            field[(x, z)] = 'outline' if outline else 'crop'
+
+    # A wobbled outline can leave a cell or two stranded inside the field. Filling them keeps the
+    # fence on the outside where it belongs, and spares the farm a pothole nobody put there.
+    for _ in range(2):
+        for z in range(size):
+            for x in range(size):
+                if (x, z) in field:
+                    continue
+
+                neighbours = sum((x + dx, z + dz) in field for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+
+                if neighbours >= 3:
+                    field[(x, z)] = 'crop'
 
     return field
 
@@ -181,15 +208,32 @@ def blob(shape, biome):
 
             if kind == 'water':
                 put(x, 0, z, entry('minecraft:water', {'level': '0'}))
+            elif kind == 'outline':
+                put(x, 0, z, entry('minecraft:farmland', {'moisture': '0'}))
+                put(x, 1, z, entry('minecraft:wheat', {'age': '0'}))
             elif kind == 'crop':
                 put(x, 0, z, entry('minecraft:farmland', {'moisture': '7'}))
-                put(x, 1, z, entry('minecraft:wheat', {'age': str((x * 3 + z * 5) % 8)}))
+                # Never age zero: that is the outline's mark, and a core plot wearing it would be
+                # eroded along with the ring.
+                put(x, 1, z, entry('minecraft:wheat', {'age': str(1 + (x * 3 + z * 5) % 7)}))
             else:
                 continue
 
             # Air above, so the field is not left standing inside whatever grew there before.
             for y in range(2 if kind == 'crop' else 1, 4):
                 put(x, y, z, entry('minecraft:air', None))
+
+    # A fence around it, most of which FarmShaping takes away again. Posts sit on the cells just
+    # outside the field, which is where somebody would have put them.
+    for z in range(size):
+        for x in range(size):
+            if (x, z) in field:
+                continue
+
+            touching = any((x + dx, z + dz) in field for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+
+            if touching:
+                put(x, 1, z, entry(*biome['fence']))
 
     # The way in. Placed on the western edge at the middle row, the same edge and facing the copied
     # farms use, with a composter beside it so the plot reads as somebody's work.

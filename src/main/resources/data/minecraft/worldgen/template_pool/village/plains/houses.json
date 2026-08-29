@@ -329,8 +329,8 @@
     {
       "element": {
         "location": "rpg4fools:village/plains/small_farm",
-        "processors": "minecraft:farm_plains",
-        "projection": "terrain_matching",
+        "processors": "rpg4fools:farm_plains_lane",
+        "projection": "rigid",
         "element_type": "minecraft:legacy_single_pool_element"
       },
       "weight": 2
@@ -338,8 +338,8 @@
     {
       "element": {
         "location": "rpg4fools:village/plains/large_farm",
-        "processors": "minecraft:farm_plains",
-        "projection": "terrain_matching",
+        "processors": "rpg4fools:farm_plains_lane",
+        "projection": "rigid",
         "element_type": "minecraft:legacy_single_pool_element"
       },
       "weight": 2
@@ -347,7 +347,7 @@
     {
       "element": {
         "location": "rpg4fools:village/plains/blob_small_farm",
-        "processors": "minecraft:farm_plains",
+        "processors": "rpg4fools:farm_plains_blob",
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
@@ -356,7 +356,7 @@
     {
       "element": {
         "location": "rpg4fools:village/plains/blob_large_farm",
-        "processors": "minecraft:farm_plains",
+        "processors": "rpg4fools:farm_plains_blob",
         "projection": "terrain_matching",
         "element_type": "minecraft:legacy_single_pool_element"
       },
