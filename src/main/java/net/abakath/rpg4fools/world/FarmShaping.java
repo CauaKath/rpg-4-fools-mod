@@ -14,11 +14,14 @@ import net.minecraft.structure.processor.StructureProcessor;
 import net.minecraft.structure.processor.StructureProcessorType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.Heightmap;
 import net.minecraft.world.WorldView;
 import net.minecraft.registry.tag.BlockTags;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Fits a farm to the ground it landed on, and stops two farms of the same shape looking alike.
@@ -26,11 +29,12 @@ import org.jetbrains.annotations.Nullable;
  * <p>Three jobs, all of them per column of the field so a plot never ends up with a crop and no
  * soil beneath it.
  *
- * <p>The first is the ground. A jigsaw piece cannot refuse the spot it was given, so a farm that
- * lands on a hillside is trimmed to the part of the ground that suits it: any column whose surface
- * sits further than the tolerance from the field's own level is dropped before it is placed. Zero
- * means level ground only, which is what the lane farms want; one lets the blob farms follow gentle
- * ground, and either way nothing is left hanging over a cave or buried in a slope.
+ * <p>The first is the ground, judged twice. A plot whose ground is mostly wrong is not built at
+ * all, since a farm trimmed down to three crops and a fence post is wreckage rather than a smaller
+ * farm; a plot that is mostly right is trimmed a column at a time, dropping any that has no ground
+ * within the tolerance of the field's level. Zero means level ground only, which is what the lane
+ * farms want; one lets the blob farms follow gentle ground, and either way nothing is left hanging
+ * over a cave or buried in a slope.
  *
  * <p>The second is the outline. The generator marks the outer ring of a blob field - farmland left
  * unwatered, wheat left at age zero - and each of those columns is dropped on a roll, so the shape
@@ -43,17 +47,33 @@ public class FarmShaping extends StructureProcessor {
   public static final MapCodec<FarmShaping> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
           Codec.INT.fieldOf("tolerance").forGetter(shaping -> shaping.tolerance),
           Codec.FLOAT.fieldOf("erosion").forGetter(shaping -> shaping.erosion),
-          Codec.FLOAT.fieldOf("fences").forGetter(shaping -> shaping.fences)
+          Codec.FLOAT.fieldOf("fences").forGetter(shaping -> shaping.fences),
+          Codec.FLOAT.fieldOf("coverage").forGetter(shaping -> shaping.coverage)
   ).apply(instance, FarmShaping::new));
+
+  /**
+   * Whether a plot's ground was good enough to build on, kept per placement.
+   *
+   * <p>The verdict is the same for every block of a piece and answering it means sampling the
+   * ground across the whole plot, which is not a thing to do a thousand times over. Bounded rather
+   * than grown without limit: worldgen runs on several threads and nothing here is worth a leak.
+   */
+  private static final Map<BlockBox, Boolean> VERDICTS = new ConcurrentHashMap<>();
+  private static final int VERDICT_LIMIT = 256;
+
+  /** How far apart the sample columns are when judging a plot. */
+  private static final int SAMPLE_STEP = 2;
 
   private final int tolerance;
   private final float erosion;
   private final float fences;
+  private final float coverage;
 
-  public FarmShaping(int tolerance, float erosion, float fences) {
+  public FarmShaping(int tolerance, float erosion, float fences, float coverage) {
     this.tolerance = tolerance;
     this.erosion = erosion;
     this.fences = fences;
+    this.coverage = coverage;
   }
 
   @Override
@@ -67,6 +87,10 @@ public class FarmShaping extends StructureProcessor {
                                                       StructureTemplate.StructureBlockInfo original,
                                                       StructureTemplate.StructureBlockInfo current,
                                                       StructurePlacementData data) {
+    if (!worthBuilding(world, origin, data)) {
+      return null;
+    }
+
     BlockPos pos = current.pos();
 
     if (!suitsTheGround(world, pos, origin)) {
@@ -89,19 +113,79 @@ public class FarmShaping extends StructureProcessor {
   }
 
   /**
-   * Whether this column's surface is close enough to the field's level to be part of it.
+   * Whether this column has ground to stand on within the tolerance of the field's level.
+   *
+   * <p>Measured by looking at the blocks rather than by asking the heightmap. A heightmap answers
+   * with the top of whatever is there, canopy included, and a village goes in before its own
+   * chunk's trees but after the neighbouring chunks are finished - so in a forest the reading is
+   * the treetops and every column looks hopeless. Reading the band directly asks the question that
+   * was meant: is there ground here, at about the right height.
    *
    * <p>Measured against the piece's own y rather than the block's, so the whole column agrees: the
    * soil, the crop standing on it and the air above all live or die together.
-   *
-   * <p>Read before the projection has had its say. A terrain matching piece is snapped to the
-   * surface afterwards, which would make every column look like a perfect fit and this check like a
-   * formality.
    */
   private boolean suitsTheGround(WorldView world, BlockPos pos, BlockPos origin) {
-    int surface = world.getTopY(Heightmap.Type.WORLD_SURFACE_WG, pos.getX(), pos.getZ()) - 1;
+    return hasGround(world, pos.getX(), origin.getY(), pos.getZ(), tolerance);
+  }
 
-    return Math.abs(surface - origin.getY()) <= tolerance;
+  private static boolean hasGround(WorldView world, int x, int level, int z, int tolerance) {
+    BlockPos.Mutable cursor = new BlockPos.Mutable();
+
+    for (int y = level + tolerance; y >= level - tolerance; y--) {
+      BlockState state = world.getBlockState(cursor.set(x, y, z));
+
+      // Anything a plot could sit on. Leaves and grass are what grew there, not what is there.
+      if (state.isSolidBlock(world, cursor) && !state.isIn(BlockTags.LEAVES)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Whether enough of this plot has ground to be worth building at all.
+   *
+   * <p>Trimming a column at a time is right for a farm that overruns a bank by a block. It is wrong
+   * for a farm dropped on a hillside, which comes out as a handful of crops and a few fence posts
+   * stepping down a slope - wreckage rather than a smaller farm. Below the coverage the plot asks
+   * for, nothing is placed and the village keeps an empty lot.
+   */
+  private boolean worthBuilding(WorldView world, BlockPos origin, StructurePlacementData data) {
+    BlockBox box = data.getBoundingBox();
+
+    if (box == null) {
+      return true;
+    }
+
+    Boolean known = VERDICTS.get(box);
+
+    if (known != null) {
+      return known;
+    }
+
+    int suitable = 0;
+    int sampled = 0;
+
+    for (int x = box.getMinX(); x <= box.getMaxX(); x += SAMPLE_STEP) {
+      for (int z = box.getMinZ(); z <= box.getMaxZ(); z += SAMPLE_STEP) {
+        sampled++;
+
+        if (hasGround(world, x, origin.getY(), z, tolerance)) {
+          suitable++;
+        }
+      }
+    }
+
+    boolean verdict = sampled == 0 || (float) suitable / sampled >= coverage;
+
+    if (VERDICTS.size() > VERDICT_LIMIT) {
+      VERDICTS.clear();
+    }
+
+    VERDICTS.put(box, verdict);
+
+    return verdict;
   }
 
   /**

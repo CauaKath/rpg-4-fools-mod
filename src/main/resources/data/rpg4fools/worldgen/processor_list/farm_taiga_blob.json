@@ -4,7 +4,8 @@
       "processor_type": "rpg4fools:farm_shaping",
       "tolerance": 1,
       "erosion": 0.45,
-      "fences": 0.4
+      "fences": 0.4,
+      "coverage": 0.7
     },
     {
       "processor_type": "rpg4fools:seasonal_farm_crops"
