@@ -1,6 +1,6 @@
 {
-  "parent": "minecraft:block/crop",
+  "parent": "minecraft:block/cross",
   "textures": {
-    "crop": "rpg4fools:block/lettuce_crop_stage0"
+    "cross": "rpg4fools:block/lettuce_crop_stage0"
   }
 }
