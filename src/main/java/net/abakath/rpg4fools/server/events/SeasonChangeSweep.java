@@ -2,8 +2,10 @@ package net.abakath.rpg4fools.server.events;
 
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.enums.Season;
+import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.server.LoadedChunks;
 import net.abakath.rpg4fools.world.CropTransition;
+import net.abakath.rpg4fools.world.VillageFarms;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
@@ -46,17 +48,39 @@ public final class SeasonChangeSweep {
     LoadedChunks.forEachChunk(world, chunk -> collectCrops(chunk, crops));
 
     int changed = 0;
+    int stuck = 0;
+    BlockPos firstStuck = null;
+
     for (BlockPos pos : crops) {
       // Read the state again rather than trusting the one collected. Setting a block can break a
       // neighbour, and a stem taken out with its farmland should not then be replaced by a dead
       // crop standing on nothing.
-      if (CropTransition.apply(world, pos, world.getBlockState(pos), season)) {
+      BlockState before = world.getBlockState(pos);
+
+      if (CropTransition.apply(world, pos, before, season)) {
         changed++;
+        continue;
+      }
+
+      // A dead crop nothing happened to is the case worth naming. Either it stands outside every
+      // village piece, or it stands inside one and the replant still declined.
+      if (before.isOf(ModBlocks.DEAD_CROP)) {
+        stuck++;
+
+        if (firstStuck == null) {
+          firstStuck = pos;
+        }
       }
     }
 
-    if (changed > 0) {
-      RPG4Fools.LOGGER.info("{} turned {} crop(s) with the change to {}", world.getRegistryKey().getValue(), changed, season.getName());
+    if (changed > 0 || stuck > 0) {
+      RPG4Fools.LOGGER.info("{} turned {} crop(s) with the change to {}, and left {} dead crop(s) as they were",
+              world.getRegistryKey().getValue(), changed, season.getName(), stuck);
+    }
+
+    if (firstStuck != null) {
+      RPG4Fools.LOGGER.info("first dead crop left alone: {}, in a village lane: {}, crops in season: {}",
+              firstStuck, VillageFarms.laneAt(world, firstStuck).isPresent(), VillageFarms.inSeason(season).size());
     }
   }
 
