@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "age=0": {
+      "model": "rpg4fools:block/dormant_blackberry_bush"
+    },
+    "age=1": {
+      "model": "rpg4fools:block/dormant_blackberry_bush"
+    },
+    "age=2": {
+      "model": "rpg4fools:block/dormant_blackberry_bush"
+    },
+    "age=3": {
+      "model": "rpg4fools:block/dormant_blackberry_bush"
+    }
+  }
+}
