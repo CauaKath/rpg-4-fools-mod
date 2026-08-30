@@ -32,6 +32,7 @@ public final class SeasonColorProviders {
   private static final int MANGROVE_FOLIAGE_COLOR = 0x92C648;
   private static final int LILY_PAD_COLOR = 0x208030;
 
+
   /** Blocks vanilla tints from the biome grass colour. */
   private static final Block[] GRASS_BLOCKS = {
           Blocks.GRASS_BLOCK,

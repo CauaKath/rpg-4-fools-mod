@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/crop",
+  "textures": {
+    "crop": "rpg4fools:block/dead_crop"
+  }
+}

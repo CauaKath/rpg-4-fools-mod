@@ -38,3 +38,11 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+
+# Python bytecode from the tools directory
+__pycache__/
+
+# ai tooling
+
+.ai-jail
+docs/
