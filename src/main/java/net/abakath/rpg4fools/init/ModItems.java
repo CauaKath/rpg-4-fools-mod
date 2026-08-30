@@ -5,6 +5,7 @@ import net.abakath.rpg4fools.world.CropDefinition;
 import net.minecraft.block.Block;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.item.AliasedBlockItem;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
@@ -20,11 +21,25 @@ import java.util.Map;
  * <p>A farmland crop has two: a seed that plants it and produce that feeds you. A bush has one,
  * because a berry is both, exactly as sweet berries are.
  *
+ * <p>The crop stick is the one item here that plants nothing. It is a block the player places, and
+ * what grows on it comes later.
+ *
  * <p>Seeds and berries are AliasedBlockItem so they plant on use while reading as an item rather
  * than a block. That also means {@link net.abakath.rpg4fools.world.CropItems} resolves them through
  * its BlockItem branch with no entry of its own.
  */
 public final class ModItems {
+  /**
+   * The trellis, as a thing to carry.
+   *
+   * <p>A plain BlockItem, unlike everything else here: placing one on farmland or on top of another
+   * is ordinary block placement, and the block's own placement rules are what keep a column three
+   * high and rooted. Only the two placements vanilla cannot express - a stick onto a crop already in
+   * the ground, and a seed into a stick already standing - are handled elsewhere, in
+   * {@link net.abakath.rpg4fools.server.events.CropStickHandling}.
+   */
+  public static final Item CROP_STICK = register("crop_stick", new BlockItem(ModBlocks.CROP_STICK, new Item.Settings()));
+
   private static final Map<CropDefinition, Item> SEEDS = new LinkedHashMap<>();
   private static final Map<CropDefinition, Item> PRODUCE = new LinkedHashMap<>();
 

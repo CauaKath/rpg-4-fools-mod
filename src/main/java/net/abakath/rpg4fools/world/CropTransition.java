@@ -74,6 +74,19 @@ public class CropTransition {
       return true;
     }
 
+    // A sticked crop leaves its trellis behind. The sticks were built by the player and are not
+    // part of the plant, so an ending season takes the crop and returns the stick to standing
+    // empty, ready to be sown again when the season comes back around. Every tier settles for
+    // itself, so a full column comes down to a full column of empty sticks.
+    if (CropSticks.isSticked(state)) {
+      if (inSeason) {
+        return false;
+      }
+
+      world.setBlockState(pos, ModBlocks.CROP_STICK.getDefaultState());
+      return true;
+    }
+
     if (inSeason) {
       return false;
     }

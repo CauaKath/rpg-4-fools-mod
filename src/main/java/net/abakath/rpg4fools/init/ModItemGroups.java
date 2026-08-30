@@ -28,6 +28,8 @@ public final class ModItemGroups {
                     .icon(() -> new ItemStack(ModItems.produceItem(ModCrops.TOMATO)))
                     .displayName(Text.translatable("itemGroup.rpg4fools.crops"))
                     .entries((context, entries) -> {
+                      entries.add(ModItems.CROP_STICK);
+
                       for (CropDefinition definition : ModCrops.ALL) {
                         entries.add(ModItems.seedItem(definition));
 

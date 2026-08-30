@@ -13,6 +13,10 @@ import java.util.Set;
  *
  * <p>Names are derived rather than stored. A crop that spelled its block one way and its seed
  * another would still compile, and the mistake would only show up as a missing texture.
+ *
+ * @param sticked whether crop sticks can carry this crop. A flag rather than something read off
+ *     {@link #regrows()}, which would have taken cucumber along with tomato: sticks are models and
+ *     a texture per crop, not a rule that follows from fruiting twice.
  */
 public record CropDefinition(
         String id,
@@ -21,7 +25,8 @@ public record CropDefinition(
         int nutrition,
         float saturation,
         boolean thorny,
-        int regrowAge
+        int regrowAge,
+        boolean sticked
 ) {
   /**
    * Whether picking this crop leaves the plant standing.
@@ -47,6 +52,11 @@ public record CropDefinition(
 
   public String dormantBlockName() {
     return "dormant_" + id + "_bush";
+  }
+
+  /** The sticked form of this crop's block. Only meaningful when {@link #sticked()}. */
+  public String stickedBlockName() {
+    return id + "_crop_stick";
   }
 
   public String seedName() {
