@@ -8,6 +8,7 @@ import net.abakath.rpg4fools.world.CropSticks;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.CropBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -27,11 +28,21 @@ import java.util.Optional;
 /**
  * The two placements vanilla has no way to express.
  *
- * <p>Stacking a stick and placing one on bare farmland are ordinary block placement, and the block's
- * own rules cover them. These two are not, because both put something into a block that is already
- * occupied: a stick into a crop standing in the ground, and a seed into a stick standing empty.
- * Vanilla would place the held block into the space above instead, which is a crop hanging in the
- * air or a stick balanced on a plant.
+ * <p>Placing a stick on bare farmland is ordinary block placement and the block's own rules cover it.
+ * Everything else about a column goes through here, because a post two pixels wide is not something
+ * anyone should have to aim at:
+ *
+ * <ul>
+ *   <li>a stick used anywhere on a column goes on top of that column, the way scaffolding stacks,
+ *       rather than needing the player to sneak and hit the top face
+ *   <li>a stick used on a crop standing in the ground puts a trellis around it
+ *   <li>a seed used on an empty stick sows it, and so does a seed used on the farmland underneath,
+ *       which is what most clicks at a thin post actually hit
+ * </ul>
+ *
+ * <p>The last three all put something into a block that is already occupied, which vanilla answers by
+ * placing the held block in the space above - a crop hanging in the air, or a stick balanced on a
+ * plant.
  *
  * <p>Registered after {@link SeasonPlantingGate}, which is what keeps a seed from being sown into a
  * stick out of season: the gate refuses the interaction first and this is never reached.
@@ -76,6 +87,12 @@ public class CropStickHandling {
    */
   private static ActionResult stick(ServerWorld world, PlayerEntity player, ItemStack stack,
                                     BlockPos pos, BlockState state) {
+    // Anywhere on a column means the top of it. Which face was hit says nothing useful about intent
+    // when the block is a post two pixels wide, and there is only one place another stick can go.
+    if (CropSticks.isColumn(state)) {
+      return stack(world, player, stack, pos);
+    }
+
     CropDefinition definition = ModBlocks.definitionFor(state.getBlock());
 
     if (definition == null || !definition.sticked()) {
@@ -102,6 +119,30 @@ public class CropStickHandling {
   }
 
   /**
+   * Adds a stick to the top of the column the player clicked, if it has room for one.
+   *
+   * <p>Passes rather than refusing when the column is full. The block's own placement rules turn the
+   * placement away from there, which is the same answer arrived at by the usual route.
+   */
+  private static ActionResult stack(ServerWorld world, PlayerEntity player, ItemStack stack, BlockPos pos) {
+    BlockPos above = CropSticks.columnTop(world, pos).up();
+
+    if (!world.getBlockState(above).isAir()) {
+      return ActionResult.PASS;
+    }
+
+    BlockState placed = ModBlocks.CROP_STICK.getDefaultState()
+            .with(CropSticks.CAPPED, CropSticks.capped(world, above));
+
+    if (!placed.canPlaceAt(world, above)) {
+      return ActionResult.PASS;
+    }
+
+    replace(world, player, stack, above, placed, SoundEvents.BLOCK_WOOD_PLACE);
+    return ActionResult.SUCCESS;
+  }
+
+  /**
    * Sows a seed into an empty stick, at age zero, as sowing it into farmland would.
    *
    * <p>Refused where the stick already touches a plant. A crop on a trellis is one plant that climbs
@@ -111,12 +152,17 @@ public class CropStickHandling {
    */
   private static ActionResult sow(ServerWorld world, PlayerEntity player, ItemStack stack,
                                   BlockPos pos, BlockState state) {
-    if (!CropSticks.isEmpty(state)) {
+    // Aiming a seed at a stick mostly means hitting the farmland behind it, so the ground a stick
+    // stands in counts as the stick. Farmland with nothing on it is left to vanilla, which plants
+    // the crop the ordinary way.
+    BlockPos target = state.isOf(Blocks.FARMLAND) ? pos.up() : pos;
+
+    if (!CropSticks.isEmpty(world.getBlockState(target))) {
       return ActionResult.PASS;
     }
 
-    if (CropSticks.isSticked(world.getBlockState(pos.down()))
-            || CropSticks.isSticked(world.getBlockState(pos.up()))) {
+    if (CropSticks.isSticked(world.getBlockState(target.down()))
+            || CropSticks.isSticked(world.getBlockState(target.up()))) {
       return ActionResult.PASS;
     }
 
@@ -132,8 +178,8 @@ public class CropStickHandling {
       return ActionResult.PASS;
     }
 
-    replace(world, player, stack, pos, ModBlocks.stickedFor(definition).getDefaultState()
-                    .with(CropSticks.CAPPED, state.get(CropSticks.CAPPED)),
+    replace(world, player, stack, target, ModBlocks.stickedFor(definition).getDefaultState()
+                    .with(CropSticks.CAPPED, world.getBlockState(target).get(CropSticks.CAPPED)),
             SoundEvents.ITEM_CROP_PLANT);
     return ActionResult.SUCCESS;
   }

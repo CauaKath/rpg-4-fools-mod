@@ -91,6 +91,26 @@ public final class CropSticks {
   }
 
   /**
+   * The topmost block of this position's column, whether or not anything is growing in it.
+   *
+   * <p>Where the next stick goes. {@link #plantTop} answers a different question - how tall the plant
+   * is - and stops at the first empty stick.
+   */
+  public static BlockPos columnTop(BlockView world, BlockPos pos) {
+    BlockPos cursor = pos;
+
+    for (int step = 1; step < MAX_HEIGHT; step++) {
+      if (!isColumn(world.getBlockState(cursor.up()))) {
+        break;
+      }
+
+      cursor = cursor.up();
+    }
+
+    return cursor;
+  }
+
+  /**
    * How far up its column this position sits, counting from the farmland.
    *
    * <p>One for a stick on the ground, up to {@link #MAX_HEIGHT}. Stops counting at the cap: nothing

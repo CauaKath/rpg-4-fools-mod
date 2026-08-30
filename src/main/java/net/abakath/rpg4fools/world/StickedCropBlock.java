@@ -50,13 +50,13 @@ public class StickedCropBlock extends RegrowingCropBlock {
   public static final EnumProperty<ColumnPart> PART = EnumProperty.of("part", ColumnPart.class);
 
   /**
-   * One random tick in eight climbs a section.
+   * One random tick in four climbs a section.
    *
    * <p>Deliberately slower than growing an age. A plant that shot to full height the moment it was
    * grown would make the sticks a formality; making the player wait for each section is what turns
    * height into something earned.
    */
-  private static final int CLIMB_CHANCE = 8;
+  private static final int CLIMB_CHANCE = 4;
 
   /** Matches the stick's box, since the plant is drawn around one. */
   private static final VoxelShape SHAPE = Block.createCuboidShape(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);

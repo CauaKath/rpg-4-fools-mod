@@ -10,6 +10,7 @@ import net.minecraft.state.StateManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
@@ -54,8 +55,19 @@ public class CropStickBlock extends Block {
     return CODEC;
   }
 
+  /**
+   * The post, or the whole block to anyone holding a stick.
+   *
+   * <p>The same bargain scaffolding strikes. Stacking a column means clicking a post two pixels wide,
+   * and a player carrying sticks is trying to build with them, so the block becomes as easy to hit as
+   * it is to reason about. Anyone holding anything else gets the post they can see.
+   */
   @Override
   public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    if (context.isHolding(asItem())) {
+      return VoxelShapes.fullCube();
+    }
+
     return state.get(CropSticks.CAPPED) ? CAPPED_SHAPE : SHAPE;
   }
 
