@@ -41,3 +41,8 @@ replay_*.log
 
 # Python bytecode from the tools directory
 __pycache__/
+
+# ai tooling
+
+.ai-jail
+docs/
