@@ -163,7 +163,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
    * and leave a section drawing itself as the wrong end of the plant.
    */
   @Override
-  protected void applyGrowth(World world, BlockPos pos, BlockState state) {
+  public void applyGrowth(World world, BlockPos pos, BlockState state) {
     BlockPos base = CropSticks.plantBase(world, pos);
     int age = getAge(world.getBlockState(base));
 
