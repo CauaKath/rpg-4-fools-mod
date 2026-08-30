@@ -1,5 +1,5 @@
 {
-  "__comment": "The last stick a column may hold, three pixels shorter than the rest. Nothing can stack on it, and the gap it leaves at the top of the block is what says so before a player tries.",
+  "__comment": "The last stick a column may hold, standing a little over half the height of the block. Nothing can stack on it, and the gap it leaves is what says so before a player tries.",
   "ambientocclusion": false,
   "textures": {
     "stick": "rpg4fools:block/crop_stick",
@@ -7,13 +7,14 @@
   },
   "elements": [
     {
+      "__comment": "Ten pixels tall counted from the farmland it sinks into, so nine of it shows above the block it stands in.",
       "from": [7, -1, 7],
-      "to": [9, 12, 9],
+      "to": [9, 9, 9],
       "faces": {
-        "north": { "uv": [7, 3, 9, 16], "texture": "#stick" },
-        "south": { "uv": [7, 3, 9, 16], "texture": "#stick" },
-        "west": { "uv": [7, 3, 9, 16], "texture": "#stick" },
-        "east": { "uv": [7, 3, 9, 16], "texture": "#stick" },
+        "north": { "uv": [7, 6, 9, 16], "texture": "#stick" },
+        "south": { "uv": [7, 6, 9, 16], "texture": "#stick" },
+        "west": { "uv": [7, 6, 9, 16], "texture": "#stick" },
+        "east": { "uv": [7, 6, 9, 16], "texture": "#stick" },
         "up": { "uv": [7, 7, 9, 9], "texture": "#stick" }
       }
     }

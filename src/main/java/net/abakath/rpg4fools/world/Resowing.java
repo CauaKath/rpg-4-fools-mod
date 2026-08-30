@@ -29,9 +29,13 @@ import java.util.Set;
  *
  * <p>Winter offers nothing, so nothing regrows and the world browns over the way it should.
  *
- * <p>A patch that comes back as a crop sticks can carry sometimes comes back on a trellis, one to
- * three sticks tall. Only the sticks and a young plant are put down, never a grown one: the plant
- * climbs them itself, the same way a player's does.
+ * <p>The odd plant in a field of a crop sticks can carry comes back on a trellis, one to three sticks
+ * tall. Decided per plant rather than per patch, unlike the crop itself: a lane of tomatoes with a
+ * couple of trellises standing in it looks like a farm, and a lane where every plant has one looks
+ * like a different feature entirely.
+ *
+ * <p>Only the sticks and a young plant are put down, never a grown one: the plant climbs them itself,
+ * the same way a player's does.
  */
 public final class Resowing {
   /**
@@ -46,8 +50,13 @@ public final class Resowing {
   /** How wide a patch of one crop is. Three blocks reads as a row somebody planted, not as noise. */
   private static final int PATCH = 3;
 
-  /** One patch of a stickable crop in three comes back on a trellis. */
-  private static final int TRELLIS_CHANCE = 3;
+  /**
+   * One plant in twelve, where the patch came back as a crop sticks can carry.
+   *
+   * <p>Rare on purpose. A trellis is something a player builds, and a field full of them found in the
+   * world would make the crafted stick pointless.
+   */
+  private static final int TRELLIS_CHANCE = 12;
 
   /** Out of ten trellises: six one stick, three two, one three. A full one stays worth finding. */
   private static final int TWO_STICKS_ABOVE = 6;
@@ -68,10 +77,13 @@ public final class Resowing {
   /**
    * What would be sown here this season, or empty if the season has nothing to offer.
    *
-   * <p>The choice is the same across a patch of three by three and changes with the season, so a
-   * field comes back as bands of one crop rather than as a speckle, and comes back differently
-   * after each winter. It is settled by position alone, so the sweep and the chunk scan cannot
-   * disagree about a field one of them has already been over.
+   * <p>The crop is the same across a patch of three by three and changes with the season, so a field
+   * comes back as bands of one crop rather than as a speckle, and comes back differently after each
+   * winter. Whether a plant stands on a trellis is decided one plant at a time instead, so a band of
+   * tomatoes is a band of tomatoes with the occasional trellis in it.
+   *
+   * <p>Both are settled by position alone, so the sweep and the chunk scan cannot disagree about a
+   * field one of them has already been over.
    */
   public static Optional<Sowing> sownAt(BlockPos pos, Season season) {
     List<Block> pool = inSeason(season);
@@ -80,19 +92,26 @@ public final class Resowing {
       return Optional.empty();
     }
 
-    Random random = Random.create(MathHelper.hashCode(
+    Random patch = Random.create(MathHelper.hashCode(
             Math.floorDiv(pos.getX(), PATCH), season.ordinal(), Math.floorDiv(pos.getZ(), PATCH)));
 
-    Block crop = pool.get(random.nextInt(pool.size()));
+    Block crop = pool.get(patch.nextInt(pool.size()));
     CropDefinition definition = ModBlocks.definitionFor(crop);
 
-    // Drawn from the same seeded roll as the crop, so the whole patch agrees about its trellises
-    // without any block having to look at its neighbours.
-    if (definition == null || !definition.sticked() || random.nextInt(TRELLIS_CHANCE) != 0) {
+    if (definition == null || !definition.sticked()) {
       return Optional.of(new Sowing(crop.getDefaultState(), 0));
     }
 
-    return Optional.of(new Sowing(ModBlocks.stickedFor(definition).getDefaultState(), sticks(random)));
+    // Seeded from the block rather than the patch, so trellises are scattered through a lane instead
+    // of claiming all of one. Still position alone, so the sweep and the chunk scan cannot disagree
+    // about a field one of them has already been over.
+    Random plant = Random.create(MathHelper.hashCode(pos.getX(), pos.getY() + season.ordinal(), pos.getZ()));
+
+    if (plant.nextInt(TRELLIS_CHANCE) != 0) {
+      return Optional.of(new Sowing(crop.getDefaultState(), 0));
+    }
+
+    return Optional.of(new Sowing(ModBlocks.stickedFor(definition).getDefaultState(), sticks(plant)));
   }
 
   private static int sticks(Random random) {

@@ -38,7 +38,7 @@ public class CropStickBlock extends Block {
    * post: there is nothing to stack on it, so nothing is lost by being harder to click on top of.
    */
   private static final VoxelShape SHAPE = Block.createCuboidShape(6.0, 0.0, 6.0, 10.0, 16.0, 10.0);
-  private static final VoxelShape CAPPED_SHAPE = Block.createCuboidShape(6.0, 0.0, 6.0, 10.0, 13.0, 10.0);
+  private static final VoxelShape CAPPED_SHAPE = Block.createCuboidShape(6.0, 0.0, 6.0, 10.0, 9.0, 10.0);
 
   public CropStickBlock(Settings settings) {
     super(settings);
