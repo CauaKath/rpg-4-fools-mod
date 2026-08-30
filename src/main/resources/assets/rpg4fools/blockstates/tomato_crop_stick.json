@@ -238,7 +238,7 @@
         "age": "0"
       },
       "apply": {
-        "model": "rpg4fools:block/tomato_crop_stick_top_stage4"
+        "model": "rpg4fools:block/tomato_crop_stick_top_stage0"
       }
     },
     {
@@ -247,7 +247,7 @@
         "age": "1"
       },
       "apply": {
-        "model": "rpg4fools:block/tomato_crop_stick_top_stage4"
+        "model": "rpg4fools:block/tomato_crop_stick_top_stage1"
       }
     },
     {
@@ -256,7 +256,7 @@
         "age": "2"
       },
       "apply": {
-        "model": "rpg4fools:block/tomato_crop_stick_top_stage4"
+        "model": "rpg4fools:block/tomato_crop_stick_top_stage2"
       }
     },
     {
@@ -265,7 +265,7 @@
         "age": "3"
       },
       "apply": {
-        "model": "rpg4fools:block/tomato_crop_stick_top_stage4"
+        "model": "rpg4fools:block/tomato_crop_stick_top_stage3"
       }
     },
     {

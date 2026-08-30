@@ -13,8 +13,13 @@ into its top two, and the joins then line up pixel for pixel at every age, for f
     middle   stalk carried through both ends, foliage mirrored so it is not the same picture twice
     top      the crown cleared back, so the plant tapers to a tip instead of being cut off
 
-Only ages 4 to 7 are produced. A plant does not start climbing until it is grown, so no section above
-the bottom one ever exists younger than that, and a one section plant keeps the plain sprites.
+The top section also gets young ages, because a plant climbing a stick puts up a shoot and fills it
+in rather than arriving whole. Those are the plain young sprites, which already grow from the bottom
+of their block upward, grafted onto the mature stalk the section below ends on - so the shoot reads
+as coming out of the plant rather than floating above it.
+
+Bottom and middle need only ages 4 to 7. Neither exists until something is growing above it, and
+nothing grows above a plant that is not yet an adult.
 
 Run from the repository root:
 
@@ -31,6 +36,13 @@ SOURCE = "tomato_crop_stage{age}.png"
 OUTPUT = "tomato_crop_stick_{part}_stage{age}.png"
 
 AGES = (4, 5, 6, 7)
+
+# The ages a new section passes through while it fills in. Only the top is ever this young.
+SHOOT_AGES = (0, 1, 2, 3)
+
+# The age whose foot every section joins on to, which is the age the plant below is held at while
+# the shoot above it grows.
+JOIN_AGE = 4
 
 CLEAR = (0, 0, 0, 0)
 STEM_LIGHT = (0x58, 0x40, 0x19, 255)
@@ -173,7 +185,27 @@ def mirror_body(rows):
     return rows
 
 
+def graft(rows, join):
+    """Stands a young shoot on the stalk the section below ends on.
+
+    A shoot is the plain sprite of the same age, which already grows from the bottom of its block
+    upward. Only its foot is replaced, so it rises out of the mature stalk instead of hanging over
+    a gap.
+    """
+    rows[14] = list(join[14])
+    rows[15] = list(join[15])
+    return rows
+
+
 def main():
+    join = read_png(BLOCKS / SOURCE.format(age=JOIN_AGE))
+
+    for age in SHOOT_AGES:
+        shoot = graft(copy(read_png(BLOCKS / SOURCE.format(age=age))), join)
+        target = BLOCKS / OUTPUT.format(part="top", age=age)
+        write_png(target, shoot)
+        print(f"wrote {target}")
+
     for age in AGES:
         source = read_png(BLOCKS / SOURCE.format(age=age))
 

@@ -118,6 +118,11 @@ public class StickedCropBlock extends RegrowingCropBlock {
    * <p>Everything above the bottom is along for the ride. Letting each section tick would have them
    * growing at their own rates, which is the stack of separate bushes this block exists not to be.
    *
+   * <p>One ladder, one rung per tick, in order: fill the plant out, then put up a shoot on the next
+   * stick, then fill that shoot in, and only when there is nothing left to climb, ripen. A plant is
+   * therefore never caught with fruit on one section and none on another, and it is never caught
+   * having sprouted a finished section out of nowhere.
+   *
    * <p>Only reached while the crop is in season. The random tick hook settles an out of season crop
    * at the head of the tick and cancels the rest of it, so there is no season check to make here.
    */
@@ -136,10 +141,27 @@ public class StickedCropBlock extends RegrowingCropBlock {
 
     int age = getAge(state);
 
+    // Still becoming a plant. Nothing has climbed yet, so this is the whole of it.
+    if (age < adultAge()) {
+      grow(world, pos, state, random);
+      return;
+    }
+
+    BlockPos top = CropSticks.plantTop(world, pos);
+    BlockState crown = world.getBlockState(top);
+
+    // A shoot the plant put up is still filling in. It thickens on its own rolls while the rest of
+    // the plant waits at the adult age, which is what makes a plant look like it is growing into its
+    // trellis rather than arriving in it.
+    if (getAge(crown) < adultAge()) {
+      grow(world, top, crown, random);
+      return;
+    }
+
     // Height before fruit. While there is a stick above the plant, every roll goes into climbing it.
-    if (climbable(world, pos, age)) {
+    if (CropSticks.isEmpty(world.getBlockState(top.up()))) {
       if (random.nextInt(CLIMB_CHANCE) == 0) {
-        climb(world, pos, age);
+        climb(world, top);
       }
 
       return;
@@ -149,34 +171,80 @@ public class StickedCropBlock extends RegrowingCropBlock {
       return;
     }
 
-    // Vanilla's roll, written out because vanilla measures moisture from directly under the crop and
-    // the plant should grow at the rate its farmland allows however tall it has become.
-    float moisture = getAvailableMoisture(this, world, CropSticks.base(world, pos));
-
-    if (random.nextInt((int) (25.0F / moisture) + 1) == 0) {
+    if (rolls(world, pos, random)) {
       setPlantAge(world, pos, age + 1);
     }
   }
 
   /**
-   * Bone meal, which the whole plant feels at once.
+   * Advances one section by one age.
+   *
+   * <p>Used for the two stages that are local to a section rather than shared: a plant that has not
+   * reached the adult age yet, and a shoot filling in above one that has.
+   */
+  private void grow(ServerWorld world, BlockPos pos, BlockState state, Random random) {
+    if (!rolls(world, pos, random)) {
+      return;
+    }
+
+    world.setBlockState(pos, state.with(getAgeProperty(), getAge(state) + 1), Block.NOTIFY_LISTENERS);
+  }
+
+  /**
+   * Vanilla's growth roll, written out.
+   *
+   * <p>Vanilla measures moisture from directly under the crop, and for any section but the bottom
+   * that is another stick. Measuring from the farmland the column is rooted in means the plant grows
+   * at the rate its bed allows however tall it has become.
+   */
+  private boolean rolls(ServerWorld world, BlockPos pos, Random random) {
+    float moisture = getAvailableMoisture(this, world, CropSticks.base(world, pos));
+
+    return random.nextInt((int) (25.0F / moisture) + 1) == 0;
+  }
+
+  /**
+   * Bone meal, which follows the same ladder a tick does.
    *
    * <p>Spends itself on height while the plant still has a stick to climb, so meal is worth using on
    * a young trellis rather than only on a finished one. Written out rather than inherited because
    * vanilla's version rebuilds the state from the block's default, which would throw away the part
    * and leave a section drawing itself as the wrong end of the plant.
+   *
+   * <p>Growth below the adult age never overshoots it. That age is where the plant decides whether to
+   * climb, and a handful of meal should not carry it straight past the decision.
    */
   @Override
   public void applyGrowth(World world, BlockPos pos, BlockState state) {
     BlockPos base = CropSticks.plantBase(world, pos);
-    int age = getAge(world.getBlockState(base));
+    BlockState root = world.getBlockState(base);
+    int age = getAge(root);
 
-    if (climbable(world, base, age)) {
-      climb(world, base, age);
+    if (age < adultAge()) {
+      feed(world, base, root, adultAge());
+      return;
+    }
+
+    BlockPos top = CropSticks.plantTop(world, base);
+    BlockState crown = world.getBlockState(top);
+
+    if (getAge(crown) < adultAge()) {
+      feed(world, top, crown, adultAge());
+      return;
+    }
+
+    if (CropSticks.isEmpty(world.getBlockState(top.up()))) {
+      climb(world, top);
       return;
     }
 
     setPlantAge(world, base, Math.min(age + getGrowthAmount(world), getMaxAge()));
+  }
+
+  private void feed(World world, BlockPos pos, BlockState state, int ceiling) {
+    int fed = Math.min(getAge(state) + getGrowthAmount(world), ceiling);
+
+    world.setBlockState(pos, state.with(getAgeProperty(), fed), Block.NOTIFY_LISTENERS);
   }
 
   /**
@@ -220,29 +288,18 @@ public class StickedCropBlock extends RegrowingCropBlock {
   }
 
   /**
-   * Whether the plant has somewhere left to climb.
+   * Claims the stick above the plant, putting up a shoot in it.
    *
-   * <p>Only at the adult age. Younger and it is still becoming a plant; older and it has already
-   * committed its growth to fruit, and would be handed a ripe section for free.
+   * <p>At age zero, not at the age the rest of the plant is holding. A section that appeared already
+   * grown was the thing that made a tall plant look assembled rather than grown, and starting from
+   * nothing is also what pays for the height: the shoot has to fill in before anything ripens.
    */
-  private boolean climbable(World world, BlockPos pos, int age) {
-    if (age != adultAge()) {
-      return false;
-    }
-
-    BlockPos top = CropSticks.plantTop(world, pos);
-
-    return CropSticks.isEmpty(world.getBlockState(top.up()));
-  }
-
-  /** Claims the stick above the plant, extending it by one section at the age the rest is at. */
-  private void climb(World world, BlockPos pos, int age) {
-    BlockPos grown = CropSticks.plantTop(world, pos).up();
+  private void climb(World world, BlockPos pos) {
+    BlockPos grown = pos.up();
 
     // The part is set here as well as derived, so the new section is never drawn as a whole plant
     // for the tick before its neighbour update lands.
     world.setBlockState(grown, getDefaultState()
-            .with(getAgeProperty(), age)
             .with(PART, ColumnPart.TOP)
             .with(CropSticks.CAPPED, CropSticks.capped(world, grown)), Block.NOTIFY_ALL);
   }
