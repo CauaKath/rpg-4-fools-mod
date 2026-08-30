@@ -78,6 +78,52 @@ public final class CropSticks {
   }
 
   /**
+   * The bottom section of the plant at this position.
+   *
+   * <p>Walks past sections only, so it stops at a bare stick. The bottom section is the one that
+   * grows, ripens and decides how tall the plant is; everything above it follows.
+   */
+  public static BlockPos plantBase(BlockView world, BlockPos pos) {
+    BlockPos cursor = pos;
+
+    for (int step = 1; step < MAX_HEIGHT; step++) {
+      if (!isSticked(world.getBlockState(cursor.down()))) {
+        break;
+      }
+
+      cursor = cursor.down();
+    }
+
+    return cursor;
+  }
+
+  /** The topmost section of the plant, counted up from wherever this position sits in it. */
+  public static BlockPos plantTop(BlockView world, BlockPos pos) {
+    BlockPos cursor = pos;
+
+    for (int step = 1; step < MAX_HEIGHT; step++) {
+      if (!isSticked(world.getBlockState(cursor.up()))) {
+        break;
+      }
+
+      cursor = cursor.up();
+    }
+
+    return cursor;
+  }
+
+  /** How many sections the plant standing on this base has, counted upward. */
+  public static int plantHeight(BlockView world, BlockPos base) {
+    int height = 0;
+
+    while (height < MAX_HEIGHT && isSticked(world.getBlockState(base.up(height)))) {
+      height++;
+    }
+
+    return height;
+  }
+
+  /**
    * The bottom block of this position's column, which is the one sitting on the farmland.
    *
    * <p>Growth reads moisture from the ground, and vanilla reads it from directly below the crop.

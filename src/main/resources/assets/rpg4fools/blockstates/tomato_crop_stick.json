@@ -1,28 +1,100 @@
 {
   "variants": {
-    "age=0": {
+    "age=0,part=single": {
       "model": "rpg4fools:block/tomato_crop_stick_stage0"
     },
-    "age=1": {
+    "age=1,part=single": {
       "model": "rpg4fools:block/tomato_crop_stick_stage1"
     },
-    "age=2": {
+    "age=2,part=single": {
       "model": "rpg4fools:block/tomato_crop_stick_stage2"
     },
-    "age=3": {
+    "age=3,part=single": {
       "model": "rpg4fools:block/tomato_crop_stick_stage3"
     },
-    "age=4": {
+    "age=4,part=single": {
       "model": "rpg4fools:block/tomato_crop_stick_stage4"
     },
-    "age=5": {
+    "age=5,part=single": {
       "model": "rpg4fools:block/tomato_crop_stick_stage5"
     },
-    "age=6": {
+    "age=6,part=single": {
       "model": "rpg4fools:block/tomato_crop_stick_stage6"
     },
-    "age=7": {
+    "age=7,part=single": {
       "model": "rpg4fools:block/tomato_crop_stick_stage7"
+    },
+    "age=0,part=bottom": {
+      "model": "rpg4fools:block/tomato_crop_stick_bottom_stage4"
+    },
+    "age=1,part=bottom": {
+      "model": "rpg4fools:block/tomato_crop_stick_bottom_stage4"
+    },
+    "age=2,part=bottom": {
+      "model": "rpg4fools:block/tomato_crop_stick_bottom_stage4"
+    },
+    "age=3,part=bottom": {
+      "model": "rpg4fools:block/tomato_crop_stick_bottom_stage4"
+    },
+    "age=4,part=bottom": {
+      "model": "rpg4fools:block/tomato_crop_stick_bottom_stage4"
+    },
+    "age=5,part=bottom": {
+      "model": "rpg4fools:block/tomato_crop_stick_bottom_stage5"
+    },
+    "age=6,part=bottom": {
+      "model": "rpg4fools:block/tomato_crop_stick_bottom_stage6"
+    },
+    "age=7,part=bottom": {
+      "model": "rpg4fools:block/tomato_crop_stick_bottom_stage7"
+    },
+    "age=0,part=middle": {
+      "model": "rpg4fools:block/tomato_crop_stick_middle_stage4"
+    },
+    "age=1,part=middle": {
+      "model": "rpg4fools:block/tomato_crop_stick_middle_stage4"
+    },
+    "age=2,part=middle": {
+      "model": "rpg4fools:block/tomato_crop_stick_middle_stage4"
+    },
+    "age=3,part=middle": {
+      "model": "rpg4fools:block/tomato_crop_stick_middle_stage4"
+    },
+    "age=4,part=middle": {
+      "model": "rpg4fools:block/tomato_crop_stick_middle_stage4"
+    },
+    "age=5,part=middle": {
+      "model": "rpg4fools:block/tomato_crop_stick_middle_stage5"
+    },
+    "age=6,part=middle": {
+      "model": "rpg4fools:block/tomato_crop_stick_middle_stage6"
+    },
+    "age=7,part=middle": {
+      "model": "rpg4fools:block/tomato_crop_stick_middle_stage7"
+    },
+    "age=0,part=top": {
+      "model": "rpg4fools:block/tomato_crop_stick_top_stage4"
+    },
+    "age=1,part=top": {
+      "model": "rpg4fools:block/tomato_crop_stick_top_stage4"
+    },
+    "age=2,part=top": {
+      "model": "rpg4fools:block/tomato_crop_stick_top_stage4"
+    },
+    "age=3,part=top": {
+      "model": "rpg4fools:block/tomato_crop_stick_top_stage4"
+    },
+    "age=4,part=top": {
+      "model": "rpg4fools:block/tomato_crop_stick_top_stage4"
+    },
+    "age=5,part=top": {
+      "model": "rpg4fools:block/tomato_crop_stick_top_stage5"
+    },
+    "age=6,part=top": {
+      "model": "rpg4fools:block/tomato_crop_stick_top_stage6"
+    },
+    "age=7,part=top": {
+      "model": "rpg4fools:block/tomato_crop_stick_top_stage7"
     }
   }
 }

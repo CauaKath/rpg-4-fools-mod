@@ -99,10 +99,22 @@ public class CropStickHandling {
     return ActionResult.SUCCESS;
   }
 
-  /** Sows a seed into an empty stick, at age zero, as sowing it into farmland would. */
+  /**
+   * Sows a seed into an empty stick, at age zero, as sowing it into farmland would.
+   *
+   * <p>Refused where the stick already touches a plant. A crop on a trellis is one plant that climbs
+   * its own sticks, and a seed sown directly above or below an existing one would graft a second
+   * plant into the middle of it - two sets of roots, two ages, one column. The stick a player wants
+   * filled is reached by letting the plant grow into it.
+   */
   private static ActionResult sow(ServerWorld world, PlayerEntity player, ItemStack stack,
                                   BlockPos pos, BlockState state) {
     if (!CropSticks.isEmpty(state)) {
+      return ActionResult.PASS;
+    }
+
+    if (CropSticks.isSticked(world.getBlockState(pos.down()))
+            || CropSticks.isSticked(world.getBlockState(pos.up()))) {
       return ActionResult.PASS;
     }
 

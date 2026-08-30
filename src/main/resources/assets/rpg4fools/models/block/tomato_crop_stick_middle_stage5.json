@@ -1,0 +1,7 @@
+{
+  "parent": "rpg4fools:block/crop_stick_cross",
+  "textures": {
+    "cross": "rpg4fools:block/tomato_crop_stick_middle_stage5",
+    "stick": "rpg4fools:block/crop_stick"
+  }
+}
