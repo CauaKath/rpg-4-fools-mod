@@ -12,8 +12,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -31,29 +29,21 @@ import net.minecraft.world.event.GameEvent;
  * nothing to hand back - a plant that paid out seeds on every pick would seed a farm off one
  * tomato. Breaking it still rolls the loot table, which is where seeds come from.
  *
- * <p>PICKED is only there to be looked at. A picked plant reads as bare rather than half grown,
- * which is the difference between a crop worth waiting on and a crop worth tearing up. It clears
- * itself: growth and bone meal both go through {@link CropBlock#withAge}, which rebuilds from the
- * default state, so the flag survives exactly as long as the age it was set at.
+ * <p>The age the plant returns to is drawn as the bare adult, so a picked plant reads as done
+ * fruiting rather than half grown - the difference between a crop worth waiting on and a crop
+ * worth tearing up. The two ages above it carry flowers, so the whole cycle is legible from the
+ * sprite alone and nothing has to be tracked on the blockstate.
  */
 public class RegrowingCropBlock extends ModCropBlock {
-  public static final BooleanProperty PICKED = BooleanProperty.of("picked");
   public static final MapCodec<RegrowingCropBlock> CODEC = createCodec(RegrowingCropBlock::new);
 
   public RegrowingCropBlock(Settings settings) {
     super(settings);
-    setDefaultState(getDefaultState().with(PICKED, false));
   }
 
   @Override
   public MapCodec<? extends CropBlock> getCodec() {
     return CODEC;
-  }
-
-  @Override
-  protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-    super.appendProperties(builder);
-    builder.add(PICKED);
   }
 
   @Override
@@ -80,11 +70,10 @@ public class RegrowingCropBlock extends ModCropBlock {
 
   /**
    * Built from the current state rather than the default one, so anything else the crop is carrying
-   * survives being picked. withAge would not: it starts from the default state, which is the very
-   * thing that clears PICKED again once the plant grows.
+   * survives being picked. withAge would not: it starts from the default state and would drop it.
    */
   private BlockState pick(BlockState state) {
-    return state.with(getAgeProperty(), ModBlocks.definitionFor(this).regrowAge()).with(PICKED, true);
+    return state.with(getAgeProperty(), ModBlocks.definitionFor(this).regrowAge());
   }
 
   private Item produce() {
