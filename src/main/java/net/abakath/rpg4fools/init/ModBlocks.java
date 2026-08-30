@@ -31,6 +31,9 @@ import java.util.Map;
 public class ModBlocks {
   public static final Block DEAD_CROP = register("dead_crop", new DeadCropBlock(
           AbstractBlock.Settings.create()
+                  // Ticks so a village farm nobody had loaded when spring came can still be sown
+                  // again on its first tick, the way an out of season crop is settled late.
+                  .ticksRandomly()
                   .breakInstantly()
                   .noCollision()
                   // No loot table of its own. A dead crop is a loss, not a harvest, and saying so

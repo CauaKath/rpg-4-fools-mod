@@ -3,35 +3,27 @@ package net.abakath.rpg4fools.server.events;
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.server.LoadedChunks;
-import net.abakath.rpg4fools.world.CropSeasons;
-import net.abakath.rpg4fools.world.CropTransition;
-import net.minecraft.block.BlockState;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Settles every loaded crop the moment a season turns.
+ * Queues every loaded crop the moment a season turns.
  *
  * <p>A player standing in a wheat field when winter arrives should watch it die, not find it dead
- * next time it happens to tick. The random tick hook remains for the rest: a farm nobody had loaded
- * at the turn of the season converts when it comes back, which is the only thing that can be done
- * about ground the server is not holding.
+ * next time it happens to tick. Ground nobody had loaded at the turn is settled by
+ * {@link CropSettling} as it comes back, which is the only thing that can be done about chunks the
+ * server is not holding - loading a world's worth of them to be thorough would cost minutes and
+ * change nothing anybody could see.
  *
- * <p>Cost is kept off the scan by asking each chunk section whether its palette contains a crop at
- * all before looking at any position in it. A section is 4096 blocks and almost none of them hold
- * crops, so nearly every section is dismissed on a palette check.
+ * <p>Collects, and leaves the changing to the queue. Finding the crops is a palette check per chunk
+ * section and costs almost nothing; changing them is neighbour updates and packets, and a season
+ * turning over several large farms is thousands of those in one tick.
  */
 public final class SeasonChangeSweep {
-  /** Blocks along one edge of a chunk section. */
-  private static final int SECTION_SIZE = 16;
-
   private SeasonChangeSweep() {
   }
 
@@ -42,50 +34,18 @@ public final class SeasonChangeSweep {
   }
 
   private static void sweep(ServerWorld world, Season season) {
+    long started = System.nanoTime();
     List<BlockPos> crops = new ArrayList<>();
 
-    LoadedChunks.forEachChunk(world, chunk -> collectCrops(chunk, crops));
+    LoadedChunks.forEachChunk(world, chunk -> crops.addAll(CropSettling.collect(chunk)));
+    CropSettling.enqueue(world, crops);
 
-    int changed = 0;
-    for (BlockPos pos : crops) {
-      // Read the state again rather than trusting the one collected. Setting a block can break a
-      // neighbour, and a stem taken out with its farmland should not then be replaced by a dead
-      // crop standing on nothing.
-      if (CropTransition.apply(world, pos, world.getBlockState(pos), season)) {
-        changed++;
-      }
+    if (crops.isEmpty()) {
+      return;
     }
 
-    if (changed > 0) {
-      RPG4Fools.LOGGER.info("{} turned {} crop(s) with the change to {}", world.getRegistryKey().getValue(), changed, season.getName());
-    }
-  }
-
-  private static void collectCrops(WorldChunk chunk, List<BlockPos> crops) {
-    ChunkSection[] sections = chunk.getSectionArray();
-
-    for (int index = 0; index < sections.length; index++) {
-      ChunkSection section = sections[index];
-
-      if (section.isEmpty() || !section.hasAny(CropSeasons::isCrop)) {
-        continue;
-      }
-
-      int startX = chunk.getPos().getStartX();
-      int startY = ChunkSectionPos.getBlockCoord(chunk.sectionIndexToCoord(index));
-      int startZ = chunk.getPos().getStartZ();
-
-      for (int y = 0; y < SECTION_SIZE; y++) {
-        for (int z = 0; z < SECTION_SIZE; z++) {
-          for (int x = 0; x < SECTION_SIZE; x++) {
-            BlockState state = section.getBlockState(x, y, z);
-
-            if (CropSeasons.isCrop(state)) {
-              crops.add(new BlockPos(startX + x, startY + y, startZ + z));
-            }
-          }
-        }
-      }
-    }
+    RPG4Fools.LOGGER.info("{} queued {} crop(s) for the change to {}, found in {} ms, {} waiting",
+            world.getRegistryKey().getValue(), crops.size(), season.getName(),
+            (System.nanoTime() - started) / 1_000_000, CropSettling.waitingIn(world));
   }
 }
