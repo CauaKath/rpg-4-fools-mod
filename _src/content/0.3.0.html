@@ -1,0 +1,453 @@
+<header class="masthead">
+    <span class="version">0.3.0 · Minecraft 1.20.6 · Fabric</span>
+    <h1>Seasons decide what grows</h1>
+    <p class="standfirst">
+      A season now decides what is allowed to grow. This release adds six plants that keep
+      their own calendar, wild berry bushes that sleep through the cold, and fields that
+      sow themselves again when nobody is tending them.
+    </p>
+    <div class="ribbon" aria-hidden="true"><div></div><div></div><div></div><div></div></div>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">One</span>
+      <h2>Every crop keeps a calendar</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Each crop belongs to one or more season tags — <code>grows_in_spring</code>,
+      <code>grows_in_summer</code>, <code>grows_in_autumn</code>, <code>grows_in_winter</code>.
+      Vanilla crops are tagged alongside the mod's own, and because it is all tags, a datapack
+      can re-tag any of them without touching code. Hold Shift on a seed or a crop to read its
+      seasons off the tooltip.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption>Winter has no entries at all — the tag exists and is empty.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Crop</th>
+            <th scope="col" class="s">Spring</th>
+            <th scope="col" class="s">Summer</th>
+            <th scope="col" class="s">Autumn</th>
+            <th scope="col" class="s winter-col">Winter</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="mine">
+            <th scope="row">Tomato</th>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s"><span class="pip summer"></span></td>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s winter-col"><span class="pip off"></span></td>
+          </tr>
+          <tr class="mine">
+            <th scope="row">Cucumber</th>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s"><span class="pip summer"></span></td>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s winter-col"><span class="pip off"></span></td>
+          </tr>
+          <tr class="mine">
+            <th scope="row">Lettuce</th>
+            <td class="s"><span class="pip spring"></span></td>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s"><span class="pip autumn"></span></td>
+            <td class="s winter-col"><span class="pip off"></span></td>
+          </tr>
+          <tr class="mine">
+            <th scope="row">Strawberry</th>
+            <td class="s"><span class="pip spring"></span></td>
+            <td class="s"><span class="pip summer"></span></td>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s winter-col"><span class="pip off"></span></td>
+          </tr>
+          <tr class="mine">
+            <th scope="row">Blackberry</th>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s"><span class="pip summer"></span></td>
+            <td class="s"><span class="pip autumn"></span></td>
+            <td class="s winter-col"><span class="pip off"></span></td>
+          </tr>
+          <tr class="mine">
+            <th scope="row">Blueberry</th>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s"><span class="pip summer"></span></td>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s winter-col"><span class="pip off"></span></td>
+          </tr>
+          <tr>
+            <th scope="row">Wheat</th>
+            <td class="s"><span class="pip spring"></span></td>
+            <td class="s"><span class="pip summer"></span></td>
+            <td class="s"><span class="pip autumn"></span></td>
+            <td class="s winter-col"><span class="pip off"></span></td>
+          </tr>
+          <tr>
+            <th scope="row">Potatoes</th>
+            <td class="s"><span class="pip spring"></span></td>
+            <td class="s"><span class="pip summer"></span></td>
+            <td class="s"><span class="pip autumn"></span></td>
+            <td class="s winter-col"><span class="pip off"></span></td>
+          </tr>
+          <tr>
+            <th scope="row">Carrots, beetroot</th>
+            <td class="s"><span class="pip spring"></span></td>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s"><span class="pip autumn"></span></td>
+            <td class="s winter-col"><span class="pip off"></span></td>
+          </tr>
+          <tr>
+            <th scope="row">Melon</th>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s"><span class="pip summer"></span></td>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s winter-col"><span class="pip off"></span></td>
+          </tr>
+          <tr>
+            <th scope="row">Pumpkin, sweet berries</th>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s"><span class="pip summer"></span></td>
+            <td class="s"><span class="pip autumn"></span></td>
+            <td class="s winter-col"><span class="pip off"></span></td>
+          </tr>
+          <tr>
+            <th scope="row">Torchflower, pitcher</th>
+            <td class="s"><span class="pip spring"></span></td>
+            <td class="s"><span class="pip summer"></span></td>
+            <td class="s"><span class="pip off"></span></td>
+            <td class="s winter-col"><span class="pip off"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>What happens out of season</h3>
+    <div class="fates">
+      <div class="fate">
+        <h3>You cannot plant it</h3>
+        <p>Right-clicking farmland with a seed out of its season does nothing and says so:
+          <em>Tomato Seeds cannot be planted in Autumn.</em></p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="@@block/tomato_crop_stage7@@" alt="Ripe tomato crop">
+          <span class="arrow">→</span>
+          <img src="@@block/dead_crop@@" alt="Dead crop">
+        </div>
+        <h3>Standing crops brown over</h3>
+        <p>The moment the season turns, anything out of season becomes a dead crop — instantly,
+          not after a few ticks of looking fine.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="@@block/strawberry_bush_stage3@@" alt="Fruiting strawberry bush">
+          <span class="arrow">→</span>
+          <img src="@@block/dormant_sweet_berry_bush@@" alt="Dormant bush">
+        </div>
+        <h3>Bushes sleep instead</h3>
+        <p>A berry bush goes dormant rather than dying, and wakes back up leafy but bare —
+          it does not hand back the berries it lost.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="@@block/dead_crop@@" alt="Dead crop">
+          <span class="arrow">→</span>
+          <img src="@@block/lettuce_crop_stage0@@" alt="Freshly sown lettuce">
+        </div>
+        <h3>Untended fields sow themselves</h3>
+        <p>A crop nobody planted comes back as something the new season keeps alive, in
+          patches three blocks wide. Anything <em>you</em> planted is left exactly as it fell.</p>
+      </div>
+    </div>
+
+    <div class="winter-note">
+      <p><strong>Winter is the empty column.</strong> Nothing is in season, so nothing can be
+        planted, everything in the ground dies, and no field sows itself again until spring.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Two</span>
+      <h2>Three crops for the furrow</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Eight growth stages each, planted on farmland from their own seeds. Tomato and cucumber
+      are picked by right-clicking a ripe plant, which drops it back to stage 4 to fruit again —
+      worth leaving in the ground for the rest of the summer instead of tearing up.
+    </p>
+
+    <div class="specimen">
+      <div class="specimen-head">
+        <h3>Tomato</h3>
+        <span class="label">Farmland · regrows</span>
+        <span class="seasons-of"><span class="chip summer">Summer</span></span>
+      </div>
+      <div class="strip-scroll">
+        <div class="strip">
+          <div class="stage"><img src="@@block/tomato_crop_stage0@@" alt="Tomato stage 0"><span>0</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage1@@" alt="Tomato stage 1"><span>1</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage2@@" alt="Tomato stage 2"><span>2</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage3@@" alt="Tomato stage 3"><span>3</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage4@@" alt="Tomato stage 4"><span>4</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage5@@" alt="Tomato stage 5"><span>5</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage6@@" alt="Tomato stage 6"><span>6</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage7@@" alt="Tomato stage 7, ripe"><span>7</span></div>
+          <div class="stage picked"><img src="@@block/tomato_crop_stage4_picked@@" alt="Tomato after picking"><span>picked</span></div>
+        </div>
+      </div>
+      <div class="yield">
+        <span class="drop"><img src="@@item/tomato@@" alt="">Tomato · 3 hunger</span>
+        <span class="drop"><img src="@@item/tomato_seeds@@" alt="">Tomato Seeds</span>
+        <span class="note">Picking a ripe plant returns it to stage 4 rather than breaking it.</span>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <div class="specimen-head">
+        <h3>Cucumber</h3>
+        <span class="label">Farmland · regrows</span>
+        <span class="seasons-of"><span class="chip summer">Summer</span></span>
+      </div>
+      <div class="strip-scroll">
+        <div class="strip">
+          <div class="stage"><img src="@@block/cucumber_crop_stage0@@" alt="Cucumber stage 0"><span>0</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage1@@" alt="Cucumber stage 1"><span>1</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage2@@" alt="Cucumber stage 2"><span>2</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage3@@" alt="Cucumber stage 3"><span>3</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage4@@" alt="Cucumber stage 4"><span>4</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage5@@" alt="Cucumber stage 5"><span>5</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage6@@" alt="Cucumber stage 6"><span>6</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage7@@" alt="Cucumber stage 7, ripe"><span>7</span></div>
+          <div class="stage picked"><img src="@@block/cucumber_crop_stage4_picked@@" alt="Cucumber after picking"><span>picked</span></div>
+        </div>
+      </div>
+      <div class="yield">
+        <span class="drop"><img src="@@item/cucumber@@" alt="">Cucumber · 2 hunger</span>
+        <span class="drop"><img src="@@item/cucumber_seeds@@" alt="">Cucumber Seeds</span>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <div class="specimen-head">
+        <h3>Lettuce</h3>
+        <span class="label">Farmland · harvested whole</span>
+        <span class="seasons-of"><span class="chip spring">Spring</span><span class="chip autumn">Autumn</span></span>
+      </div>
+      <div class="strip-scroll">
+        <div class="strip">
+          <div class="stage"><img src="@@block/lettuce_crop_stage0@@" alt="Lettuce stage 0"><span>0</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage1@@" alt="Lettuce stage 1"><span>1</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage2@@" alt="Lettuce stage 2"><span>2</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage3@@" alt="Lettuce stage 3"><span>3</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage4@@" alt="Lettuce stage 4"><span>4</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage5@@" alt="Lettuce stage 5"><span>5</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage6@@" alt="Lettuce stage 6"><span>6</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage7@@" alt="Lettuce stage 7, ripe"><span>7</span></div>
+        </div>
+      </div>
+      <div class="yield">
+        <span class="drop"><img src="@@item/lettuce@@" alt="">Lettuce · 2 hunger</span>
+        <span class="drop"><img src="@@item/lettuce_seeds@@" alt="">Lettuce Seeds</span>
+        <span class="note">The only one of the three with two seasons, so a lettuce bed skips summer and comes back.</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Three</span>
+      <h2>Harvest without the replanting</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Right-click a ripe crop and it is harvested and sown again in the same tick. Nothing about
+      the yield changes: the drops come from the crop's own loot table and land at the plant's
+      feet exactly as breaking it would, so tools and Fortune still decide the numbers.
+      One seed is taken back out of the drops to pay for the replant.
+    </p>
+
+    <div class="specimen">
+      <div class="specimen-head">
+        <h3>One click, two jobs</h3>
+        <span class="label">Any crop in the crops tag</span>
+      </div>
+      <div class="strip-scroll">
+        <div class="strip">
+          <div class="stage"><img src="@@block/lettuce_crop_stage7@@" alt="Ripe lettuce"><span>ripe</span></div>
+          <div class="stage" style="justify-content: center;"><span class="arrow" style="padding: 0; font-size: 20px;">&rarr;</span><span>click</span></div>
+          <div class="stage"><img src="@@item/lettuce@@" alt="Lettuce drops" style="width: 48px; height: 48px;"><span>drops</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage0@@" alt="Sown again at stage 0"><span>sown</span></div>
+        </div>
+      </div>
+      <div class="yield">
+        <span class="note" style="margin-left: 0;">Sneak to opt out — that is how you place a block into a tilled row instead of harvesting it.</span>
+      </div>
+    </div>
+
+    <div class="fates">
+      <div class="fate">
+        <h3>Vanilla crops too</h3>
+        <p>The crops tag decides, not a list of the mod's own, so wheat, carrots, potatoes and
+          beetroot are all picked this way alongside lettuce.</p>
+      </div>
+      <div class="fate">
+        <h3>No seed, no charge</h3>
+        <p>Wheat's table can roll no seed at all. Nothing is taken when that happens, rather than
+          leaving you clicking a ripe crop that does nothing.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="@@block/tomato_crop_stage7@@" alt="Ripe tomato">
+          <span class="arrow">&rarr;</span>
+          <img src="@@block/tomato_crop_stage4_picked@@" alt="Tomato picked back to stage 4">
+        </div>
+        <h3>Tomato and cucumber are picked instead</h3>
+        <p>They are never torn up, so there is nothing to replant — the plant stays standing and
+          drops back to stage 4 to fruit again.</p>
+      </div>
+      <div class="fate">
+        <h3>Stems and bushes are left alone</h3>
+        <p>Melon and pumpkin stems are not what you are harvesting, and berry bushes already pick
+          themselves. Neither is reset.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Four</span>
+      <h2>Berry bushes, one to a climate</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Three bushes that generate in the world already fruiting, built on the sweet berry bush:
+      four stages, picked by hand, replanted from their own berries. Which biome you are standing
+      in tells you which berry you will find.
+    </p>
+
+    <div class="bushes">
+      <div class="specimen">
+        <div class="specimen-head">
+          <h3>Strawberry</h3>
+          <span class="label">Meadow · plains</span>
+          <span class="seasons-of"><span class="chip spring">Spring</span><span class="chip summer">Summer</span></span>
+        </div>
+        <div class="strip-scroll">
+          <div class="strip">
+            <div class="stage"><img src="@@block/strawberry_bush_stage0@@" alt="Strawberry bush stage 0"><span>0</span></div>
+            <div class="stage"><img src="@@block/strawberry_bush_stage1@@" alt="Strawberry bush stage 1"><span>1</span></div>
+            <div class="stage"><img src="@@block/strawberry_bush_stage2@@" alt="Strawberry bush stage 2"><span>2</span></div>
+            <div class="stage"><img src="@@block/strawberry_bush_stage3@@" alt="Strawberry bush stage 3, fruiting"><span>3</span></div>
+            <div class="stage"><img src="@@block/dormant_sweet_berry_bush@@" alt="Dormant bush"><span>dormant</span></div>
+          </div>
+        </div>
+        <div class="yield">
+          <span class="drop"><img src="@@item/strawberry_berries@@" alt="">Strawberries · 2 hunger</span>
+        </div>
+      </div>
+
+      <div class="specimen">
+        <div class="specimen-head">
+          <h3>Blackberry</h3>
+          <span class="label">Forest · birch · dark forest</span>
+          <span class="seasons-of"><span class="chip summer">Summer</span><span class="chip autumn">Autumn</span><span class="chip thorn">Thorny</span></span>
+        </div>
+        <div class="strip-scroll">
+          <div class="strip">
+            <div class="stage"><img src="@@block/blackberry_bush_stage0@@" alt="Blackberry bush stage 0"><span>0</span></div>
+            <div class="stage"><img src="@@block/blackberry_bush_stage1@@" alt="Blackberry bush stage 1"><span>1</span></div>
+            <div class="stage"><img src="@@block/blackberry_bush_stage2@@" alt="Blackberry bush stage 2"><span>2</span></div>
+            <div class="stage"><img src="@@block/blackberry_bush_stage3@@" alt="Blackberry bush stage 3, fruiting"><span>3</span></div>
+            <div class="stage"><img src="@@block/dormant_sweet_berry_bush@@" alt="Dormant bush"><span>dormant</span></div>
+          </div>
+        </div>
+        <div class="yield">
+          <span class="drop"><img src="@@item/blackberry_berries@@" alt="">Blackberries · 2 hunger</span>
+          <span class="note">The only bramble here: walking through one hurts, the way sweet berries do. Strawberry and blueberry are harmless.</span>
+        </div>
+      </div>
+
+      <div class="specimen">
+        <div class="specimen-head">
+          <h3>Blueberry</h3>
+          <span class="label">Taiga · old growth taiga</span>
+          <span class="seasons-of"><span class="chip summer">Summer</span></span>
+        </div>
+        <div class="strip-scroll">
+          <div class="strip">
+            <div class="stage"><img src="@@block/blueberry_bush_stage0@@" alt="Blueberry bush stage 0"><span>0</span></div>
+            <div class="stage"><img src="@@block/blueberry_bush_stage1@@" alt="Blueberry bush stage 1"><span>1</span></div>
+            <div class="stage"><img src="@@block/blueberry_bush_stage2@@" alt="Blueberry bush stage 2"><span>2</span></div>
+            <div class="stage"><img src="@@block/blueberry_bush_stage3@@" alt="Blueberry bush stage 3, fruiting"><span>3</span></div>
+            <div class="stage"><img src="@@block/dormant_sweet_berry_bush@@" alt="Dormant bush"><span>dormant</span></div>
+          </div>
+        </div>
+        <div class="yield">
+          <span class="drop"><img src="@@item/blueberry_berries@@" alt="">Blueberries · 2 hunger</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="where">
+      <div>
+        <strong>Rarer than vanilla in the open</strong>
+        <p>Plains and forest are far bigger than taiga, so strawberry and blackberry patches are
+          smaller and scarcer than the vanilla berry patch. A find, not a field.</p>
+      </div>
+      <div>
+        <strong>The taiga is split, not doubled</strong>
+        <p>Blueberry does not add bushes to the taiga. Vanilla's one patch every 32 chunks is
+          halved between blueberry and sweet berry, so a patch is all of one or all of the other.</p>
+      </div>
+      <div>
+        <strong>All four bushes share one dormant look</strong>
+        <p>Out of season a bush becomes a bare cross of sticks — sweet berries included, since
+          vanilla's bush follows the same calendar now.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Also in 0.3.0</span>
+      <h2>Around the edges</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="also">
+      <div>
+        <h3>Village farms grow in season</h3>
+        <p>Village fields are sown a lane at a time with whatever the season allows, the mod's
+          crops among them, through the five vanilla farm processor lists.</p>
+      </div>
+      <div>
+        <h3>Villagers replant</h3>
+        <p>A field that died over winter is sown again in spring, so a village reads as tended
+          rather than abandoned.</p>
+      </div>
+      <div>
+        <h3>Your fields stay yours</h3>
+        <p>Positions a player planted are remembered in world data. Self-sowing never overwrites
+          them, and harvesting a regrowing crop does not give up the claim.</p>
+      </div>
+      <div>
+        <h3>A season turn without a stutter</h3>
+        <p>Changing thousands of blocks at once is spread over ticks on a budget, and chunks that
+          load later are caught as they arrive.</p>
+      </div>
+      <div>
+        <h3>Tooltips and refusals</h3>
+        <p>Hold Shift on any seed for its seasons, and a refused planting says which crop and
+          which season rather than failing silently.</p>
+      </div>
+      <div>
+        <h3>Dead crops have their own sprite</h3>
+        <p>A browned-over field is a block of its own, not a re-used vanilla texture, and it is
+          what every out-of-season crop turns into.</p>
+      </div>
+    </div>
+  </section>

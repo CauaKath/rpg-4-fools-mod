@@ -1,0 +1,51 @@
+<header class="masthead">
+    <span class="version">0.1.0 · Released 19 Jul 2024</span>
+    <h1>A calendar, and somewhere to read it</h1>
+    <p class="standfirst">
+      The first release. A world gets a date, the date gets a season, and the season gets a
+      corner of the screen.
+    </p>
+    <div class="ribbon" aria-hidden="true"><div></div><div></div><div></div><div></div></div>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">What it added</span>
+      <h2>The season on your HUD</h2>
+      <div class="rule"></div>
+    </div>
+
+    <div class="specimen">
+      <div class="specimen-head">
+        <h3>One icon per season</h3>
+        <span class="label">Shown in the corner of the HUD</span>
+      </div>
+      <div class="strip-scroll">
+        <div class="strip">
+          <div class="stage"><img src="@@gui/spring@@" alt="Spring icon"><span>spring</span></div>
+          <div class="stage"><img src="@@gui/summer@@" alt="Summer icon"><span>summer</span></div>
+          <div class="stage"><img src="@@gui/autumn@@" alt="Autumn icon"><span>autumn</span></div>
+          <div class="stage"><img src="@@gui/winter@@" alt="Winter icon"><span>winter</span></div>
+          <div class="stage"><img src="@@gui/halloween@@" alt="Halloween icon"><span>halloween</span></div>
+          <div class="stage"><img src="@@gui/christmas@@" alt="Christmas icon"><span>christmas</span></div>
+        </div>
+      </div>
+      <div class="yield">
+        <span class="note" style="margin-left: 0;">Halloween and Christmas take over the icon on
+          their own dates, ahead of whichever season they fall in.</span>
+      </div>
+    </div>
+
+    <div class="also">
+      <div>
+        <h3>Months mapped to seasons</h3>
+        <p>A world keeps a day count, the day count gives a month, and the month gives the season
+          everything else reads.</p>
+      </div>
+      <div>
+        <h3>Kept per world</h3>
+        <p>The date is saved with the world and sent to the client, so it survives a restart and
+          every player agrees on it.</p>
+      </div>
+    </div>
+  </section>
