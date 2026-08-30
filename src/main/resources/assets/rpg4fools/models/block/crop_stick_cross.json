@@ -1,330 +1,39 @@
 {
-  "__comment": "The trellis with a plant growing up it: crop_cross drawn inside crop_stick's posts. Children set #cross to the crop's stage sprite and #stick to the posts, so a sticked stage needs no art of its own.",
+  "__comment": "The trellis with a plant growing up it: crop_cross's planes drawn around crop_stick's post. Children set #cross to the crop's stage sprite and #stick to the post, so a sticked stage needs no art of its own.",
   "ambientocclusion": false,
   "textures": {
     "particle": "#cross"
   },
   "elements": [
     {
-      "from": [
-        0.8,
-        -1,
-        8
-      ],
-      "to": [
-        15.2,
-        15,
-        8
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          8,
-          8
-        ],
-        "axis": "y",
-        "angle": 45,
-        "rescale": true
-      },
+      "from": [0.8, -1, 8],
+      "to": [15.2, 15, 8],
+      "rotation": { "origin": [8, 8, 8], "axis": "y", "angle": 45, "rescale": true },
       "shade": false,
       "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#cross"
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#cross"
-        }
+        "north": { "uv": [0, 0, 16, 16], "texture": "#cross" },
+        "south": { "uv": [0, 0, 16, 16], "texture": "#cross" }
       }
     },
     {
-      "from": [
-        8,
-        -1,
-        0.8
-      ],
-      "to": [
-        8,
-        15,
-        15.2
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          8,
-          8
-        ],
-        "axis": "y",
-        "angle": 45,
-        "rescale": true
-      },
+      "from": [8, -1, 0.8],
+      "to": [8, 15, 15.2],
+      "rotation": { "origin": [8, 8, 8], "axis": "y", "angle": 45, "rescale": true },
       "shade": false,
       "faces": {
-        "west": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#cross"
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#cross"
-        }
+        "west": { "uv": [0, 0, 16, 16], "texture": "#cross" },
+        "east": { "uv": [0, 0, 16, 16], "texture": "#cross" }
       }
     },
     {
-      "from": [
-        1,
-        -1,
-        1
-      ],
-      "to": [
-        3,
-        15,
-        3
-      ],
+      "from": [7, -1, 7],
+      "to": [9, 15, 9],
       "faces": {
-        "north": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "south": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "west": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "east": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "up": {
-          "uv": [
-            7,
-            7,
-            9,
-            9
-          ],
-          "texture": "#stick"
-        }
-      }
-    },
-    {
-      "from": [
-        13,
-        -1,
-        1
-      ],
-      "to": [
-        15,
-        15,
-        3
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "south": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "west": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "east": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "up": {
-          "uv": [
-            7,
-            7,
-            9,
-            9
-          ],
-          "texture": "#stick"
-        }
-      }
-    },
-    {
-      "from": [
-        1,
-        -1,
-        13
-      ],
-      "to": [
-        3,
-        15,
-        15
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "south": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "west": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "east": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "up": {
-          "uv": [
-            7,
-            7,
-            9,
-            9
-          ],
-          "texture": "#stick"
-        }
-      }
-    },
-    {
-      "from": [
-        13,
-        -1,
-        13
-      ],
-      "to": [
-        15,
-        15,
-        15
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "south": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "west": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "east": {
-          "uv": [
-            7,
-            0,
-            9,
-            16
-          ],
-          "texture": "#stick"
-        },
-        "up": {
-          "uv": [
-            7,
-            7,
-            9,
-            9
-          ],
-          "texture": "#stick"
-        }
+        "north": { "uv": [7, 0, 9, 16], "texture": "#stick" },
+        "south": { "uv": [7, 0, 9, 16], "texture": "#stick" },
+        "west": { "uv": [7, 0, 9, 16], "texture": "#stick" },
+        "east": { "uv": [7, 0, 9, 16], "texture": "#stick" },
+        "up": { "uv": [7, 7, 9, 9], "texture": "#stick" }
       }
     }
   ]

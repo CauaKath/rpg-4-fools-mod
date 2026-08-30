@@ -28,12 +28,12 @@ public class CropStickBlock extends Block {
   public static final MapCodec<CropStickBlock> CODEC = createCodec(CropStickBlock::new);
 
   /**
-   * The full height of the block, unlike a crop's flattened box.
+   * The post, and the full height of the block.
    *
-   * <p>The posts run the whole way up, and a shorter box would leave the top of a stick unclickable
-   * - which is exactly where the player aims to stack the next one.
+   * <p>Narrow because there is only the one post to hit, and full height because the top of a stick
+   * is exactly where the player aims to stack the next one.
    */
-  private static final VoxelShape SHAPE = Block.createCuboidShape(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
+  private static final VoxelShape SHAPE = Block.createCuboidShape(6.0, 0.0, 6.0, 10.0, 16.0, 10.0);
 
   public CropStickBlock(Settings settings) {
     super(settings);

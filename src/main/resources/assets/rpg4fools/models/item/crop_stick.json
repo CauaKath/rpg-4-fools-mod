@@ -1,3 +1,6 @@
 {
-  "parent": "rpg4fools:block/crop_stick"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "rpg4fools:item/crop_stick"
+  }
 }
