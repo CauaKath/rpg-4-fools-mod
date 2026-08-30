@@ -1,0 +1,626 @@
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img, svg { display: block; max-width: 100%; }
+h1, h2, h3, p, figure, blockquote, ol, ul { margin: 0; }
+table { border-collapse: collapse; }
+
+  @font-face {
+    font-family: "Almanac Display";
+    src: url("fonts/almanac-display.ttf") format("truetype");
+    font-weight: 700;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: "Field Sans";
+    src: url("fonts/field-sans.ttf") format("truetype");
+    font-weight: 200 800;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: "Field Mono";
+    src: url("fonts/field-mono.ttf") format("truetype");
+    font-weight: 300 700;
+    font-style: normal;
+  }
+
+  :root {
+    --ground: #ecefe5;
+    --surface: #f7f9f2;
+    --sunken: #e2e6d8;
+    --ink: #161a12;
+    --muted: #5c6455;
+    --line: #cbd1bf;
+    --accent: #3d6b34;
+    --accent-soft: #e0ead9;
+    --spring: #56913c;
+    --summer: #bb8a12;
+    --autumn: #ad4f1c;
+    --winter: #6b869c;
+    --dead: #8a6a33;
+    --grid-dot: rgba(22, 26, 18, 0.09);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #11150e;
+      --surface: #1a1f16;
+      --sunken: #232a1e;
+      --ink: #e9ece1;
+      --muted: #9aa48f;
+      --line: #333c2b;
+      --accent: #93c470;
+      --accent-soft: #26301d;
+      --spring: #91c96c;
+      --summer: #e8bc4c;
+      --autumn: #e08149;
+      --winter: #a2bcd2;
+      --dead: #c39a4f;
+      --grid-dot: rgba(233, 236, 225, 0.09);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #11150e;
+    --surface: #1a1f16;
+    --sunken: #232a1e;
+    --ink: #e9ece1;
+    --muted: #9aa48f;
+    --line: #333c2b;
+    --accent: #93c470;
+    --accent-soft: #26301d;
+    --spring: #91c96c;
+    --summer: #e8bc4c;
+    --autumn: #e08149;
+    --winter: #a2bcd2;
+    --dead: #c39a4f;
+    --grid-dot: rgba(233, 236, 225, 0.09);
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Field Sans", system-ui, sans-serif;
+    font-weight: 380;
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: clamp(28px, 6vw, 72px) clamp(20px, 5vw, 48px) 96px;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(48px, 7vw, 88px);
+  }
+
+  h1, h2, h3 {
+    font-family: "Almanac Display", Georgia, serif;
+    font-weight: 700;
+    text-wrap: balance;
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+  }
+
+  p { max-width: 66ch; }
+
+  .label {
+    font-family: "Field Mono", ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  code, .tag {
+    font-family: "Field Mono", ui-monospace, monospace;
+    font-size: 0.86em;
+  }
+
+  code {
+    background: var(--sunken);
+    border-radius: 3px;
+    padding: 0.1em 0.36em;
+  }
+
+  a { color: var(--accent); }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  /* ── masthead ─────────────────────────────────────── */
+
+  .masthead { display: flex; flex-direction: column; gap: 20px; }
+
+  .version {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    align-self: flex-start;
+    font-family: "Field Mono", ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 2px;
+    padding: 6px 10px;
+  }
+
+  .masthead h1 {
+    font-size: clamp(38px, 7vw, 68px);
+    margin: 0;
+  }
+
+  .standfirst {
+    font-size: clamp(18px, 2.2vw, 21px);
+    color: var(--muted);
+    max-width: 60ch;
+  }
+
+  .ribbon {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3px;
+    margin-top: 12px;
+  }
+
+  .ribbon div {
+    height: 6px;
+    border-radius: 1px;
+  }
+
+  .ribbon div:nth-child(1) { background: var(--spring); }
+  .ribbon div:nth-child(2) { background: var(--summer); }
+  .ribbon div:nth-child(3) { background: var(--autumn); }
+  .ribbon div:nth-child(4) { background: var(--winter); opacity: 0.45; }
+
+  /* ── sections ─────────────────────────────────────── */
+
+  section { display: flex; flex-direction: column; gap: 24px; }
+
+  .sec-head { display: flex; flex-direction: column; gap: 8px; }
+
+  .sec-head h2 {
+    font-size: clamp(27px, 3.6vw, 38px);
+    margin: 0;
+  }
+
+  .rule {
+    height: 2px;
+    background: var(--ink);
+    opacity: 0.85;
+  }
+
+  /* ── season table ─────────────────────────────────── */
+
+  .table-wrap { overflow-x: auto; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 520px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  caption {
+    caption-side: bottom;
+    text-align: left;
+    color: var(--muted);
+    font-size: 14px;
+    padding-top: 12px;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  thead th {
+    font-family: "Field Mono", ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 2px solid var(--ink);
+  }
+
+  tbody th { font-weight: 600; }
+
+  tbody tr.mine th { color: var(--accent); }
+
+  td.s { text-align: center; width: 15%; }
+
+  .pip {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+
+  .pip.spring { background: var(--spring); }
+  .pip.summer { background: var(--summer); }
+  .pip.autumn { background: var(--autumn); }
+
+  .pip.off {
+    border: 1px solid var(--line);
+    background: transparent;
+  }
+
+  .winter-col { background: var(--sunken); }
+
+  /* ── behaviour cards ──────────────────────────────── */
+
+  .fates {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+  }
+
+  .fate {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 18px 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .fate h3 { font-size: 19px; margin: 0; }
+  .fate p { font-size: 15px; margin: 0; color: var(--muted); }
+
+  .fate-figure {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    height: 56px;
+  }
+
+  .fate-figure img { height: 48px; width: 48px; }
+
+  .arrow {
+    font-family: "Field Mono", ui-monospace, monospace;
+    color: var(--muted);
+    padding-bottom: 14px;
+  }
+
+  .winter-note {
+    border-left: 3px solid var(--winter);
+    background: var(--surface);
+    padding: 16px 20px;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .winter-note p { margin: 0; }
+
+  /* ── sprite specimens ─────────────────────────────── */
+
+  img {
+    image-rendering: pixelated;
+    display: block;
+    max-width: 100%;
+  }
+
+  .specimen {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .specimen-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 14px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .specimen-head h3 { font-size: 21px; margin: 0; }
+
+  .seasons-of {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+  }
+
+  .chip {
+    font-family: "Field Mono", ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    color: var(--ground);
+  }
+
+  .chip.spring { background: var(--spring); }
+  .chip.summer { background: var(--summer); }
+  .chip.autumn { background: var(--autumn); }
+  .chip.thorn {
+    background: transparent;
+    color: var(--autumn);
+    border: 1px solid var(--autumn);
+  }
+
+  .strip-scroll { overflow-x: auto; }
+
+  .strip {
+    display: flex;
+    gap: 2px;
+    padding: 20px 18px 14px;
+    background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+    background-size: 16px 16px;
+    background-position: 9px 9px;
+    min-width: max-content;
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stage img { width: 64px; height: 64px; }
+
+  .stage span {
+    font-family: "Field Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .stage.picked span { color: var(--accent); }
+
+  .yield {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
+    padding: 14px 18px;
+    border-top: 1px solid var(--line);
+  }
+
+  .drop {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 15px;
+  }
+
+  .drop img { width: 32px; height: 32px; }
+
+  .yield .note {
+    font-size: 14px;
+    color: var(--muted);
+    margin-left: auto;
+    max-width: 42ch;
+  }
+
+  /* ── bushes ───────────────────────────────────────── */
+
+  .bushes { display: flex; flex-direction: column; gap: 18px; }
+
+  .where {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+  }
+
+  .where div {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .where strong { font-size: 15px; }
+  .where p { font-size: 14px; color: var(--muted); margin: 0; }
+
+  /* ── closing list ─────────────────────────────────── */
+
+  .also {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 22px 32px;
+  }
+
+  .also > div { display: flex; flex-direction: column; gap: 6px; }
+  .also h3 { font-size: 18px; margin: 0; }
+  .also p { font-size: 15px; color: var(--muted); margin: 0; }
+
+  footer {
+    border-top: 2px solid var(--ink);
+    padding-top: 18px;
+    color: var(--muted);
+    font-size: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+  }
+
+  /* ── print / PDF ──────────────────────────────────── */
+
+  @page {
+    size: A4;
+    margin: 16mm 14mm;
+  }
+
+  @media print {
+    :root {
+      --ground: #ffffff;
+      --surface: #ffffff;
+      --sunken: #f0f2ea;
+      --ink: #14180f;
+      --muted: #4d5546;
+      --line: #b9c0ac;
+      --accent: #2f5528;
+      --accent-soft: #e8eee2;
+      --grid-dot: rgba(20, 24, 15, 0.12);
+    }
+
+    body {
+      background: #ffffff;
+      font-size: 11pt;
+      line-height: 1.5;
+    }
+
+    .page {
+      max-width: none;
+      padding: 0;
+      gap: 28px;
+    }
+
+    .masthead h1 { font-size: 34pt; }
+    .standfirst { font-size: 12pt; }
+    .sec-head h2 { font-size: 20pt; }
+
+    section { break-inside: auto; }
+    .sec-head { break-after: avoid; }
+    .specimen, .fate, .where div, .also > div, .winter-note, tr {
+      break-inside: avoid;
+    }
+
+    .strip { background-image: none; }
+    footer { break-before: avoid; }
+  }
+
+  /* ── site chrome ──────────────────────────────────── */
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: -12px;
+  }
+
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Field Mono", ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px;
+  }
+
+  .back:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── version index ────────────────────────────────── */
+
+  .versions {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .versions a {
+    display: grid;
+    grid-template-columns: minmax(96px, 128px) 1fr auto;
+    align-items: start;
+    gap: 10px 28px;
+    padding: 22px 20px;
+    text-decoration: none;
+    color: inherit;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+  }
+
+  .versions a:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .versions a:hover .v-num { color: var(--accent); }
+
+  .v-num {
+    font-family: "Almanac Display", Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(28px, 4vw, 40px);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .v-body { display: flex; flex-direction: column; gap: 6px; }
+
+  .v-title { font-size: 19px; font-weight: 600; }
+
+  .v-sum { font-size: 15px; color: var(--muted); max-width: 54ch; }
+
+  .v-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    font-family: "Field Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .v-chip {
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 3px 8px;
+    font-weight: 600;
+  }
+
+  .v-chip.current {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  @media (max-width: 640px) {
+    .versions a {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .v-meta {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  @media print {
+    .topbar { display: none; }
+
+    .versions a {
+      border-color: var(--line);
+      background: transparent;
+      break-inside: avoid;
+    }
+  }

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RPG 4 Fools 0.1.0</title>
+<meta name="description" content="Months mapped to seasons, kept per world and shown on the HUD, with holidays of their own.">
+<meta property="og:title" content="RPG 4 Fools 0.1.0">
+<meta property="og:description" content="Months mapped to seasons, kept per world and shown on the HUD, with holidays of their own.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <a class="back" href="../">&larr; All versions</a>
+  </div>
+
+  <header class="masthead">
+    <span class="version">0.1.0 · Released 19 Jul 2024</span>
+    <h1>A calendar, and somewhere to read it</h1>
+    <p class="standfirst">
+      The first release. A world gets a date, the date gets a season, and the season gets a
+      corner of the screen.
+    </p>
+    <div class="ribbon" aria-hidden="true"><div></div><div></div><div></div><div></div></div>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">What it added</span>
+      <h2>The season on your HUD</h2>
+      <div class="rule"></div>
+    </div>
+
+    <div class="specimen">
+      <div class="specimen-head">
+        <h3>One icon per season</h3>
+        <span class="label">Shown in the corner of the HUD</span>
+      </div>
+      <div class="strip-scroll">
+        <div class="strip">
+          <div class="stage"><img src="../assets/sprites/gui/spring.png" alt="Spring icon"><span>spring</span></div>
+          <div class="stage"><img src="../assets/sprites/gui/summer.png" alt="Summer icon"><span>summer</span></div>
+          <div class="stage"><img src="../assets/sprites/gui/autumn.png" alt="Autumn icon"><span>autumn</span></div>
+          <div class="stage"><img src="../assets/sprites/gui/winter.png" alt="Winter icon"><span>winter</span></div>
+          <div class="stage"><img src="../assets/sprites/gui/halloween.png" alt="Halloween icon"><span>halloween</span></div>
+          <div class="stage"><img src="../assets/sprites/gui/christmas.png" alt="Christmas icon"><span>christmas</span></div>
+        </div>
+      </div>
+      <div class="yield">
+        <span class="note" style="margin-left: 0;">Halloween and Christmas take over the icon on
+          their own dates, ahead of whichever season they fall in.</span>
+      </div>
+    </div>
+
+    <div class="also">
+      <div>
+        <h3>Months mapped to seasons</h3>
+        <p>A world keeps a day count, the day count gives a month, and the month gives the season
+          everything else reads.</p>
+      </div>
+      <div>
+        <h3>Kept per world</h3>
+        <p>The date is saved with the world and sent to the client, so it survives a restart and
+          every player agrees on it.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>RPG 4 Fools 0.1.0</span>
+    <span>Minecraft 1.20.6 · Fabric</span>
+    <span>Block sprites shown at 4×, items at 2×</span>
+    <span><a href="https://github.com/CauaKath/rpg-4-fools-mod">Source on GitHub</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
