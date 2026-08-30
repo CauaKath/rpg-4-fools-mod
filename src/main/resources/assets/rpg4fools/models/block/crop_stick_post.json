@@ -1,5 +1,5 @@
 {
-  "__comment": "A single post down the middle of the block. Dropped one pixel so it sits in the farmland rather than on top of it, which also lets a stacked column tile without a seam.",
+  "__comment": "One post down the middle of the block, drawn on its own so a crop growing up it can be a separate piece of the same blockstate. Dropped one pixel so it sits in the farmland rather than on top of it, which also lets a stacked column tile without a seam.",
   "ambientocclusion": false,
   "textures": {
     "stick": "rpg4fools:block/crop_stick",

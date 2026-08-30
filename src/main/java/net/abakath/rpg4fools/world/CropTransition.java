@@ -83,7 +83,8 @@ public class CropTransition {
         return false;
       }
 
-      world.setBlockState(pos, ModBlocks.CROP_STICK.getDefaultState());
+      world.setBlockState(pos, ModBlocks.CROP_STICK.getDefaultState()
+              .with(CropSticks.CAPPED, state.get(CropSticks.CAPPED)));
       return true;
     }
 
@@ -145,7 +146,8 @@ public class CropTransition {
         return;
       }
 
-      world.setBlockState(at, ModBlocks.CROP_STICK.getDefaultState());
+      world.setBlockState(at, ModBlocks.CROP_STICK.getDefaultState()
+              .with(CropSticks.CAPPED, CropSticks.capped(world, at)));
     }
   }
 }

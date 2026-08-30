@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
-      "model": "rpg4fools:block/crop_stick"
+    "capped=false": {
+      "model": "rpg4fools:block/crop_stick_post"
+    },
+    "capped=true": {
+      "model": "rpg4fools:block/crop_stick_post_capped"
     }
   }
 }

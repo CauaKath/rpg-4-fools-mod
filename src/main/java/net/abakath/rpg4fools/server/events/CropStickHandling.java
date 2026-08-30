@@ -89,7 +89,9 @@ public class CropStickHandling {
     }
 
     Block sticked = ModBlocks.stickedFor(definition);
-    BlockState placed = sticked.getDefaultState().with(CropBlock.AGE, state.get(CropBlock.AGE));
+    BlockState placed = sticked.getDefaultState()
+            .with(CropBlock.AGE, state.get(CropBlock.AGE))
+            .with(CropSticks.CAPPED, CropSticks.capped(world, pos));
 
     if (!placed.canPlaceAt(world, pos)) {
       return ActionResult.PASS;
@@ -130,7 +132,8 @@ public class CropStickHandling {
       return ActionResult.PASS;
     }
 
-    replace(world, player, stack, pos, ModBlocks.stickedFor(definition).getDefaultState(),
+    replace(world, player, stack, pos, ModBlocks.stickedFor(definition).getDefaultState()
+                    .with(CropSticks.CAPPED, state.get(CropSticks.CAPPED)),
             SoundEvents.ITEM_CROP_PLANT);
     return ActionResult.SUCCESS;
   }

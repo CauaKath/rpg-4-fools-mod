@@ -3,6 +3,7 @@ package net.abakath.rpg4fools.world;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldView;
@@ -20,6 +21,18 @@ import net.minecraft.world.WorldView;
 public final class CropSticks {
   /** How tall a column may be, counting the crop's own block. */
   public static final int MAX_HEIGHT = 3;
+
+  /**
+   * Whether this is the last stick a column may have.
+   *
+   * <p>Drawn shorter when it is, which is the only way a player can tell a column is finished. Two
+   * sticks and three sticks are otherwise the same picture with one more of it, and finding out the
+   * cap by having a placement refused is a worse way to learn it.
+   *
+   * <p>Shared by both blocks in a column, since the post is drawn the same whether a crop is growing
+   * up it or not.
+   */
+  public static final BooleanProperty CAPPED = BooleanProperty.of("capped");
 
   private CropSticks() {
   }
@@ -75,6 +88,29 @@ public final class CropSticks {
     // Whatever the column ends on has to be farmland. A stack rooted on stone is not a column that
     // lost its bottom block, it is a stack that should never have been built.
     return world.getBlockState(cursor).isOf(Blocks.FARMLAND);
+  }
+
+  /**
+   * How far up its column this position sits, counting from the farmland.
+   *
+   * <p>One for a stick on the ground, up to {@link #MAX_HEIGHT}. Stops counting at the cap: nothing
+   * asks the difference between three and more, because more cannot be built.
+   */
+  public static int depth(BlockView world, BlockPos pos) {
+    int depth = 1;
+    BlockPos cursor = pos.down();
+
+    while (depth < MAX_HEIGHT && isColumn(world.getBlockState(cursor))) {
+      depth++;
+      cursor = cursor.down();
+    }
+
+    return depth;
+  }
+
+  /** Whether a block at this position is the last one its column may hold. */
+  public static boolean capped(BlockView world, BlockPos pos) {
+    return depth(world, pos) >= MAX_HEIGHT;
   }
 
   /**

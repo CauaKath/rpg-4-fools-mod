@@ -63,7 +63,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
 
   public StickedCropBlock(Settings settings) {
     super(settings);
-    setDefaultState(getDefaultState().with(PART, ColumnPart.SINGLE));
+    setDefaultState(getDefaultState().with(PART, ColumnPart.SINGLE).with(CropSticks.CAPPED, false));
   }
 
   @Override
@@ -74,7 +74,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
   @Override
   protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
     super.appendProperties(builder);
-    builder.add(PART);
+    builder.add(PART, CropSticks.CAPPED);
   }
 
   @Override
@@ -105,7 +105,11 @@ public class StickedCropBlock extends RegrowingCropBlock {
                                               WorldAccess world, BlockPos pos, BlockPos neighborPos) {
     BlockState updated = super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
 
-    return updated.isAir() ? updated : updated.with(PART, partAt(world, pos));
+    if (updated.isAir()) {
+      return updated;
+    }
+
+    return updated.with(PART, partAt(world, pos)).with(CropSticks.CAPPED, CropSticks.capped(world, pos));
   }
 
   /**
@@ -239,7 +243,8 @@ public class StickedCropBlock extends RegrowingCropBlock {
     // for the tick before its neighbour update lands.
     world.setBlockState(grown, getDefaultState()
             .with(getAgeProperty(), age)
-            .with(PART, ColumnPart.TOP), Block.NOTIFY_ALL);
+            .with(PART, ColumnPart.TOP)
+            .with(CropSticks.CAPPED, CropSticks.capped(world, grown)), Block.NOTIFY_ALL);
   }
 
   /** Writes one age to every section, so the plant is never caught half ripe. */
