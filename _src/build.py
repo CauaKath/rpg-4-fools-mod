@@ -24,11 +24,19 @@ FONTS = {
 }
 FONT_FILES = {"display": "almanac-display.ttf", "body": "field-sans.ttf", "mono": "field-mono.ttf"}
 
+# A released page keeps the art that shipped with it. Anything under legacy/<version>/ wins over
+# the live texture directory for that version's build, which is also how a page can go on showing
+# a sprite the mod has since deleted.
+LEGACY = HERE / "legacy"
+
 REPO = "https://github.com/CauaKath/rpg-4-fools-mod"
 SITE = "https://cauakath.github.io/rpg-4-fools-mod/"
 
 # Newest first, which is the order the index lists them in.
 VERSIONS = [
+    ("0.3.1", "You can see when it is ready",
+     "Lettuce redrawn as a lettuce, tomato and cucumber flower before they fruit, and the "
+     "picked flag they needed is gone."),
     ("0.3.0", "Seasons decide what grows",
      "Six new plants with their own calendar, wild berry bushes, right click harvest, "
      "and fields that sow themselves again."),
@@ -44,7 +52,13 @@ CURRENT = VERSIONS[0][0]
 ASSET = re.compile(r"@@(font|block|item|gui)/([^@]+)@@")
 
 
-def texture(kind, name):
+def texture(kind, name, version=None):
+    if version is not None:
+        frozen = LEGACY / version / kind / (name + ".png")
+
+        if frozen.exists():
+            return frozen
+
     path = TEXTURES / kind / (name + ".png")
 
     if not path.exists():
@@ -53,19 +67,23 @@ def texture(kind, name):
     return path
 
 
-def inline(match):
+def inline(version=None):
     """Every asset as a data URI, for the single file build."""
-    kind, name = match.group(1), match.group(2)
 
-    if kind == "font":
-        return "data:font/ttf;base64," + base64.b64encode(FONTS[name].read_bytes()).decode()
+    def replace(match):
+        kind, name = match.group(1), match.group(2)
 
-    data = texture(kind, name).read_bytes()
+        if kind == "font":
+            return "data:font/ttf;base64," + base64.b64encode(FONTS[name].read_bytes()).decode()
 
-    return "data:image/png;base64," + base64.b64encode(data).decode()
+        data = texture(kind, name, version).read_bytes()
+
+        return "data:image/png;base64," + base64.b64encode(data).decode()
+
+    return replace
 
 
-def linked(prefix):
+def linked(prefix, version=None):
     """Every asset as a file the page points at, for the site build."""
 
     def replace(match):
@@ -74,6 +92,9 @@ def linked(prefix):
         if kind == "font":
             # The stylesheet itself lives in assets/, so its font paths are relative to that.
             return "fonts/" + FONT_FILES[name]
+
+        if version is not None and (LEGACY / version / kind / (name + ".png")).exists():
+            return "sprites/" + kind + "/" + name + ".png"
 
         return prefix + "assets/sprites/" + kind + "/" + name + ".png"
 
@@ -159,9 +180,14 @@ def build_pages(dist):
         body = content(version)
 
         for kind, name in sprites_used(body):
+            # A frozen sprite is written under the version that froze it, so two versions can
+            # ship the same file name with different art.
+            frozen = (LEGACY / version / kind / (name + ".png")).exists()
             target = dist / "assets" / "sprites" / kind
-            target.mkdir(exist_ok=True)
-            shutil.copy(texture(kind, name), target / (name + ".png"))
+            if frozen:
+                target = dist / version / "sprites" / kind
+            target.mkdir(parents=True, exist_ok=True)
+            shutil.copy(texture(kind, name, version), target / (name + ".png"))
             written += 1
 
         out = dist / version / "index.html"
@@ -169,7 +195,7 @@ def build_pages(dist):
         out.write_text(page(
             "RPG 4 Fools " + version,
             summary,
-            ASSET.sub(linked("../"), body),
+            ASSET.sub(linked("../", version), body),
             "../assets/site.css",
             version=version,
             prefix="../",
@@ -187,8 +213,8 @@ def build_pages(dist):
 
 
 def build_artifact(out):
-    css = ASSET.sub(inline, HERE.joinpath("styles.css").read_text())
-    body = ASSET.sub(inline, content(CURRENT))
+    css = ASSET.sub(inline(), HERE.joinpath("styles.css").read_text())
+    body = ASSET.sub(inline(CURRENT), content(CURRENT))
 
     out.write_text(
         "<title>RPG 4 Fools " + CURRENT + "</title>\n\n"

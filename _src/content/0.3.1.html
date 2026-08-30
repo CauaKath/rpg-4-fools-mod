@@ -1,0 +1,193 @@
+<header class="masthead">
+    <span class="version">0.3.1 · Released 30 Aug 2026</span>
+    <h1>You can see when it is ready</h1>
+    <p class="standfirst">
+      An art release. Lettuce is drawn as a lettuce instead of a green blob, tomato and cucumber
+      flower before they fruit so a ripe plant is obvious from across the field, and the hidden
+      flag they needed to look right has been taken out.
+    </p>
+    <div class="ribbon" aria-hidden="true"><div></div><div></div><div></div><div></div></div>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">One</span>
+      <h2>Lettuce is a lettuce</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      The old sprite was a symmetrical green mound with no leaf structure, which read as a shrub
+      in a row of shrubs. All eight stages are redrawn as loose-leaf lettuce: frilly lobes, a
+      jagged rim and no head, opening from two seed leaves out to a rosette that reaches the
+      edge of the block. Nothing about how it grows or what it drops has changed.
+    </p>
+
+    <div class="specimen">
+      <div class="specimen-head">
+        <h3>Lettuce</h3>
+        <span class="label">Farmland · harvested whole</span>
+        <span class="seasons-of"><span class="chip spring">Spring</span><span class="chip autumn">Autumn</span></span>
+      </div>
+      <div class="strip-scroll">
+        <div class="strip">
+          <div class="stage"><img src="@@block/lettuce_crop_stage0@@" alt="Lettuce stage 0"><span>0</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage1@@" alt="Lettuce stage 1"><span>1</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage2@@" alt="Lettuce stage 2"><span>2</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage3@@" alt="Lettuce stage 3"><span>3</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage4@@" alt="Lettuce stage 4"><span>4</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage5@@" alt="Lettuce stage 5"><span>5</span></div>
+          <div class="stage"><img src="@@block/lettuce_crop_stage6@@" alt="Lettuce stage 6"><span>6</span></div>
+          <div class="stage picked"><img src="@@block/lettuce_crop_stage7@@" alt="Lettuce stage 7, ripe"><span>ripe</span></div>
+        </div>
+      </div>
+      <div class="yield">
+        <span class="drop"><img src="@@item/lettuce@@" alt="">Lettuce · 2 hunger</span>
+        <span class="note">The young stages grow from a single centred stalk rather than the
+          splayed roots the vine crops use, so a seedling reads as one plant instead of a clump.</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Two</span>
+      <h2>Flowers first, then fruit</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Tomato and cucumber fruit more than once, and telling a ripe plant from an almost-ripe one
+      used to mean counting pixels. Cucumber was the worst of it: the fruit was painted within
+      ten RGB units of the leaves around it, so ripe and not-ripe differed by twelve pixels of
+      near-identical green. Both plants now spend their last three stages saying what they are
+      doing.
+    </p>
+
+    <div class="fates">
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="@@block/cucumber_crop_stage4@@" alt="Bare adult cucumber vine">
+        </div>
+        <h3>Stage 4 · bare</h3>
+        <p>The plant is full grown and carrying nothing. This is also where it lands after you
+          pick it.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="@@block/cucumber_crop_stage5@@" alt="Cucumber vine with one flower">
+        </div>
+        <h3>Stage 5 · one flower</h3>
+        <p>A yellow blossom opens. Nothing to take yet, but the plant is working.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="@@block/cucumber_crop_stage6@@" alt="Cucumber vine with two flowers">
+        </div>
+        <h3>Stage 6 · two flowers</h3>
+        <p>A second blossom. Still nothing to take.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="@@block/cucumber_crop_stage7@@" alt="Ripe cucumber vine">
+        </div>
+        <h3>Stage 7 · fruit</h3>
+        <p>The flowers are gone and fruit hangs where they were. The only stage you can pick.</p>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <div class="specimen-head">
+        <h3>Cucumber</h3>
+        <span class="label">Farmland · regrows</span>
+        <span class="seasons-of"><span class="chip summer">Summer</span></span>
+      </div>
+      <div class="strip-scroll">
+        <div class="strip">
+          <div class="stage"><img src="@@block/cucumber_crop_stage0@@" alt="Cucumber stage 0"><span>0</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage1@@" alt="Cucumber stage 1"><span>1</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage2@@" alt="Cucumber stage 2"><span>2</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage3@@" alt="Cucumber stage 3"><span>3</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage4@@" alt="Cucumber stage 4, bare adult"><span>4</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage5@@" alt="Cucumber stage 5, one flower"><span>5</span></div>
+          <div class="stage"><img src="@@block/cucumber_crop_stage6@@" alt="Cucumber stage 6, two flowers"><span>6</span></div>
+          <div class="stage picked"><img src="@@block/cucumber_crop_stage7@@" alt="Cucumber stage 7, ripe"><span>ripe</span></div>
+        </div>
+      </div>
+      <div class="yield">
+        <span class="drop"><img src="@@item/cucumber@@" alt="">Cucumber · 2 hunger</span>
+        <span class="note">The seedlings are redrawn too — stage 0 was a loose dash lying in the
+          dirt, and stage 1 barely differed from it.</span>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <div class="specimen-head">
+        <h3>Tomato</h3>
+        <span class="label">Farmland · regrows</span>
+        <span class="seasons-of"><span class="chip summer">Summer</span></span>
+      </div>
+      <div class="strip-scroll">
+        <div class="strip">
+          <div class="stage"><img src="@@block/tomato_crop_stage0@@" alt="Tomato stage 0"><span>0</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage1@@" alt="Tomato stage 1"><span>1</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage2@@" alt="Tomato stage 2"><span>2</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage3@@" alt="Tomato stage 3"><span>3</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage4@@" alt="Tomato stage 4, bare adult"><span>4</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage5@@" alt="Tomato stage 5, one flower"><span>5</span></div>
+          <div class="stage"><img src="@@block/tomato_crop_stage6@@" alt="Tomato stage 6, two flowers"><span>6</span></div>
+          <div class="stage picked"><img src="@@block/tomato_crop_stage7@@" alt="Tomato stage 7, ripe"><span>ripe</span></div>
+        </div>
+      </div>
+      <div class="yield">
+        <span class="drop"><img src="@@item/tomato@@" alt="">Tomato · 3 hunger</span>
+        <span class="note">Fruit sets exactly where the blossoms were, and there are two larger
+          tomatoes instead of three small ones so they read at a distance.</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Three</span>
+      <h2>One less thing to remember</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Both plants used to carry a <code>picked</code> boolean on the block, for one reason: so a
+      picked plant could be drawn bare instead of half grown. It doubled each blockstate to
+      sixteen entries and needed a stage-4 sprite that no age could reach on its own. Now that
+      stage 4 <em>is</em> the bare plant, the flag has nothing left to say and has been removed.
+    </p>
+
+    <div class="also">
+      <div>
+        <h3>Picking works the same</h3>
+        <p>Right-click a ripe plant, take one to three of the produce, and it drops back to
+          stage 4 to flower again. Only the bookkeeping changed.</p>
+      </div>
+      <div>
+        <h3>Half the blockstate</h3>
+        <p>Sixteen variants down to eight on both crops, one model per age, no property to
+          match against.</p>
+      </div>
+      <div>
+        <h3>Two files gone</h3>
+        <p>The <code>stage4_picked</code> texture and model for each crop are deleted. Their art
+          lives on as the new stage 4.</p>
+      </div>
+      <div>
+        <h3>A smoother run to adult</h3>
+        <p>Stage 3 inherits the plant that used to be stage 4 on both crops, so reaching the
+          adult is a step rather than a jump.</p>
+      </div>
+      <div>
+        <h3>Existing worlds are fine</h3>
+        <p>A planted crop keeps its age. A plant that was carrying the old flag simply stops
+          carrying it and draws as the stage it is on.</p>
+      </div>
+      <div>
+        <h3>Nothing else moved</h3>
+        <p>Seasons, loot tables, harvest behaviour and the seed items are all untouched. This
+          release is sprites and the state they made unnecessary.</p>
+      </div>
+    </div>
+  </section>
