@@ -107,19 +107,45 @@ public class CropTransition {
    *
    * <p>Placed at age 0. The crop is freshly sown, and a field that came back already ripe would
    * hand a player a harvest for every season that turned.
+   *
+   * <p>A crop that came back on a trellis gets its sticks put up empty above it, and climbs them on
+   * its own. Standing the plant up already grown would be the same free harvest by another route,
+   * and would also make a world grown trellis behave unlike one a player built.
    */
   private static boolean resow(ServerWorld world, BlockPos pos, Season season) {
     if (PlantedCrops.get(world).planted(world, pos)) {
       return false;
     }
 
-    Optional<Block> sown = Resowing.sownAt(pos, season);
+    Optional<Resowing.Sowing> sown = Resowing.sownAt(pos, season);
 
     if (sown.isEmpty()) {
       return false;
     }
 
-    world.setBlockState(pos, sown.get().getDefaultState());
+    Resowing.Sowing sowing = sown.get();
+    world.setBlockState(pos, sowing.crop());
+    raise(world, pos, sowing.sticks());
+
     return true;
+  }
+
+  /**
+   * Stands the rest of the trellis up above a crop that came back on one.
+   *
+   * <p>The plant's own block is the first stick, so only what is above it is put down here. Stops at
+   * anything that is not air rather than clearing it: whatever is standing there was not part of the
+   * field, and a shorter trellis is a better outcome than a field that eats what is built over it.
+   */
+  private static void raise(ServerWorld world, BlockPos pos, int sticks) {
+    for (int above = 1; above < sticks; above++) {
+      BlockPos at = pos.up(above);
+
+      if (!world.getBlockState(at).isAir()) {
+        return;
+      }
+
+      world.setBlockState(at, ModBlocks.CROP_STICK.getDefaultState());
+    }
   }
 }
