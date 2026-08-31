@@ -2,6 +2,7 @@ package net.abakath.rpg4fools.world;
 
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.init.ModBlockTags;
+import net.abakath.rpg4fools.init.ModBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -27,6 +28,14 @@ import java.util.Set;
  * else, which is the honest cost of the rule being this simple.
  *
  * <p>Winter offers nothing, so nothing regrows and the world browns over the way it should.
+ *
+ * <p>The odd plant in a field of a crop sticks can carry comes back on a trellis, one to three sticks
+ * tall. Decided per plant rather than per patch, unlike the crop itself: a lane of tomatoes with a
+ * couple of trellises standing in it looks like a farm, and a lane where every plant has one looks
+ * like a different feature entirely.
+ *
+ * <p>Only the sticks and a young plant are put down, never a grown one: the plant climbs them itself,
+ * the same way a player's does.
  */
 public final class Resowing {
   /**
@@ -41,28 +50,78 @@ public final class Resowing {
   /** How wide a patch of one crop is. Three blocks reads as a row somebody planted, not as noise. */
   private static final int PATCH = 3;
 
+  /**
+   * One plant in twelve, where the patch came back as a crop sticks can carry.
+   *
+   * <p>Rare on purpose. A trellis is something a player builds, and a field full of them found in the
+   * world would make the crafted stick pointless.
+   */
+  private static final int TRELLIS_CHANCE = 12;
+
+  /** Out of ten trellises: six one stick, three two, one three. A full one stays worth finding. */
+  private static final int TWO_STICKS_ABOVE = 6;
+  private static final int THREE_STICKS_ABOVE = 9;
+
+  /**
+   * What to put down, and how tall a trellis to put it on.
+   *
+   * <p>Sticks are counted including the one the plant itself stands in, so one means a plant on a
+   * single stick and zero means no trellis at all.
+   */
+  public record Sowing(BlockState crop, int sticks) {
+  }
+
   private Resowing() {
   }
 
   /**
    * What would be sown here this season, or empty if the season has nothing to offer.
    *
-   * <p>The choice is the same across a patch of three by three and changes with the season, so a
-   * field comes back as bands of one crop rather than as a speckle, and comes back differently
-   * after each winter. It is settled by position alone, so the sweep and the chunk scan cannot
-   * disagree about a field one of them has already been over.
+   * <p>The crop is the same across a patch of three by three and changes with the season, so a field
+   * comes back as bands of one crop rather than as a speckle, and comes back differently after each
+   * winter. Whether a plant stands on a trellis is decided one plant at a time instead, so a band of
+   * tomatoes is a band of tomatoes with the occasional trellis in it.
+   *
+   * <p>Both are settled by position alone, so the sweep and the chunk scan cannot disagree about a
+   * field one of them has already been over.
    */
-  public static Optional<Block> sownAt(BlockPos pos, Season season) {
+  public static Optional<Sowing> sownAt(BlockPos pos, Season season) {
     List<Block> pool = inSeason(season);
 
     if (pool.isEmpty()) {
       return Optional.empty();
     }
 
-    Random random = Random.create(MathHelper.hashCode(
+    Random patch = Random.create(MathHelper.hashCode(
             Math.floorDiv(pos.getX(), PATCH), season.ordinal(), Math.floorDiv(pos.getZ(), PATCH)));
 
-    return Optional.of(pool.get(random.nextInt(pool.size())));
+    Block crop = pool.get(patch.nextInt(pool.size()));
+    CropDefinition definition = ModBlocks.definitionFor(crop);
+
+    if (definition == null || !definition.sticked()) {
+      return Optional.of(new Sowing(crop.getDefaultState(), 0));
+    }
+
+    // Seeded from the block rather than the patch, so trellises are scattered through a lane instead
+    // of claiming all of one. Still position alone, so the sweep and the chunk scan cannot disagree
+    // about a field one of them has already been over.
+    Random plant = Random.create(MathHelper.hashCode(pos.getX(), pos.getY() + season.ordinal(), pos.getZ()));
+
+    if (plant.nextInt(TRELLIS_CHANCE) != 0) {
+      return Optional.of(new Sowing(crop.getDefaultState(), 0));
+    }
+
+    return Optional.of(new Sowing(ModBlocks.stickedFor(definition).getDefaultState(), sticks(plant)));
+  }
+
+  private static int sticks(Random random) {
+    int roll = random.nextInt(10);
+
+    if (roll < TWO_STICKS_ABOVE) {
+      return 1;
+    }
+
+    return roll < THREE_STICKS_ABOVE ? 2 : 3;
   }
 
   /**
@@ -71,6 +130,10 @@ public final class Resowing {
    * <p>Read from the crops tag rather than a list of its own, so a datapack that retags a crop is
    * obeyed and this mod's own crops need no special mention. Narrowed to CropBlock, which drops the
    * stems, and then to what anyone would actually sow.
+   *
+   * <p>Sticked crops are kept out. They are in the crops tag and they are CropBlocks, so they would
+   * otherwise be picked here - and a field would come back carrying trellises that were never built,
+   * with nothing above them to climb. A trellis is decided deliberately in {@link #sownAt} instead.
    */
   private static List<Block> inSeason(Season season) {
     List<Block> crops = new ArrayList<>();
@@ -84,7 +147,8 @@ public final class Resowing {
       Block block = entry.value();
       BlockState state = block.getDefaultState();
 
-      if (block instanceof CropBlock && !NOT_SOWN.contains(block) && CropSeasons.isInSeason(state, season)) {
+      if (block instanceof CropBlock && !(block instanceof StickedCropBlock)
+              && !NOT_SOWN.contains(block) && CropSeasons.isInSeason(state, season)) {
         crops.add(block);
       }
     }

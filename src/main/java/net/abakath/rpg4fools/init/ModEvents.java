@@ -5,6 +5,7 @@ import net.abakath.rpg4fools.server.LoadedChunks;
 import net.abakath.rpg4fools.server.events.CropAutoReplant;
 import net.abakath.rpg4fools.server.events.CropOwnership;
 import net.abakath.rpg4fools.server.events.CropSettling;
+import net.abakath.rpg4fools.server.events.CropStickHandling;
 import net.abakath.rpg4fools.server.events.CropTagValidator;
 import net.abakath.rpg4fools.server.events.DayChangingHandler;
 import net.abakath.rpg4fools.server.events.SeasonPlantingGate;
@@ -19,6 +20,7 @@ public class ModEvents {
     LoadedChunks.register();
     CropTagValidator.register();
     SeasonPlantingGate.register();
+    CropStickHandling.register();
     CropAutoReplant.register();
     CropOwnership.register();
     CropSettling.register();

@@ -1,6 +1,7 @@
 {
   "block.rpg4fools.blackberry_bush": "Blackberry Bush",
   "block.rpg4fools.blueberry_bush": "Blueberry Bush",
+  "block.rpg4fools.crop_stick": "Crop Stick",
   "block.rpg4fools.cucumber_crop": "Cucumber Crop",
   "block.rpg4fools.dormant_blackberry_bush": "Dormant Blackberry Bush",
   "block.rpg4fools.dormant_blueberry_bush": "Dormant Blueberry Bush",
@@ -8,6 +9,7 @@
   "block.rpg4fools.lettuce_crop": "Lettuce Crop",
   "block.rpg4fools.strawberry_bush": "Strawberry Bush",
   "block.rpg4fools.tomato_crop": "Tomato Crop",
+  "block.rpg4fools.tomato_crop_stick": "Sticked Tomato Crop",
   "item.rpg4fools.blackberry_berries": "Blackberries",
   "item.rpg4fools.blueberry_berries": "Blueberries",
   "item.rpg4fools.cucumber": "Cucumber",

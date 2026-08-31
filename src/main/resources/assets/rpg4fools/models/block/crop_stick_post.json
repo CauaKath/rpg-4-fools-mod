@@ -1,0 +1,22 @@
+{
+  "__comment": "One post down the middle of the block, drawn on its own so a crop growing up it can be a separate piece of the same blockstate. Dropped one pixel so it sits in the farmland rather than on top of it, which also lets a stacked column tile without a seam.",
+  "ambientocclusion": false,
+  "textures": {
+    "stick": "rpg4fools:block/crop_stick",
+    "particle": "rpg4fools:block/crop_stick"
+  },
+  "elements": [
+    {
+      "__comment": "Two pixels square, and the faces map to a two wide slice of the texture, which is what the texture repeats at.",
+      "from": [7, -1, 7],
+      "to": [9, 15, 9],
+      "faces": {
+        "north": { "uv": [7, 0, 9, 16], "texture": "#stick" },
+        "south": { "uv": [7, 0, 9, 16], "texture": "#stick" },
+        "west": { "uv": [7, 0, 9, 16], "texture": "#stick" },
+        "east": { "uv": [7, 0, 9, 16], "texture": "#stick" },
+        "up": { "uv": [7, 7, 9, 9], "texture": "#stick" }
+      }
+    }
+  ]
+}

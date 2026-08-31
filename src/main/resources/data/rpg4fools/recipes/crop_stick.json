@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["SS", "SS"],
+  "key": {
+    "S": { "item": "minecraft:stick" }
+  },
+  "result": {
+    "id": "rpg4fools:crop_stick",
+    "count": 2
+  }
+}
