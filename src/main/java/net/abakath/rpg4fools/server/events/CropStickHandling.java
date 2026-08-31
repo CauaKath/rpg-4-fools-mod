@@ -132,8 +132,7 @@ public class CropStickHandling {
       return ActionResult.PASS;
     }
 
-    BlockState placed = ModBlocks.CROP_STICK.getDefaultState()
-            .with(CropSticks.CAPPED, CropSticks.capped(world, above));
+    BlockState placed = CropSticks.stick(world, above, false);
 
     if (!placed.canPlaceAt(world, above)) {
       return ActionResult.PASS;

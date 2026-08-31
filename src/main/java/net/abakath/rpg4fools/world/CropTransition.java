@@ -100,9 +100,7 @@ public class CropTransition {
 
       // The plant stays on the stick, dead. Deleting it left a trellis that had been full one day
       // spotless the next, which read as the crop having been harvested rather than lost.
-      world.setBlockState(pos, ModBlocks.CROP_STICK.getDefaultState()
-              .with(CropSticks.CAPPED, state.get(CropSticks.CAPPED))
-              .with(CropSticks.DEAD, true));
+      world.setBlockState(pos, CropSticks.stick(world, pos, true));
       return true;
     }
 
@@ -193,8 +191,7 @@ public class CropTransition {
           return;
         }
 
-        world.setBlockState(at, ModBlocks.CROP_STICK.getDefaultState()
-                .with(CropSticks.CAPPED, CropSticks.capped(world, at)));
+        world.setBlockState(at, CropSticks.stick(world, at, false));
         continue;
       }
 

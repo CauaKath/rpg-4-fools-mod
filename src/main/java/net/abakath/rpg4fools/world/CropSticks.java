@@ -44,6 +44,15 @@ public final class CropSticks {
    */
   public static final BooleanProperty DEAD = BooleanProperty.of("dead");
 
+  /**
+   * Whether this stick has column both above and below it.
+   *
+   * <p>Only the dead sprite reads it, and only to draw the middle of a column flipped, so three dead
+   * sections are not the same picture three times. The living sections answer the same question with
+   * {@link ColumnPart}, which they need in more detail: they have a foot and a crown to draw as well.
+   */
+  public static final BooleanProperty MIDDLE = BooleanProperty.of("middle");
+
   private CropSticks() {
   }
 
@@ -141,6 +150,24 @@ public final class CropSticks {
   /** Whether a block at this position is the last one its column may hold. */
   public static boolean capped(BlockView world, BlockPos pos) {
     return depth(world, pos) >= MAX_HEIGHT;
+  }
+
+  /** Whether a block at this position has column on both sides of it. */
+  public static boolean middle(BlockView world, BlockPos pos) {
+    return isColumn(world.getBlockState(pos.down())) && isColumn(world.getBlockState(pos.up()));
+  }
+
+  /**
+   * A stick that knows where it stands, for anything putting one down.
+   *
+   * <p>Both derived properties are worked out here rather than left to a neighbour update, because a
+   * neighbour update reaches the blocks around a placement and never the placement itself.
+   */
+  public static BlockState stick(BlockView world, BlockPos pos, boolean dead) {
+    return ModBlocks.CROP_STICK.getDefaultState()
+            .with(CAPPED, capped(world, pos))
+            .with(MIDDLE, middle(world, pos))
+            .with(DEAD, dead);
   }
 
   /**

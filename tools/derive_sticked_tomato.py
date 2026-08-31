@@ -9,7 +9,8 @@ Row 0 of a block sits against row 15 of the block above it, because the models s
 is the whole trick: a section that continues upward gets the original's own bottom two rows copied
 into its top two, and the joins then line up pixel for pixel at every age, for free.
 
-    dead     the adult recoloured to straw and thinned out, for a plant a season killed
+    dead     the adult recoloured to straw and thinned out, for a plant a season killed, with a
+             mirrored twin for the middle of a column, for the reason the living middle has one
     bottom   roots at the foot, stalk carried out of the top
     middle   stalk carried through both ends, foliage mirrored so it is not the same picture twice
     top      the crown cleared back, so the plant tapers to a tip instead of being cut off
@@ -36,6 +37,7 @@ BLOCKS = pathlib.Path("src/main/resources/assets/rpg4fools/textures/block")
 SOURCE = "tomato_crop_stage{age}.png"
 OUTPUT = "tomato_crop_stick_{part}_stage{age}.png"
 DEAD_OUTPUT = "crop_stick_dead.png"
+DEAD_MIDDLE_OUTPUT = "crop_stick_dead_middle.png"
 
 AGES = (4, 5, 6, 7)
 
@@ -262,6 +264,9 @@ def main():
     dead = wither(copy(join))
     write_png(BLOCKS / DEAD_OUTPUT, dead)
     print(f"wrote {BLOCKS / DEAD_OUTPUT}")
+
+    write_png(BLOCKS / DEAD_MIDDLE_OUTPUT, mirror_body(copy(dead)))
+    print(f"wrote {BLOCKS / DEAD_MIDDLE_OUTPUT}")
 
     for age in SHOOT_AGES:
         shoot = graft(copy(read_png(BLOCKS / SOURCE.format(age=age))), join)

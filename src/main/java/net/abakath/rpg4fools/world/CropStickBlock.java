@@ -43,12 +43,15 @@ public class CropStickBlock extends Block {
 
   public CropStickBlock(Settings settings) {
     super(settings);
-    setDefaultState(getDefaultState().with(CropSticks.CAPPED, false).with(CropSticks.DEAD, false));
+    setDefaultState(getDefaultState()
+            .with(CropSticks.CAPPED, false)
+            .with(CropSticks.MIDDLE, false)
+            .with(CropSticks.DEAD, false));
   }
 
   @Override
   protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-    builder.add(CropSticks.CAPPED, CropSticks.DEAD);
+    builder.add(CropSticks.CAPPED, CropSticks.MIDDLE, CropSticks.DEAD);
   }
 
   @Override
@@ -81,8 +84,7 @@ public class CropStickBlock extends Block {
    */
   @Override
   public BlockState getPlacementState(ItemPlacementContext context) {
-    return getDefaultState().with(CropSticks.CAPPED,
-            CropSticks.capped(context.getWorld(), context.getBlockPos()));
+    return CropSticks.stick(context.getWorld(), context.getBlockPos(), false);
   }
 
   @Override
@@ -106,6 +108,7 @@ public class CropStickBlock extends Block {
     }
 
     return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos)
-            .with(CropSticks.CAPPED, CropSticks.capped(world, pos));
+            .with(CropSticks.CAPPED, CropSticks.capped(world, pos))
+            .with(CropSticks.MIDDLE, CropSticks.middle(world, pos));
   }
 }

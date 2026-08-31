@@ -18,10 +18,20 @@
     },
     {
       "when": {
-        "dead": "true"
+        "dead": "true",
+        "middle": "false"
       },
       "apply": {
         "model": "rpg4fools:block/crop_stick_dead"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "middle": "true"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_stick_dead_middle"
       }
     }
   ]
