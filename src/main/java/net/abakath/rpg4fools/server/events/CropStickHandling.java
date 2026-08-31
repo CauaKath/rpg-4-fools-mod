@@ -2,6 +2,7 @@ package net.abakath.rpg4fools.server.events;
 
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModItems;
+import net.abakath.rpg4fools.server.PlantedCrops;
 import net.abakath.rpg4fools.world.CropDefinition;
 import net.abakath.rpg4fools.world.CropItems;
 import net.abakath.rpg4fools.world.CropSticks;
@@ -187,6 +188,12 @@ public class CropStickHandling {
   private static void replace(ServerWorld world, PlayerEntity player, ItemStack stack, BlockPos pos,
                               BlockState placed, SoundEvent sound) {
     world.setBlockState(pos, placed, Block.NOTIFY_ALL);
+
+    // The plot is the player's now, however it started. Sticks are work put into it, and a field that
+    // resowed itself over them would be taking that away. Recorded at the foot of the column, which
+    // is the position the season rules ask about.
+    PlantedCrops.get(world).remember(CropSticks.base(world, pos));
+
     world.emitGameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Emitter.of(player, placed));
     world.playSound(null, pos, sound, SoundCategory.BLOCKS,
             1.0F, 0.8F + world.random.nextFloat() * 0.4F);

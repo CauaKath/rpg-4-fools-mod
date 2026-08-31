@@ -4,6 +4,7 @@ import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.SweetBerryBushBlock;
 import net.minecraft.server.world.ServerWorld;
 import net.abakath.rpg4fools.server.PlantedCrops;
@@ -29,7 +30,10 @@ import java.util.Optional;
 public class CropTransition {
   /** Whether {@link #apply} has anything to say about this block, which is what the sweep scans for. */
   public static boolean settles(BlockState state) {
-    return CropSeasons.isCrop(state) || state.isOf(ModBlocks.DEAD_CROP);
+    // Bare sticks are worth looking at even though nothing about them is a crop. A trellis in a
+    // village field is a plot waiting to be sown, and one left out of this scan would stand empty
+    // for good.
+    return CropSeasons.isCrop(state) || state.isOf(ModBlocks.DEAD_CROP) || CropSticks.isEmpty(state);
   }
 
   /**
@@ -43,6 +47,13 @@ public class CropTransition {
     // looking at: a field nobody planted comes back the season after it died.
     if (state.isOf(ModBlocks.DEAD_CROP)) {
       return resow(world, pos, season);
+    }
+
+    // An empty trellis is a plot, not a crop, so it carries no tag and falls out of every rule
+    // below. Sowing it again is the whole reason it is scanned: a village field that came back on
+    // sticks would otherwise stand bare from the season that killed it onwards.
+    if (CropSticks.isEmpty(state)) {
+      return foot(world, pos) && resow(world, pos, season);
     }
 
     if (!CropSeasons.isCrop(state)) {
@@ -74,13 +85,17 @@ public class CropTransition {
       return true;
     }
 
-    // A sticked crop leaves its trellis behind. The sticks were built by the player and are not
-    // part of the plant, so an ending season takes the crop and returns the stick to standing
-    // empty, ready to be sown again when the season comes back around. Every tier settles for
-    // itself, so a full column comes down to a full column of empty sticks.
+    // A sticked crop leaves its trellis behind. The sticks are not part of the plant, so an ending
+    // season takes the crop and returns the stick to standing empty. Every section settles for
+    // itself, so a full column comes down to a full column of empty sticks - except the foot, which
+    // gets the chance to sow the plot again first if nobody is tending it.
     if (CropSticks.isSticked(state)) {
       if (inSeason) {
         return false;
+      }
+
+      if (foot(world, pos) && resow(world, pos, season)) {
+        return true;
       }
 
       world.setBlockState(pos, ModBlocks.CROP_STICK.getDefaultState()
@@ -126,28 +141,57 @@ public class CropTransition {
 
     Resowing.Sowing sowing = sown.get();
     world.setBlockState(pos, sowing.crop());
-    raise(world, pos, sowing.sticks());
+    shape(world, pos, sowing.sticks());
 
     return true;
   }
 
   /**
-   * Stands the rest of the trellis up above a crop that came back on one.
+   * Whether this is the block a column stands on, which is the only one that speaks for the plot.
    *
-   * <p>The plant's own block is the first stick, so only what is above it is put down here. Stops at
-   * anything that is not air rather than clearing it: whatever is standing there was not part of the
-   * field, and a shorter trellis is a better outcome than a field that eats what is built over it.
+   * <p>Every block of a column is scanned, and all of them would otherwise try to sow the plot -
+   * which for anything but the foot means a crop halfway up a trellis.
    */
-  private static void raise(ServerWorld world, BlockPos pos, int sticks) {
-    for (int above = 1; above < sticks; above++) {
-      BlockPos at = pos.up(above);
+  private static boolean foot(ServerWorld world, BlockPos pos) {
+    return !CropSticks.isColumn(world.getBlockState(pos.down()));
+  }
 
-      if (!world.getBlockState(at).isAir()) {
-        return;
+  /**
+   * Brings the trellis above a resown plot to the height the plot asked for.
+   *
+   * <p>Puts sticks up and takes them down, because the season decides the crop afresh and last
+   * season's trellis is no guide to this one's: a plot that came back as carrots has no use for one,
+   * and a plot that came back on three sticks may only have had one before.
+   *
+   * <p>Only ever adds into air and only ever removes bare sticks. Whatever else is standing there
+   * was not part of the field, and a trellis of the wrong height is a better outcome than a field
+   * that eats what has been built over it.
+   */
+  private static void shape(ServerWorld world, BlockPos pos, int sticks) {
+    for (int above = 1; above < CropSticks.MAX_HEIGHT; above++) {
+      BlockPos at = pos.up(above);
+      BlockState standing = world.getBlockState(at);
+
+      if (above < sticks) {
+        // Already a stick, and the plot wants one. Left alone rather than replaced, and carried
+        // past rather than returned on: a taller trellis than the plot asked for still has surplus
+        // above this, and stopping here would strand it.
+        if (CropSticks.isEmpty(standing)) {
+          continue;
+        }
+
+        if (!standing.isAir()) {
+          return;
+        }
+
+        world.setBlockState(at, ModBlocks.CROP_STICK.getDefaultState()
+                .with(CropSticks.CAPPED, CropSticks.capped(world, at)));
+        continue;
       }
 
-      world.setBlockState(at, ModBlocks.CROP_STICK.getDefaultState()
-              .with(CropSticks.CAPPED, CropSticks.capped(world, at)));
+      if (CropSticks.isEmpty(standing)) {
+        world.setBlockState(at, Blocks.AIR.getDefaultState());
+      }
     }
   }
 }

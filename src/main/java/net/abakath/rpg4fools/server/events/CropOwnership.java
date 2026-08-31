@@ -1,10 +1,13 @@
 package net.abakath.rpg4fools.server.events;
 
+import net.abakath.rpg4fools.init.ModItems;
 import net.abakath.rpg4fools.server.PlantedCrops;
 import net.abakath.rpg4fools.world.CropItems;
 import net.abakath.rpg4fools.world.CropSeasons;
+import net.abakath.rpg4fools.world.CropSticks;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
@@ -22,6 +25,11 @@ import net.minecraft.world.World;
  * queue, which is reached after the placement it is asking about has already happened; if the
  * placement failed, or the player was holding a seed and clicked something else entirely, there is
  * simply no crop there and nothing is recorded.
+ *
+ * <p>A crop stick counts as a planting too. Sticks are work a player put into a plot, and a field
+ * that resowed itself over a trellis somebody built would be taking that away. The position recorded
+ * is the foot of the column rather than the block the stick landed in, because the foot is the spot
+ * the season rules ask about.
  */
 public final class CropOwnership {
   private CropOwnership() {
@@ -33,7 +41,7 @@ public final class CropOwnership {
     // Breaking it hands the plot back. Harvesting does not: the replanting hook sows the same spot
     // again, and a field a player keeps cutting is still a field a player planted.
     PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, entity) -> {
-      if (world instanceof ServerWorld server && CropSeasons.isCrop(state)) {
+      if (world instanceof ServerWorld server && (CropSeasons.isCrop(state) || CropSticks.isColumn(state))) {
         PlantedCrops.get(server).forget(pos);
       }
     });
@@ -46,18 +54,35 @@ public final class CropOwnership {
 
     ItemStack stack = player.getStackInHand(hand);
 
-    if (CropItems.plantedBy(stack).isEmpty()) {
+    if (CropItems.plantedBy(stack).isEmpty() && !stack.isOf(ModItems.CROP_STICK)) {
       return ActionResult.PASS;
     }
 
-    BlockPos sown = hit.getBlockPos().offset(hit.getSide());
+    // Both the block clicked and the one a placement would land in. A seed goes into the space the
+    // player pointed past; a stick can go either there or into the column already standing in front
+    // of them, and which one it was is not worth working out twice.
+    BlockPos clicked = hit.getBlockPos();
+    BlockPos offset = clicked.offset(hit.getSide());
 
     server.getServer().execute(() -> {
-      if (CropSeasons.isCrop(server.getBlockState(sown))) {
-        PlantedCrops.get(server).remember(sown);
-      }
+      claim(server, clicked);
+      claim(server, offset);
     });
 
     return ActionResult.PASS;
+  }
+
+  /** Records the foot of whatever grew or was built here, if anything did. */
+  private static void claim(ServerWorld world, BlockPos pos) {
+    BlockState state = world.getBlockState(pos);
+
+    if (CropSticks.isColumn(state)) {
+      PlantedCrops.get(world).remember(CropSticks.base(world, pos));
+      return;
+    }
+
+    if (CropSeasons.isCrop(state)) {
+      PlantedCrops.get(world).remember(pos);
+    }
   }
 }
