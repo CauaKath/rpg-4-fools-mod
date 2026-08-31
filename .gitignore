@@ -39,7 +39,8 @@ replay_*.log
 *.hprof
 *.jfr
 
-# Python bytecode from the tools directory
+# local development tools, and the bytecode they leave behind
+tools/
 __pycache__/
 
 # ai tooling
