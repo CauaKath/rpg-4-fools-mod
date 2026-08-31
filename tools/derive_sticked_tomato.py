@@ -11,7 +11,8 @@ into its top two, and the joins then line up pixel for pixel at every age, for f
 
     dead     the adult recoloured to straw and thinned out, for a plant a season killed. Three of
              them - foot, middle, crown - so a dead column is not one picture repeated, for the
-             reason the living sections are not
+             reason the living sections are not. The crown is cut back at the top the way the living
+             one is, and stands in for a lone dead plant too
     bottom   roots at the foot, stalk carried out of the top
     middle   stalk carried through both ends, foliage mirrored so it is not the same picture twice
     top      the crown cleared back, so the plant tapers to a tip instead of being cut off
@@ -282,7 +283,9 @@ def main():
 
     foot = join_rows(thin(copy(dried), 0), thin(copy(dried), 0))
     middle = mirror_body(copy(foot))
-    crown = mirror_body(join_rows(thin(copy(dried), CROWN_SALT), foot))
+    # Cut back at the top like the living crown, because nothing grows above it. That also drops the
+    # two rows that carry the stalk upward, which is right: there is nothing up there to carry it to.
+    crown = clear_crown(mirror_body(join_rows(thin(copy(dried), CROWN_SALT), foot)))
 
     for suffix, rows in (("", foot), ("_middle", middle), ("_top", crown)):
         target = BLOCKS / DEAD_OUTPUT.format(suffix=suffix)

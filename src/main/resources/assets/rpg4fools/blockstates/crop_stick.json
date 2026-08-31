@@ -22,7 +22,7 @@
         "part": "single"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_stick_dead"
+        "model": "rpg4fools:block/crop_stick_dead_top"
       }
     },
     {
