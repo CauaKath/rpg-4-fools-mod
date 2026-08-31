@@ -98,8 +98,11 @@ public class CropTransition {
         return true;
       }
 
+      // The plant stays on the stick, dead. Deleting it left a trellis that had been full one day
+      // spotless the next, which read as the crop having been harvested rather than lost.
       world.setBlockState(pos, ModBlocks.CROP_STICK.getDefaultState()
-              .with(CropSticks.CAPPED, state.get(CropSticks.CAPPED)));
+              .with(CropSticks.CAPPED, state.get(CropSticks.CAPPED))
+              .with(CropSticks.DEAD, true));
       return true;
     }
 
@@ -177,6 +180,12 @@ public class CropTransition {
         // past rather than returned on: a taller trellis than the plot asked for still has surplus
         // above this, and stopping here would strand it.
         if (CropSticks.isEmpty(standing)) {
+          // Clearing last season's remains along with it. The plot is being sown again, so the whole
+          // trellis is put back in order rather than only the part being added to.
+          if (standing.get(CropSticks.DEAD)) {
+            world.setBlockState(at, standing.with(CropSticks.DEAD, false));
+          }
+
           continue;
         }
 

@@ -34,6 +34,16 @@ public final class CropSticks {
    */
   public static final BooleanProperty CAPPED = BooleanProperty.of("capped");
 
+  /**
+   * Whether the plant that was growing here died on the stick.
+   *
+   * <p>Debris, and nothing more. A stick carrying dead growth is still an empty stick to every rule
+   * that matters - it can be sown, a plant below can climb into it, and a field settling itself can
+   * take it down - and the new growth is what clears it. Without this a season simply deleted the
+   * plant, and a trellis that had been full one day was spotless the next.
+   */
+  public static final BooleanProperty DEAD = BooleanProperty.of("dead");
+
   private CropSticks() {
   }
 

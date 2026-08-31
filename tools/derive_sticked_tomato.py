@@ -9,6 +9,7 @@ Row 0 of a block sits against row 15 of the block above it, because the models s
 is the whole trick: a section that continues upward gets the original's own bottom two rows copied
 into its top two, and the joins then line up pixel for pixel at every age, for free.
 
+    dead     the adult recoloured to straw and thinned out, for a plant a season killed
     bottom   roots at the foot, stalk carried out of the top
     middle   stalk carried through both ends, foliage mirrored so it is not the same picture twice
     top      the crown cleared back, so the plant tapers to a tip instead of being cut off
@@ -34,6 +35,7 @@ BLOCKS = pathlib.Path("src/main/resources/assets/rpg4fools/textures/block")
 
 SOURCE = "tomato_crop_stage{age}.png"
 OUTPUT = "tomato_crop_stick_{part}_stage{age}.png"
+DEAD_OUTPUT = "crop_stick_dead.png"
 
 AGES = (4, 5, 6, 7)
 
@@ -63,6 +65,34 @@ ROOT_SPREAD = (3, 4, 11, 12)
 
 # How much of the crown the top section loses. Five rows leaves the plant's own taper as its tip.
 CROWN = 5
+
+# The straw the mod's dead crop is drawn in, so a withered trellis matches a withered field.
+STRAW_PALE = (0xD0, 0xBA, 0x80, 255)
+STRAW_LIGHT = (0xAC, 0x92, 0x62, 255)
+STRAW_MID = (0x7C, 0x63, 0x3F, 255)
+STRAW_DARK = (0x56, 0x43, 0x2B, 255)
+
+# Green by green, brightest to darkest. Withering is a recolour, not a redraw: the plant that died
+# should be recognisably the plant that was there.
+WITHERED = {
+    (0x82, 0xBC, 0x57): STRAW_PALE,
+    (0x5C, 0x9C, 0x40): STRAW_LIGHT,
+    (0x43, 0x7F, 0x33): STRAW_LIGHT,
+    (0x2F, 0x63, 0x29): STRAW_MID,
+    (0x24, 0x49, 0x1F): STRAW_DARK,
+    (0x1D, 0x3C, 0x1B): STRAW_DARK,
+    (0x58, 0x40, 0x19): STRAW_MID,
+    (0x3A, 0x2A, 0x12): STRAW_DARK,
+}
+
+# Roughly a third of the foliage is dropped, so what is left reads as a plant that has thinned out
+# rather than one that merely changed colour. Scattered by position rather than by counting pixels:
+# dropping every third one leaves a regular mesh, which reads as a texture rather than as decay.
+#
+# Fruit and flowers go entirely. They are the first thing a dying plant loses, and the wrong thing to
+# leave hanging on a bare trellis.
+THINNING = 10
+THINNED_BELOW = 3
 
 
 def read_png(path):
@@ -197,8 +227,41 @@ def graft(rows, join):
     return rows
 
 
+def scatter(x, y):
+    """A fixed, unlovely hash. Enough to break up a grid, and the same every time it is run."""
+    return ((x * 29 + y * 17) ^ (x * 13 + y * 7) ^ (x * y)) % THINNING
+
+
+def wither(rows):
+    """Dries the adult plant out: recoloured to straw, thinned, and stripped of anything it fruited."""
+    for y in range(16):
+        for x in range(16):
+            pixel = rows[y][x]
+
+            if pixel[3] == 0:
+                continue
+
+            dried = WITHERED.get(pixel[:3])
+
+            if dried is None:
+                rows[y][x] = CLEAR
+                continue
+
+            rows[y][x] = CLEAR if scatter(x, y) < THINNED_BELOW else dried
+
+    # Carried across the join the same way a living section is, so a column of dead sections still
+    # joins up instead of reading as three separate wrecks.
+    rows[0] = list(rows[15])
+    rows[1] = list(rows[14])
+    return rows
+
+
 def main():
     join = read_png(BLOCKS / SOURCE.format(age=JOIN_AGE))
+
+    dead = wither(copy(join))
+    write_png(BLOCKS / DEAD_OUTPUT, dead)
+    print(f"wrote {BLOCKS / DEAD_OUTPUT}")
 
     for age in SHOOT_AGES:
         shoot = graft(copy(read_png(BLOCKS / SOURCE.format(age=age))), join)

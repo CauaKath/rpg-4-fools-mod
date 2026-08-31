@@ -23,9 +23,10 @@ import net.minecraft.world.WorldView;
  * starts and where it returns to. The sticks outlive the plant on purpose: a trellis is something
  * the player built, and taking it away every autumn would make it a consumable instead.
  *
- * <p>Carries one piece of state, and only for the sprite: the last stick a column may hold is drawn
+ * <p>Its two properties are both sprites and nothing else. The last stick a column may hold is drawn
  * shorter, so a finished column says so rather than making the player find out by having a placement
- * refused. Which crop is on a stick is the block's identity rather than a property.
+ * refused; and a stick whose plant a season killed keeps the dead growth until something replaces it.
+ * Which crop is on a stick is the block's identity rather than a property.
  */
 public class CropStickBlock extends Block {
   public static final MapCodec<CropStickBlock> CODEC = createCodec(CropStickBlock::new);
@@ -42,12 +43,12 @@ public class CropStickBlock extends Block {
 
   public CropStickBlock(Settings settings) {
     super(settings);
-    setDefaultState(getDefaultState().with(CropSticks.CAPPED, false));
+    setDefaultState(getDefaultState().with(CropSticks.CAPPED, false).with(CropSticks.DEAD, false));
   }
 
   @Override
   protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-    builder.add(CropSticks.CAPPED);
+    builder.add(CropSticks.CAPPED, CropSticks.DEAD);
   }
 
   @Override
