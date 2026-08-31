@@ -340,6 +340,7 @@
   .chip.spring { background: var(--spring); }
   .chip.summer { background: var(--summer); }
   .chip.autumn { background: var(--autumn); }
+  .chip.winter { background: var(--winter); }
   .chip.thorn {
     background: transparent;
     color: var(--autumn);
@@ -366,6 +367,20 @@
   }
 
   .stage img { width: 64px; height: 64px; }
+
+  /* A column of sections, stacked the way they stand in the world. No gap: the sprites are drawn
+     to meet, and a seam here would hide the one thing the picture is meant to show. */
+  .trellis {
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+    padding: 20px 18px 14px;
+    background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+    background-size: 16px 16px;
+    background-position: 9px 9px;
+  }
+
+  .trellis img { width: 64px; height: 64px; }
 
   .stage span {
     font-family: "Field Mono", ui-monospace, monospace;
@@ -525,7 +540,7 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 12px;
   }
 
   .versions a {
@@ -588,6 +603,13 @@
     border-color: var(--accent);
     color: var(--accent);
     background: var(--accent-soft);
+  }
+
+  /* Not out yet. Reads as unfinished rather than as the one to reach for. */
+  .v-chip.dev {
+    border-color: var(--summer);
+    color: var(--summer);
+    background: transparent;
   }
 
   @media (max-width: 640px) {

@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RPG 4 Fools 0.4.0</title>
+<meta name="description" content="Crop sticks: a trellis up to three high, and a tomato that climbs it a section at a time and fruits the whole way up.">
+<meta property="og:title" content="RPG 4 Fools 0.4.0">
+<meta property="og:description" content="Crop sticks: a trellis up to three high, and a tomato that climbs it a section at a time and fruits the whole way up.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <a class="back" href="../">&larr; All versions</a>
+  </div>
+
+  <header class="masthead">
+    <span class="version">0.4.0 · In development</span>
+    <h1>A tomato worth climbing</h1>
+    <p class="standfirst">
+      Crop sticks: a trellis you build on farmland, up to three high. A tomato grown up one is a
+      single tall plant rather than three stacked bushes — it climbs a section at a time, fruits
+      the whole way up, and pays out once for all of it.
+    </p>
+    <div class="ribbon" aria-hidden="true"><div></div><div></div><div></div><div></div></div>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">One</span>
+      <h2>Four sticks make two</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      The mod's first crafting recipe: four vanilla sticks in a two by two, for two crop sticks.
+      Place one on farmland, or on top of another, up to three in a column. Sowing works either
+      into the stick or into the farmland it stands in, because a post two pixels wide is not
+      something anyone should have to aim at — and a stick used anywhere on a column goes on top
+      of it, the way scaffolding stacks.
+    </p>
+
+    <div class="also">
+      <div>
+        <h3>Three is the cap</h3>
+        <p>The last stick a column may hold stands a little over half the block, so a finished
+          trellis says so instead of making you find out by having a placement refused.</p>
+      </div>
+      <div>
+        <h3>The trellis outlives the plant</h3>
+        <p>A season takes the crop and leaves the sticks standing. Sow it again when the season
+          comes back around.</p>
+      </div>
+      <div>
+        <h3>Tomato only, for now</h3>
+        <p>One flag on the crop roster decides who can climb. Every other plant ignores sticks
+          entirely.</p>
+      </div>
+    </div>
+
+    <div class="yield">
+      <span class="drop"><img src="../assets/sprites/item/crop_stick.png" alt="">Crop Stick · 4 sticks make 2</span>
+      <span class="note">Placing a stick on a tomato already in the ground puts a trellis around
+        it without disturbing how far along it is.</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Two</span>
+      <h2>It climbs before it fruits</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      A plant reaching the adult age with an empty stick above it puts up a shoot and fills it in,
+      rather than sprouting a finished section. Ripening does not start until there is nothing
+      left to climb, so height is paid for in time — and a ripe plant can never gain a section,
+      because it is already past the age that climbs.
+    </p>
+
+    <div class="strip-scroll">
+      <div class="strip">
+        <div class="stage"><img src="../assets/sprites/block/tomato_crop_stick_top_stage0.png" alt="Shoot at age 0"><span>0</span></div>
+        <div class="stage"><img src="../assets/sprites/block/tomato_crop_stick_top_stage1.png" alt="Shoot at age 1"><span>1</span></div>
+        <div class="stage"><img src="../assets/sprites/block/tomato_crop_stick_top_stage2.png" alt="Shoot at age 2"><span>2</span></div>
+        <div class="stage"><img src="../assets/sprites/block/tomato_crop_stick_top_stage3.png" alt="Shoot at age 3"><span>3</span></div>
+        <div class="stage picked"><img src="../assets/sprites/block/tomato_crop_stick_top_stage4.png" alt="Shoot filled in"><span>filled</span></div>
+      </div>
+    </div>
+
+    <div class="yield">
+      <span class="note">The shoot thickens on its own rolls while the rest of the plant holds at
+        the adult age, so the pair is never caught with fruit on one section and none on the
+        other. Bone meal follows the same order: it buys height first.</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Three</span>
+      <h2>One plant, not a stack</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Every section carries the same age once the climbing is done, and they ripen together. The
+      foot has roots, the crown tapers to a tip, and the middle is the foot flipped so a tall
+      plant is not one picture repeated. Picking anywhere on it picks all of it — one to three
+      tomatoes per section, so a full trellis pays about three times over.
+    </p>
+
+    <div class="fates">
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="../assets/sprites/block/tomato_crop_stick_bottom_stage7.png" alt="Rooted bottom section">
+        </div>
+        <h3>Foot · roots</h3>
+        <p>Thickened into roots where it meets the farmland, with the stalk carried out of the
+          top to meet whatever is above.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="../assets/sprites/block/tomato_crop_stick_middle_stage7.png" alt="Middle section">
+        </div>
+        <h3>Middle · flipped</h3>
+        <p>Only on a three tall plant. The join rows stay unmirrored, which is what keeps the
+          stalk lined up where the sections meet.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="../assets/sprites/block/tomato_crop_stick_top_stage7.png" alt="Tapered top section">
+        </div>
+        <h3>Crown · tapered</h3>
+        <p>Cut back at the top, so the plant visibly ends rather than being cut off by the block
+          above it.</p>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <div class="specimen-head">
+        <h3>Tomato on a full trellis</h3>
+        <span class="label">Three sections · ripe</span>
+        <span class="seasons-of"><span class="chip summer">Summer</span></span>
+      </div>
+      <div class="trellis">
+        <img src="../assets/sprites/block/tomato_crop_stick_top_stage7.png" alt="Ripe crown">
+        <img src="../assets/sprites/block/tomato_crop_stick_middle_stage7.png" alt="Ripe middle">
+        <img src="../assets/sprites/block/tomato_crop_stick_bottom_stage7.png" alt="Ripe foot">
+      </div>
+      <div class="yield">
+        <span class="drop"><img src="../assets/sprites/item/tomato.png" alt="">Tomato · 3 hunger</span>
+        <span class="note">Row 0 of a block meets row 15 of the one above it, so every section is
+          drawn to agree about those rows — the stalk lines up at each join at every age.</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Four</span>
+      <h2>What a season leaves behind</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      A plant that dies on a trellis stays on it, dried out. Deleting it left a trellis that had
+      been full one day and spotless the next, which read as a harvest rather than a loss. The
+      remains are debris and nothing more: sow the stick again, or let a plant below climb up
+      through it, and the new growth clears them.
+    </p>
+
+    <div class="fates">
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="../assets/sprites/block/crop_stick_dead.png" alt="Dead foot section">
+        </div>
+        <h3>Foot</h3>
+        <p>The adult plant recoloured into the four straws the mod's dead crop already uses, then
+          thinned by about a third.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="../assets/sprites/block/crop_stick_dead_middle.png" alt="Dead middle section">
+        </div>
+        <h3>Middle</h3>
+        <p>The foot flipped, for the same reason the living middle is.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="../assets/sprites/block/crop_stick_dead_top.png" alt="Dead crown section">
+        </div>
+        <h3>Crown</h3>
+        <p>Flipped over a different scatter, since flipping alone would have left it identical to
+          the middle, and cut back at the top like the living crown.</p>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <div class="specimen-head">
+        <h3>The same trellis, out of season</h3>
+        <span class="label">Three sections · dead</span>
+        <span class="seasons-of"><span class="chip autumn">Autumn</span><span class="chip winter">Winter</span></span>
+      </div>
+      <div class="trellis">
+        <img src="../assets/sprites/block/crop_stick_dead_top.png" alt="Dead crown">
+        <img src="../assets/sprites/block/crop_stick_dead_middle.png" alt="Dead middle">
+        <img src="../assets/sprites/block/crop_stick_dead.png" alt="Dead foot">
+      </div>
+      <div class="yield">
+        <span class="note">Fruit is stripped entirely. It is the first thing a dying plant loses,
+          and the wrong thing to leave hanging on a bare trellis.</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Five</span>
+      <h2>Trellises in the wild</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      A village field that regrows on its own can come back on a trellis. One plant in twelve,
+      where the patch came back as a crop sticks can carry — rare on purpose, since a field full
+      of them would make the crafted stick pointless.
+    </p>
+
+    <div class="also">
+      <div>
+        <h3>Scattered, not banded</h3>
+        <p>The crop is still chosen per three by three patch, so fields keep their bands, but each
+          plant rolls for its trellis separately.</p>
+      </div>
+      <div>
+        <h3>Sticks, not plants</h3>
+        <p>Only the trellis and a young plant go down. It climbs its own sticks exactly as yours
+          does — no free harvest for walking past.</p>
+      </div>
+      <div>
+        <h3>Six in ten are single</h3>
+        <p>Three in ten are two sticks, one in ten is three. A full trellis found in the world is
+          meant to be worth noticing.</p>
+      </div>
+      <div>
+        <h3>Yours are left alone</h3>
+        <p>Putting sticks on a plot claims it. A field will sow itself over its own trellises and
+          never over one you built.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>RPG 4 Fools 0.4.0</span>
+    <span>Minecraft 1.20.6 · Fabric</span>
+    <span>Block sprites shown at 4×, items at 2×</span>
+    <span><a href="https://github.com/CauaKath/rpg-4-fools-mod">Source on GitHub</a></span>
+  </footer>
+
+</div>
+</body>
+</html>

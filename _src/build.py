@@ -34,6 +34,9 @@ SITE = "https://cauakath.github.io/rpg-4-fools-mod/"
 
 # Newest first, which is the order the index lists them in.
 VERSIONS = [
+    ("0.4.0", "A tomato worth climbing",
+     "Crop sticks: a trellis up to three high, and a tomato that climbs it a section at a time "
+     "and fruits the whole way up."),
     ("0.3.1", "You can see when it is ready",
      "Lettuce redrawn as a lettuce, tomato and cucumber flower before they fruit, and the "
      "picked flag they needed is gone."),
