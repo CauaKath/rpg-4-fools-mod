@@ -373,14 +373,15 @@
   .trellis {
     display: flex;
     flex-direction: column;
-    width: max-content;
-    padding: 20px 18px 14px;
+    align-items: center;
+    width: 100%;
+    padding: 24px 18px 20px;
     background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
     background-size: 16px 16px;
     background-position: 9px 9px;
   }
 
-  .trellis img { width: 64px; height: 64px; }
+  .trellis img { width: 128px; height: 128px; }
 
   .stage span {
     font-family: "Field Mono", ui-monospace, monospace;
@@ -540,7 +541,7 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
   }
 
   .versions a {

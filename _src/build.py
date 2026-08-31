@@ -9,6 +9,7 @@ Two targets share one set of content fragments and one stylesheet:
 """
 
 import base64
+import hashlib
 import pathlib
 import re
 import shutil
@@ -171,8 +172,13 @@ def build_pages(dist):
     (dist / "assets" / "fonts").mkdir(parents=True)
     (dist / "assets" / "sprites").mkdir(parents=True)
 
-    css = HERE.joinpath("styles.css").read_text()
-    (dist / "assets" / "site.css").write_text(RESET + ASSET.sub(linked(""), css))
+    css = RESET + ASSET.sub(linked(""), HERE.joinpath("styles.css").read_text())
+    (dist / "assets" / "site.css").write_text(css)
+
+    # The stylesheet lives at one URL forever, so a browser that has seen the site once keeps
+    # serving itself the old one and every style change lands invisibly. Stamping the content hash
+    # into the link is what makes an edit actually arrive.
+    stamp = "?v=" + hashlib.sha256(css.encode()).hexdigest()[:8]
 
     for key, name in FONT_FILES.items():
         shutil.copy(FONTS[key], dist / "assets" / "fonts" / name)
@@ -199,7 +205,7 @@ def build_pages(dist):
             "RPG 4 Fools " + version,
             summary,
             ASSET.sub(linked("../", version), body),
-            "../assets/site.css",
+            "../assets/site.css" + stamp,
             version=version,
             prefix="../",
         ))
@@ -209,7 +215,7 @@ def build_pages(dist):
         "RPG 4 Fools",
         "Release notes for RPG 4 Fools, a Minecraft mod that gives the world seasons.",
         ASSET.sub(linked(""), index),
-        "assets/site.css",
+        "assets/site.css" + stamp,
     ))
 
     print("pages:", len(VERSIONS) + 1, "html,", written, "sprites ->", dist)
