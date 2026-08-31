@@ -19,7 +19,7 @@
     {
       "when": {
         "dead": "true",
-        "middle": "false"
+        "part": "single"
       },
       "apply": {
         "model": "rpg4fools:block/crop_stick_dead"
@@ -28,10 +28,28 @@
     {
       "when": {
         "dead": "true",
-        "middle": "true"
+        "part": "bottom"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_stick_dead"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "part": "middle"
       },
       "apply": {
         "model": "rpg4fools:block/crop_stick_dead_middle"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "part": "top"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_stick_dead_top"
       }
     }
   ]

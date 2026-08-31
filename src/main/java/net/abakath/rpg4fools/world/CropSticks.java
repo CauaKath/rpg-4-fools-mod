@@ -4,6 +4,7 @@ import net.abakath.rpg4fools.init.ModBlocks;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldView;
@@ -45,13 +46,14 @@ public final class CropSticks {
   public static final BooleanProperty DEAD = BooleanProperty.of("dead");
 
   /**
-   * Whether this stick has column both above and below it.
+   * Where a block sits in its column.
    *
-   * <p>Only the dead sprite reads it, and only to draw the middle of a column flipped, so three dead
-   * sections are not the same picture three times. The living sections answer the same question with
-   * {@link ColumnPart}, which they need in more detail: they have a foot and a crown to draw as well.
+   * <p>Shared by both blocks, and a sprite in both. A living plant needs a foot with roots and a
+   * crown that tapers; a dead one needs three variants of the same wreck so a column is not one
+   * picture repeated. What counts as a neighbour differs between them, which is why each works the
+   * value out for itself - see {@link #partAt} and its counterpart in {@link StickedCropBlock}.
    */
-  public static final BooleanProperty MIDDLE = BooleanProperty.of("middle");
+  public static final EnumProperty<ColumnPart> PART = EnumProperty.of("part", ColumnPart.class);
 
   private CropSticks() {
   }
@@ -152,9 +154,22 @@ public final class CropSticks {
     return depth(world, pos) >= MAX_HEIGHT;
   }
 
-  /** Whether a block at this position has column on both sides of it. */
-  public static boolean middle(BlockView world, BlockPos pos) {
-    return isColumn(world.getBlockState(pos.down())) && isColumn(world.getBlockState(pos.up()));
+  /**
+   * Where a stick sits in its column.
+   *
+   * <p>Counts any column block as a neighbour, unlike the plant's own version, which counts only
+   * sections of itself. A stick above a living plant is the top of that column even though it is not
+   * part of the plant, and should be drawn as one.
+   */
+  public static ColumnPart partAt(BlockView world, BlockPos pos) {
+    boolean below = isColumn(world.getBlockState(pos.down()));
+    boolean above = isColumn(world.getBlockState(pos.up()));
+
+    if (below && above) {
+      return ColumnPart.MIDDLE;
+    }
+
+    return below ? ColumnPart.TOP : above ? ColumnPart.BOTTOM : ColumnPart.SINGLE;
   }
 
   /**
@@ -166,7 +181,7 @@ public final class CropSticks {
   public static BlockState stick(BlockView world, BlockPos pos, boolean dead) {
     return ModBlocks.CROP_STICK.getDefaultState()
             .with(CAPPED, capped(world, pos))
-            .with(MIDDLE, middle(world, pos))
+            .with(PART, partAt(world, pos))
             .with(DEAD, dead);
   }
 

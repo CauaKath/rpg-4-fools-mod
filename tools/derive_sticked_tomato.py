@@ -9,8 +9,9 @@ Row 0 of a block sits against row 15 of the block above it, because the models s
 is the whole trick: a section that continues upward gets the original's own bottom two rows copied
 into its top two, and the joins then line up pixel for pixel at every age, for free.
 
-    dead     the adult recoloured to straw and thinned out, for a plant a season killed, with a
-             mirrored twin for the middle of a column, for the reason the living middle has one
+    dead     the adult recoloured to straw and thinned out, for a plant a season killed. Three of
+             them - foot, middle, crown - so a dead column is not one picture repeated, for the
+             reason the living sections are not
     bottom   roots at the foot, stalk carried out of the top
     middle   stalk carried through both ends, foliage mirrored so it is not the same picture twice
     top      the crown cleared back, so the plant tapers to a tip instead of being cut off
@@ -36,8 +37,7 @@ BLOCKS = pathlib.Path("src/main/resources/assets/rpg4fools/textures/block")
 
 SOURCE = "tomato_crop_stage{age}.png"
 OUTPUT = "tomato_crop_stick_{part}_stage{age}.png"
-DEAD_OUTPUT = "crop_stick_dead.png"
-DEAD_MIDDLE_OUTPUT = "crop_stick_dead_middle.png"
+DEAD_OUTPUT = "crop_stick_dead{suffix}.png"
 
 AGES = (4, 5, 6, 7)
 
@@ -95,6 +95,9 @@ WITHERED = {
 # leave hanging on a bare trellis.
 THINNING = 10
 THINNED_BELOW = 3
+
+# A second scatter for the crown, so mirroring alone does not leave it identical to the middle.
+CROWN_SALT = 4
 
 
 def read_png(path):
@@ -229,13 +232,13 @@ def graft(rows, join):
     return rows
 
 
-def scatter(x, y):
+def scatter(x, y, salt):
     """A fixed, unlovely hash. Enough to break up a grid, and the same every time it is run."""
-    return ((x * 29 + y * 17) ^ (x * 13 + y * 7) ^ (x * y)) % THINNING
+    return ((x * 29 + y * 17) ^ (x * 13 + y * 7) ^ (x * y) ^ salt) % THINNING
 
 
-def wither(rows):
-    """Dries the adult plant out: recoloured to straw, thinned, and stripped of anything it fruited."""
+def dry(rows):
+    """Recolours the plant to straw and drops anything it fruited, without thinning it yet."""
     for y in range(16):
         for x in range(16):
             pixel = rows[y][x]
@@ -243,16 +246,30 @@ def wither(rows):
             if pixel[3] == 0:
                 continue
 
-            dried = WITHERED.get(pixel[:3])
+            rows[y][x] = WITHERED.get(pixel[:3], CLEAR)
 
-            if dried is None:
+    return rows
+
+
+def thin(rows, salt):
+    """Scatters gaps through what is left, so it reads as a plant that has thinned rather than one
+    that merely changed colour."""
+    for y in range(16):
+        for x in range(16):
+            if rows[y][x][3] != 0 and scatter(x, y, salt) < THINNED_BELOW:
                 rows[y][x] = CLEAR
-                continue
 
-            rows[y][x] = CLEAR if scatter(x, y) < THINNED_BELOW else dried
+    return rows
 
-    # Carried across the join the same way a living section is, so a column of dead sections still
-    # joins up instead of reading as three separate wrecks.
+
+def join_rows(rows, source):
+    """Gives every dead section the same foot and the same crown.
+
+    A section joins the one above it by its top two rows meeting that one's bottom two, so the three
+    variants have to agree about those four rows exactly. Only the body between them varies.
+    """
+    rows[14] = list(source[14])
+    rows[15] = list(source[15])
     rows[0] = list(rows[15])
     rows[1] = list(rows[14])
     return rows
@@ -261,12 +278,16 @@ def wither(rows):
 def main():
     join = read_png(BLOCKS / SOURCE.format(age=JOIN_AGE))
 
-    dead = wither(copy(join))
-    write_png(BLOCKS / DEAD_OUTPUT, dead)
-    print(f"wrote {BLOCKS / DEAD_OUTPUT}")
+    dried = dry(copy(join))
 
-    write_png(BLOCKS / DEAD_MIDDLE_OUTPUT, mirror_body(copy(dead)))
-    print(f"wrote {BLOCKS / DEAD_MIDDLE_OUTPUT}")
+    foot = join_rows(thin(copy(dried), 0), thin(copy(dried), 0))
+    middle = mirror_body(copy(foot))
+    crown = mirror_body(join_rows(thin(copy(dried), CROWN_SALT), foot))
+
+    for suffix, rows in (("", foot), ("_middle", middle), ("_top", crown)):
+        target = BLOCKS / DEAD_OUTPUT.format(suffix=suffix)
+        write_png(target, rows)
+        print(f"wrote {target}")
 
     for age in SHOOT_AGES:
         shoot = graft(copy(read_png(BLOCKS / SOURCE.format(age=age))), join)

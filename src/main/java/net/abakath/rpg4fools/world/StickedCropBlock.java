@@ -14,7 +14,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -46,9 +45,6 @@ import net.minecraft.world.event.GameEvent;
 public class StickedCropBlock extends RegrowingCropBlock {
   public static final MapCodec<StickedCropBlock> CODEC = createCodec(StickedCropBlock::new);
 
-  /** Which end of the plant this section is, for the sprite. Worked out, never stored deliberately. */
-  public static final EnumProperty<ColumnPart> PART = EnumProperty.of("part", ColumnPart.class);
-
   /**
    * One random tick in four climbs a section.
    *
@@ -63,7 +59,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
 
   public StickedCropBlock(Settings settings) {
     super(settings);
-    setDefaultState(getDefaultState().with(PART, ColumnPart.SINGLE).with(CropSticks.CAPPED, false));
+    setDefaultState(getDefaultState().with(CropSticks.PART, ColumnPart.SINGLE).with(CropSticks.CAPPED, false));
   }
 
   @Override
@@ -74,7 +70,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
   @Override
   protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
     super.appendProperties(builder);
-    builder.add(PART, CropSticks.CAPPED);
+    builder.add(CropSticks.PART, CropSticks.CAPPED);
   }
 
   @Override
@@ -109,7 +105,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
       return updated;
     }
 
-    return updated.with(PART, partAt(world, pos)).with(CropSticks.CAPPED, CropSticks.capped(world, pos));
+    return updated.with(CropSticks.PART, partAt(world, pos)).with(CropSticks.CAPPED, CropSticks.capped(world, pos));
   }
 
   /**
@@ -300,7 +296,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
     // The part is set here as well as derived, so the new section is never drawn as a whole plant
     // for the tick before its neighbour update lands.
     world.setBlockState(grown, getDefaultState()
-            .with(PART, ColumnPart.TOP)
+            .with(CropSticks.PART, ColumnPart.TOP)
             .with(CropSticks.CAPPED, CropSticks.capped(world, grown)), Block.NOTIFY_ALL);
   }
 
