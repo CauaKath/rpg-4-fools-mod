@@ -1,0 +1,100 @@
+{
+  "variants": {
+    "compost=none,moisture=0": {
+      "model": "minecraft:block/farmland"
+    },
+    "compost=none,moisture=1": {
+      "model": "minecraft:block/farmland"
+    },
+    "compost=none,moisture=2": {
+      "model": "minecraft:block/farmland"
+    },
+    "compost=none,moisture=3": {
+      "model": "minecraft:block/farmland"
+    },
+    "compost=none,moisture=4": {
+      "model": "minecraft:block/farmland"
+    },
+    "compost=none,moisture=5": {
+      "model": "minecraft:block/farmland"
+    },
+    "compost=none,moisture=6": {
+      "model": "minecraft:block/farmland"
+    },
+    "compost=none,moisture=7": {
+      "model": "minecraft:block/farmland_moist"
+    },
+    "compost=rich,moisture=0": {
+      "model": "rpg4fools:block/rich_farmland"
+    },
+    "compost=rich,moisture=1": {
+      "model": "rpg4fools:block/rich_farmland"
+    },
+    "compost=rich,moisture=2": {
+      "model": "rpg4fools:block/rich_farmland"
+    },
+    "compost=rich,moisture=3": {
+      "model": "rpg4fools:block/rich_farmland"
+    },
+    "compost=rich,moisture=4": {
+      "model": "rpg4fools:block/rich_farmland"
+    },
+    "compost=rich,moisture=5": {
+      "model": "rpg4fools:block/rich_farmland"
+    },
+    "compost=rich,moisture=6": {
+      "model": "rpg4fools:block/rich_farmland"
+    },
+    "compost=rich,moisture=7": {
+      "model": "rpg4fools:block/rich_farmland_moist"
+    },
+    "compost=warm,moisture=0": {
+      "model": "rpg4fools:block/warm_farmland"
+    },
+    "compost=warm,moisture=1": {
+      "model": "rpg4fools:block/warm_farmland"
+    },
+    "compost=warm,moisture=2": {
+      "model": "rpg4fools:block/warm_farmland"
+    },
+    "compost=warm,moisture=3": {
+      "model": "rpg4fools:block/warm_farmland"
+    },
+    "compost=warm,moisture=4": {
+      "model": "rpg4fools:block/warm_farmland"
+    },
+    "compost=warm,moisture=5": {
+      "model": "rpg4fools:block/warm_farmland"
+    },
+    "compost=warm,moisture=6": {
+      "model": "rpg4fools:block/warm_farmland"
+    },
+    "compost=warm,moisture=7": {
+      "model": "rpg4fools:block/warm_farmland_moist"
+    },
+    "compost=creeping,moisture=0": {
+      "model": "rpg4fools:block/creeping_farmland"
+    },
+    "compost=creeping,moisture=1": {
+      "model": "rpg4fools:block/creeping_farmland"
+    },
+    "compost=creeping,moisture=2": {
+      "model": "rpg4fools:block/creeping_farmland"
+    },
+    "compost=creeping,moisture=3": {
+      "model": "rpg4fools:block/creeping_farmland"
+    },
+    "compost=creeping,moisture=4": {
+      "model": "rpg4fools:block/creeping_farmland"
+    },
+    "compost=creeping,moisture=5": {
+      "model": "rpg4fools:block/creeping_farmland"
+    },
+    "compost=creeping,moisture=6": {
+      "model": "rpg4fools:block/creeping_farmland"
+    },
+    "compost=creeping,moisture=7": {
+      "model": "rpg4fools:block/creeping_farmland_moist"
+    }
+  }
+}

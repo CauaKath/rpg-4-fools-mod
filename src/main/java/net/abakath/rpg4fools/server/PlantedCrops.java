@@ -3,6 +3,7 @@ package net.abakath.rpg4fools.server;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.world.CropSeasons;
+import net.abakath.rpg4fools.world.CropSticks;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
@@ -83,7 +84,10 @@ public class PlantedCrops extends PersistentState {
 
     BlockState state = world.getBlockState(pos);
 
-    if (CropSeasons.isCrop(state) || state.isOf(ModBlocks.DEAD_CROP)) {
+    // A trellis counts, empty or not. It outlives the plant it was built for, and forgetting the
+    // spot while it stood bare would hand a player's trellis to the rule that resows village fields
+    // the next time a season turned.
+    if (CropSeasons.isCrop(state) || state.isOf(ModBlocks.DEAD_CROP) || CropSticks.isColumn(state)) {
       return true;
     }
 

@@ -1,5 +1,6 @@
 package net.abakath.rpg4fools.mixin;
 
+import net.abakath.rpg4fools.world.CompostGrowth;
 import net.abakath.rpg4fools.world.CropTransition;
 import net.abakath.rpg4fools.world.CurrentSeason;
 import net.minecraft.block.AbstractBlock;
@@ -23,6 +24,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * one method, so modded crops obey the same rule as vanilla ones and there is a single target string
  * to get right instead of five.
  *
+ * <p>Warm compost rides here too, for the same reason: one method every growing block passes
+ * through means vanilla wheat and this mod's crops are hurried by the same rule, and there is one
+ * target string to get right rather than five.
+ *
  * <p>This is the hottest block path in the game. CropTransition opens with a crops tag lookup, which
  * is a set membership test against the block's registry entry, and every block that is not a crop
  * pays only that.
@@ -37,6 +42,9 @@ public class BlockStateRandomTickMixin {
     // vanilla was about to grow.
     if (CropTransition.apply(world, pos, state, CurrentSeason.season())) {
       info.cancel();
+      return;
     }
+
+    CompostGrowth.boost(world, pos, state, random);
   }
 }

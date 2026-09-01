@@ -1,0 +1,56 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "capped": "false"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_stick_post"
+      }
+    },
+    {
+      "when": {
+        "capped": "true"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_stick_post_capped"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "part": "single"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_stick_dead_top"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "part": "bottom"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_stick_dead"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "part": "middle"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_stick_dead_middle"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "part": "top"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_stick_dead_top"
+      }
+    }
+  ]
+}

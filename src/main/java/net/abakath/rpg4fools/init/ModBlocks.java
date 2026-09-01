@@ -2,11 +2,15 @@ package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.world.CropDefinition;
+import net.abakath.rpg4fools.world.CropStickBlock;
+import net.abakath.rpg4fools.world.CropWallBlock;
 import net.abakath.rpg4fools.world.DeadCropBlock;
 import net.abakath.rpg4fools.world.DormantBerryBushBlock;
 import net.abakath.rpg4fools.world.ModBerryBushBlock;
 import net.abakath.rpg4fools.world.ModCropBlock;
 import net.abakath.rpg4fools.world.RegrowingCropBlock;
+import net.abakath.rpg4fools.world.StickedCropBlock;
+import net.abakath.rpg4fools.world.WalledCropBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.piston.PistonBehavior;
@@ -58,8 +62,43 @@ public class ModBlocks {
                   .pistonBehavior(PistonBehavior.DESTROY)
   ));
 
+  /**
+   * A trellis with nothing on it. Gets a BlockItem, unlike the two blocks above: this one is a thing
+   * the player crafts, carries and places, which is the whole point of it.
+   *
+   * <p>Deliberately outside the crops tag. It is not a crop, nothing about it grows, and the season
+   * hook has no business looking at it - an empty stick is what a sticked crop becomes when its
+   * season ends, not something a season can do anything to.
+   */
+  public static final Block CROP_STICK = register("crop_stick", new CropStickBlock(
+          AbstractBlock.Settings.create()
+                  .noCollision()
+                  .breakInstantly()
+                  .nonOpaque()
+                  .sounds(BlockSoundGroup.WOOD)
+                  .pistonBehavior(PistonBehavior.DESTROY)
+  ));
+
+  /**
+   * A trellis panel. Gets a BlockItem for the same reason the stick does, and like the stick it is
+   * kept out of the crops tag.
+   *
+   * <p>Asks nothing of the world it is placed in - no support, no farmland, no size limit - because
+   * half of what it is for is being scenery. See {@link CropWallBlock}.
+   */
+  public static final Block CROP_WALL = register("crop_wall", new CropWallBlock(
+          AbstractBlock.Settings.create()
+                  .noCollision()
+                  .breakInstantly()
+                  .nonOpaque()
+                  .sounds(BlockSoundGroup.WOOD)
+                  .pistonBehavior(PistonBehavior.DESTROY)
+  ));
+
   private static final Map<CropDefinition, Block> LIVE = new LinkedHashMap<>();
   private static final Map<CropDefinition, Block> DORMANT = new LinkedHashMap<>();
+  private static final Map<CropDefinition, Block> STICKED = new LinkedHashMap<>();
+  private static final Map<CropDefinition, Block> WALLED = new LinkedHashMap<>();
   private static final Map<Block, CropDefinition> BY_BLOCK = new HashMap<>();
 
   static {
@@ -76,6 +115,35 @@ public class ModBlocks {
         // picking it leaves the plant standing.
         register(definition, LIVE, definition.blockName(),
                 definition.regrows() ? new RegrowingCropBlock(settings) : new ModCropBlock(settings));
+
+        // The same crop again, as it grows on a trellis. A second block rather than a property on
+        // the first: which one the player is looking at decides the models, the loot and whether a
+        // season leaves sticks behind, and none of that is a state the plain crop should carry.
+        if (definition.sticked()) {
+          register(definition, STICKED, definition.stickedBlockName(), new StickedCropBlock(
+                  AbstractBlock.Settings.create()
+                          .ticksRandomly()
+                          .noCollision()
+                          .breakInstantly()
+                          .sounds(BlockSoundGroup.CROP)
+                          .pistonBehavior(PistonBehavior.DESTROY)
+          ));
+        }
+
+        // And again, as it spreads over a wall. A separate block for the same reasons the sticked
+        // form is one, plus a rule the sticked form has no need of: a cell of this block turns back
+        // into the panel it grew on, rather than dropping, when it loses its root.
+        if (definition.walled()) {
+          register(definition, WALLED, definition.walledBlockName(), new WalledCropBlock(
+                  AbstractBlock.Settings.create()
+                          .ticksRandomly()
+                          .noCollision()
+                          .breakInstantly()
+                          .sounds(BlockSoundGroup.CROP)
+                          .pistonBehavior(PistonBehavior.DESTROY)
+          ));
+        }
+
         continue;
       }
 
@@ -107,6 +175,16 @@ public class ModBlocks {
     return DORMANT.get(definition);
   }
 
+  /** This crop as it grows on a trellis, or null for a crop no sticks were made for. */
+  public static Block stickedFor(CropDefinition definition) {
+    return STICKED.get(definition);
+  }
+
+  /** This crop as it grows on a wall, or null for a crop no wall art was made for. */
+  public static Block walledFor(CropDefinition definition) {
+    return WALLED.get(definition);
+  }
+
   public static CropDefinition definitionFor(Block block) {
     return BY_BLOCK.get(block);
   }
@@ -122,7 +200,10 @@ public class ModBlocks {
     return definition == null || definition.thorny();
   }
 
-  /** Every block the roster registered, each live bush followed by its dormant form. */
+  /**
+   * Every block the roster registered: each crop, followed by its dormant, sticked or walled form
+   * where it has one.
+   */
   public static List<Block> cropBlocks() {
     List<Block> blocks = new ArrayList<>();
 
@@ -131,6 +212,14 @@ public class ModBlocks {
 
       if (DORMANT.containsKey(definition)) {
         blocks.add(DORMANT.get(definition));
+      }
+
+      if (STICKED.containsKey(definition)) {
+        blocks.add(STICKED.get(definition));
+      }
+
+      if (WALLED.containsKey(definition)) {
+        blocks.add(WALLED.get(definition));
       }
     }
 

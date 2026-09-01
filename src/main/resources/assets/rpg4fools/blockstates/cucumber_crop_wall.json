@@ -1,0 +1,787 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_post"
+      }
+    },
+    {
+      "when": {
+        "north": "true"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_side"
+      }
+    },
+    {
+      "when": {
+        "east": "true"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_side",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "true"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_side_alt"
+      }
+    },
+    {
+      "when": {
+        "west": "true"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_side_alt",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "0",
+        "age": "0"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "0",
+        "age": "1"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "0",
+        "age": "2"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "0",
+        "age": "3"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "0",
+        "age": "4"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "0",
+        "age": "5"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage5",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "0",
+        "age": "6"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage6",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "0",
+        "age": "7"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage7",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "1",
+        "age": "0"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "1",
+        "age": "1"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "1",
+        "age": "2"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "1",
+        "age": "3"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "1",
+        "age": "4"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "1",
+        "age": "5"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage5",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "1",
+        "age": "6"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage6",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "1",
+        "age": "7"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage7",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "2",
+        "age": "0"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "2",
+        "age": "1"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "2",
+        "age": "2"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "2",
+        "age": "3"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "2",
+        "age": "4"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "2",
+        "age": "5"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage5",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "2",
+        "age": "6"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage6",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "left",
+        "row": "2",
+        "age": "7"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage7",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "0",
+        "age": "0"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row0_stage0"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "0",
+        "age": "1"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row0_stage1"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "0",
+        "age": "2"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row0_stage2"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "0",
+        "age": "3"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row0_stage3"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "0",
+        "age": "4"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row0_stage4"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "0",
+        "age": "5"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row0_stage5"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "0",
+        "age": "6"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row0_stage6"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "0",
+        "age": "7"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row0_stage7"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "1",
+        "age": "0"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row1_stage0"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "1",
+        "age": "1"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row1_stage1"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "1",
+        "age": "2"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row1_stage2"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "1",
+        "age": "3"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row1_stage3"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "1",
+        "age": "4"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row1_stage4"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "1",
+        "age": "5"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row1_stage5"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "1",
+        "age": "6"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row1_stage6"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "1",
+        "age": "7"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row1_stage7"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "2",
+        "age": "0"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row2_stage0"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "2",
+        "age": "1"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row2_stage1"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "2",
+        "age": "2"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row2_stage2"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "2",
+        "age": "3"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row2_stage3"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "2",
+        "age": "4"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row2_stage4"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "2",
+        "age": "5"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row2_stage5"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "2",
+        "age": "6"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row2_stage6"
+      }
+    },
+    {
+      "when": {
+        "arm": "center",
+        "row": "2",
+        "age": "7"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_center_row2_stage7"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "0",
+        "age": "0"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage0"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "0",
+        "age": "1"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage1"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "0",
+        "age": "2"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage2"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "0",
+        "age": "3"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage3"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "0",
+        "age": "4"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage4"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "0",
+        "age": "5"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage5"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "0",
+        "age": "6"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage6"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "0",
+        "age": "7"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row0_stage7"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "1",
+        "age": "0"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage0"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "1",
+        "age": "1"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage1"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "1",
+        "age": "2"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage2"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "1",
+        "age": "3"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage3"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "1",
+        "age": "4"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage4"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "1",
+        "age": "5"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage5"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "1",
+        "age": "6"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage6"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "1",
+        "age": "7"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row1_stage7"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "2",
+        "age": "0"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage0"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "2",
+        "age": "1"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage1"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "2",
+        "age": "2"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage2"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "2",
+        "age": "3"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage3"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "2",
+        "age": "4"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage4"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "2",
+        "age": "5"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage5"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "2",
+        "age": "6"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage6"
+      }
+    },
+    {
+      "when": {
+        "arm": "right",
+        "row": "2",
+        "age": "7"
+      },
+      "apply": {
+        "model": "rpg4fools:block/cucumber_crop_wall_side_row2_stage7"
+      }
+    }
+  ]
+}

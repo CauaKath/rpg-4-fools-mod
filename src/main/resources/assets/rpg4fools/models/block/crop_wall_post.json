@@ -1,0 +1,40 @@
+{
+  "__comment": "The post down the middle, drawn on its own so a plant covering the panel can be a separate piece of the same blockstate. Columns 7 and 8 of the texture are the post, and 0 to 6 and 9 to 15 are the two arms one each. Dropped one pixel so it sits in the farmland rather than on top of it, which also lets a stack tile without a seam - the same reason crop_stick_post is drawn that way.",
+  "ambientocclusion": false,
+  "textures": {
+    "wall": "rpg4fools:block/crop_wall",
+    "particle": "rpg4fools:block/crop_wall"
+  },
+  "elements": [
+    {
+      "from": [7, -1, 7],
+      "to": [9, 15, 9],
+      "faces": {
+        "north": {
+          "uv": [7, 0, 9, 16],
+          "texture": "#wall"
+        },
+        "south": {
+          "uv": [7, 0, 9, 16],
+          "texture": "#wall"
+        },
+        "west": {
+          "uv": [7, 0, 9, 16],
+          "texture": "#wall"
+        },
+        "east": {
+          "uv": [7, 0, 9, 16],
+          "texture": "#wall"
+        },
+        "up": {
+          "uv": [7, 7, 9, 9],
+          "texture": "#wall"
+        },
+        "down": {
+          "uv": [7, 7, 9, 9],
+          "texture": "#wall"
+        }
+      }
+    }
+  ]
+}
