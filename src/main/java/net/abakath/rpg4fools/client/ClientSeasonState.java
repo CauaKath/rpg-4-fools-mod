@@ -22,7 +22,7 @@ import net.minecraft.util.math.ChunkPos;
  */
 @Environment(EnvType.CLIENT)
 public final class ClientSeasonState {
-  /** Days in a month, matching DayChangingHandler.MONTH_DURATION. */
+  /** Must match DayChangingHandler.MONTH_DURATION. */
   private static final int MONTH_DURATION = 28;
 
   private static volatile SubSeason subSeason = SubSeason.EARLY_SPRING;

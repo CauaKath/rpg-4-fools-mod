@@ -79,13 +79,6 @@ public final class SeasonAtmosphere {
    *
    * @param effectiveStrength family season sensitivity multiplied by the temperature curve
    */
-  /**
-   * The biome half of the atmosphere, averaged over the sample grid. Cached on its own because it
-   * depends only on where the player is, never on the date. Keeping the season out of the cache
-   * means a sub season change can never serve a stale value.
-   *
-   * @param effectiveStrength family season sensitivity multiplied by the temperature curve
-   */
   private record BiomeAggregate(int tintColor, float colorBlend, float effectiveStrength,
                                 float fogPresence, float fogStart, float fogEnd) {
   }
