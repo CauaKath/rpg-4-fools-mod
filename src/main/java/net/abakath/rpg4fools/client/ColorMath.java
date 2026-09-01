@@ -59,9 +59,7 @@ public final class ColorMath {
     out[2] = brightness;
   }
 
-  /**
-   * Converts HSB back to a packed 0xRRGGBB int. Inputs are clamped, and hue wraps.
-   */
+  /** Inputs are clamped, and hue wraps. */
   public static int hsbToRgb(float hue, float saturation, float brightness) {
     saturation = clamp01(saturation);
     brightness = clamp01(brightness);
@@ -120,7 +118,6 @@ public final class ColorMath {
     return (r << 16) | (g << 8) | b;
   }
 
-  /** Linearly interpolates two packed 0xRRGGBB colours, per channel. */
   public static int lerpRgb(int from, int to, float t) {
     float amount = clamp01(t);
 
@@ -131,7 +128,6 @@ public final class ColorMath {
     return (r << 16) | (g << 8) | b;
   }
 
-  /** Packs a Vec3d whose components are 0..1 channels into a 0xRRGGBB int. */
   public static int packRgb(Vec3d color) {
     int r = Math.round(clamp01((float) color.x) * 255.0f);
     int g = Math.round(clamp01((float) color.y) * 255.0f);
@@ -140,7 +136,6 @@ public final class ColorMath {
     return (r << 16) | (g << 8) | b;
   }
 
-  /** Unpacks a 0xRRGGBB int into a Vec3d of 0..1 channels. */
   public static Vec3d unpackRgb(int rgb) {
     return new Vec3d(
             ((rgb >> 16) & 0xFF) / 255.0,
