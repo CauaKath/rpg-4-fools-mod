@@ -21,8 +21,8 @@ import java.util.Map;
  * <p>A farmland crop has two: a seed that plants it and produce that feeds you. A bush has one,
  * because a berry is both, exactly as sweet berries are.
  *
- * <p>The crop stick is the one item here that plants nothing. It is a block the player places, and
- * what grows on it comes later.
+ * <p>The crop stick and the crop wall are the two items here that plant nothing. They are blocks the
+ * player places, and what grows on them comes later.
  *
  * <p>Seeds and berries are AliasedBlockItem so they plant on use while reading as an item rather
  * than a block. That also means {@link net.abakath.rpg4fools.world.CropItems} resolves them through
@@ -39,6 +39,16 @@ public final class ModItems {
    * {@link net.abakath.rpg4fools.server.events.CropStickHandling}.
    */
   public static final Item CROP_STICK = register("crop_stick", new BlockItem(ModBlocks.CROP_STICK, new Item.Settings()));
+
+  /**
+   * The wall panel, as a thing to carry.
+   *
+   * <p>A plain BlockItem like the stick, and with less for its block to check: a panel goes wherever
+   * the player points it. The two placements vanilla cannot express - a panel onto a cucumber already
+   * in the ground, and a seed into a panel already standing - are handled in
+   * {@link net.abakath.rpg4fools.server.events.CropWallHandling}.
+   */
+  public static final Item CROP_WALL = register("crop_wall", new BlockItem(ModBlocks.CROP_WALL, new Item.Settings()));
 
   private static final Map<CropDefinition, Item> SEEDS = new LinkedHashMap<>();
   private static final Map<CropDefinition, Item> PRODUCE = new LinkedHashMap<>();

@@ -7,6 +7,7 @@ import net.abakath.rpg4fools.server.events.CropOwnership;
 import net.abakath.rpg4fools.server.events.CropSettling;
 import net.abakath.rpg4fools.server.events.CropStickHandling;
 import net.abakath.rpg4fools.server.events.CropTagValidator;
+import net.abakath.rpg4fools.server.events.CropWallHandling;
 import net.abakath.rpg4fools.server.events.DayChangingHandler;
 import net.abakath.rpg4fools.server.events.SeasonPlantingGate;
 import net.abakath.rpg4fools.server.events.SnowMeltHandler;
@@ -21,6 +22,7 @@ public class ModEvents {
     CropTagValidator.register();
     SeasonPlantingGate.register();
     CropStickHandling.register();
+    CropWallHandling.register();
     CropAutoReplant.register();
     CropOwnership.register();
     CropSettling.register();

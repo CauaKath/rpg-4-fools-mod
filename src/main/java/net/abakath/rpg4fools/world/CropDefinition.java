@@ -17,6 +17,10 @@ import java.util.Set;
  * @param sticked whether crop sticks can carry this crop. A flag rather than something read off
  *     {@link #regrows()}, which would have taken cucumber along with tomato: sticks are models and
  *     a texture per crop, not a rule that follows from fruiting twice.
+ * @param walled whether a crop wall can carry this crop. Separate from {@link #sticked()} rather
+ *     than one "climbs things" flag: the two supports have different shapes, different art and
+ *     different rules about where a plant may spread, and a crop with the art for one has no art
+ *     for the other.
  */
 public record CropDefinition(
         String id,
@@ -26,7 +30,8 @@ public record CropDefinition(
         float saturation,
         boolean thorny,
         int regrowAge,
-        boolean sticked
+        boolean sticked,
+        boolean walled
 ) {
   /**
    * Whether picking this crop leaves the plant standing.
@@ -57,6 +62,11 @@ public record CropDefinition(
   /** The sticked form of this crop's block. Only meaningful when {@link #sticked()}. */
   public String stickedBlockName() {
     return id + "_crop_stick";
+  }
+
+  /** The walled form of this crop's block. Only meaningful when {@link #walled()}. */
+  public String walledBlockName() {
+    return id + "_crop_wall";
   }
 
   public String seedName() {
