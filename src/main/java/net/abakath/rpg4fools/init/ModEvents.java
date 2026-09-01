@@ -14,6 +14,7 @@ import net.abakath.rpg4fools.server.events.CropStickHandling;
 import net.abakath.rpg4fools.server.events.CropTagValidator;
 import net.abakath.rpg4fools.server.events.CropWallHandling;
 import net.abakath.rpg4fools.server.events.DayChangingHandler;
+import net.abakath.rpg4fools.server.events.HoeAreaHarvest;
 import net.abakath.rpg4fools.server.events.ManureDropping;
 import net.abakath.rpg4fools.server.events.SeasonPlantingGate;
 import net.abakath.rpg4fools.server.events.SnowMeltHandler;
@@ -36,6 +37,11 @@ public class ModEvents {
     // handler only claims a click when the player is holding compost or a shovel, and without this
     // order a field could never be composted once it ripened.
     CompostHandling.register();
+
+    // Also before the auto replant, and for the same kind of reason: a hoe harvests the square
+    // around the crop it clicked, and the auto replant would otherwise take that crop on its own
+    // first. Hoes below iron pass straight through to it.
+    HoeAreaHarvest.register();
     CropAutoReplant.register();
     CropOwnership.register();
     CropSettling.register();
