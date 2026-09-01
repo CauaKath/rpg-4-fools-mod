@@ -2,15 +2,15 @@ package net.abakath.rpg4fools.server.events;
 
 import net.abakath.rpg4fools.world.SeasonSnow;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.block.Blocks;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
  * Removes snow and ice once the season stops putting it there.
@@ -23,7 +23,7 @@ import net.minecraft.world.biome.Biome;
  * laid the snow down in the first place, since chunk ticks only run near players, so it is the same
  * ground either way and it keeps the work proportional to how many people are online.
  *
- * <p>Deliberately not a mixin. Melting needs no vanilla internals, and ServerWorld.tickChunk is a
+ * <p>Deliberately not a mixin. Melting needs no vanilla internals, and ServerLevel.tickChunk is a
  * private method whose signature can only be checked by launching the game.
  */
 public class SnowMeltHandler implements ServerTickEvents.StartTick {
@@ -46,42 +46,42 @@ public class SnowMeltHandler implements ServerTickEvents.StartTick {
 
     tickCounter = 0;
 
-    ServerWorld overworld = server.getWorld(World.OVERWORLD);
+    ServerLevel overworld = server.getLevel(Level.OVERWORLD);
 
     if (overworld == null) {
       return;
     }
 
-    for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-      if (player.getWorld() != overworld) {
+    for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+      if (player.level() != overworld) {
         continue;
       }
 
       for (int i = 0; i < SAMPLES_PER_PLAYER; i++) {
-        meltOneSample(overworld, player.getBlockPos());
+        meltOneSample(overworld, player.blockPosition());
       }
     }
   }
 
-  private void meltOneSample(ServerWorld world, BlockPos around) {
-    Random random = world.getRandom();
+  private void meltOneSample(ServerLevel world, BlockPos around) {
+    RandomSource random = world.getRandom();
 
     int x = around.getX() + random.nextInt(SAMPLE_RADIUS * 2) - SAMPLE_RADIUS;
     int z = around.getZ() + random.nextInt(SAMPLE_RADIUS * 2) - SAMPLE_RADIUS;
 
-    if (!world.isChunkLoaded(x >> 4, z >> 4)) {
+    if (!world.hasChunk(x >> 4, z >> 4)) {
       return;
     }
 
-    BlockPos top = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING, new BlockPos(x, 0, z));
+    BlockPos top = world.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(x, 0, z));
     Biome biome = world.getBiome(top).value();
 
-    if (!SeasonSnow.shouldThaw(biome.getTemperature())) {
+    if (!SeasonSnow.shouldThaw(biome.getBaseTemperature())) {
       return;
     }
 
     // Only snow layers, never SNOW_BLOCK, so anything a player built out of snow survives.
-    if (world.getBlockState(top).isOf(Blocks.SNOW)) {
+    if (world.getBlockState(top).is(Blocks.SNOW)) {
       world.removeBlock(top, false);
       return;
     }
@@ -92,10 +92,10 @@ public class SnowMeltHandler implements ServerTickEvents.StartTick {
       return;
     }
 
-    BlockPos below = top.down();
+    BlockPos below = top.below();
 
-    if (world.getBlockState(below).isOf(Blocks.ICE)) {
-      world.setBlockState(below, Blocks.WATER.getDefaultState());
+    if (world.getBlockState(below).is(Blocks.ICE)) {
+      world.setBlockAndUpdate(below, Blocks.WATER.defaultBlockState());
     }
   }
 }

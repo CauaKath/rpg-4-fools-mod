@@ -1,13 +1,13 @@
 package net.abakath.rpg4fools.world;
 
 import net.abakath.rpg4fools.init.ModBlocks;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 
 /**
  * The rules a stack of crop sticks stands by.
@@ -33,7 +33,7 @@ public final class CropSticks {
    * <p>Shared by both blocks in a column, since the post is drawn the same whether a crop is growing
    * up it or not.
    */
-  public static final BooleanProperty CAPPED = BooleanProperty.of("capped");
+  public static final BooleanProperty CAPPED = BooleanProperty.create("capped");
 
   /**
    * Whether the plant that was growing here died on the stick.
@@ -43,7 +43,7 @@ public final class CropSticks {
    * take it down - and the new growth is what clears it. Without this a season simply deleted the
    * plant, and a trellis that had been full one day was spotless the next.
    */
-  public static final BooleanProperty DEAD = BooleanProperty.of("dead");
+  public static final BooleanProperty DEAD = BooleanProperty.create("dead");
 
   /**
    * Where a block sits in its column.
@@ -53,14 +53,14 @@ public final class CropSticks {
    * picture repeated. What counts as a neighbour differs between them, which is why each works the
    * value out for itself - see {@link #partAt} and its counterpart in {@link StickedCropBlock}.
    */
-  public static final EnumProperty<ColumnPart> PART = EnumProperty.of("part", ColumnPart.class);
+  public static final EnumProperty<ColumnPart> PART = EnumProperty.create("part", ColumnPart.class);
 
   private CropSticks() {
   }
 
   /** An empty stick nothing has been sown into. */
   public static boolean isEmpty(BlockState state) {
-    return state.isOf(ModBlocks.CROP_STICK);
+    return state.is(ModBlocks.CROP_STICK);
   }
 
   /** A crop growing on a stick. */
@@ -81,11 +81,11 @@ public final class CropSticks {
    * rather than at placement time means a column can never be built past the cap by any route -
    * placing, growing upward, or a chunk loading with something odd in it.
    */
-  public static boolean canStand(WorldView world, BlockPos pos) {
-    BlockPos below = pos.down();
+  public static boolean canStand(LevelReader world, BlockPos pos) {
+    BlockPos below = pos.below();
     BlockState floor = world.getBlockState(below);
 
-    if (floor.isOf(Blocks.FARMLAND)) {
+    if (floor.is(Blocks.FARMLAND)) {
       return true;
     }
 
@@ -103,12 +103,12 @@ public final class CropSticks {
         return false;
       }
 
-      cursor = cursor.down();
+      cursor = cursor.below();
     }
 
     // Whatever the column ends on has to be farmland. A stack rooted on stone is not a column that
     // lost its bottom block, it is a stack that should never have been built.
-    return world.getBlockState(cursor).isOf(Blocks.FARMLAND);
+    return world.getBlockState(cursor).is(Blocks.FARMLAND);
   }
 
   /**
@@ -117,15 +117,15 @@ public final class CropSticks {
    * <p>Where the next stick goes. {@link #plantTop} answers a different question - how tall the plant
    * is - and stops at the first empty stick.
    */
-  public static BlockPos columnTop(BlockView world, BlockPos pos) {
+  public static BlockPos columnTop(BlockGetter world, BlockPos pos) {
     BlockPos cursor = pos;
 
     for (int step = 1; step < MAX_HEIGHT; step++) {
-      if (!isColumn(world.getBlockState(cursor.up()))) {
+      if (!isColumn(world.getBlockState(cursor.above()))) {
         break;
       }
 
-      cursor = cursor.up();
+      cursor = cursor.above();
     }
 
     return cursor;
@@ -137,20 +137,20 @@ public final class CropSticks {
    * <p>One for a stick on the ground, up to {@link #MAX_HEIGHT}. Stops counting at the cap: nothing
    * asks the difference between three and more, because more cannot be built.
    */
-  public static int depth(BlockView world, BlockPos pos) {
+  public static int depth(BlockGetter world, BlockPos pos) {
     int depth = 1;
-    BlockPos cursor = pos.down();
+    BlockPos cursor = pos.below();
 
     while (depth < MAX_HEIGHT && isColumn(world.getBlockState(cursor))) {
       depth++;
-      cursor = cursor.down();
+      cursor = cursor.below();
     }
 
     return depth;
   }
 
   /** Whether a block at this position is the last one its column may hold. */
-  public static boolean capped(BlockView world, BlockPos pos) {
+  public static boolean capped(BlockGetter world, BlockPos pos) {
     return depth(world, pos) >= MAX_HEIGHT;
   }
 
@@ -161,9 +161,9 @@ public final class CropSticks {
    * sections of itself. A stick above a living plant is the top of that column even though it is not
    * part of the plant, and should be drawn as one.
    */
-  public static ColumnPart partAt(BlockView world, BlockPos pos) {
-    boolean below = isColumn(world.getBlockState(pos.down()));
-    boolean above = isColumn(world.getBlockState(pos.up()));
+  public static ColumnPart partAt(BlockGetter world, BlockPos pos) {
+    boolean below = isColumn(world.getBlockState(pos.below()));
+    boolean above = isColumn(world.getBlockState(pos.above()));
 
     if (below && above) {
       return ColumnPart.MIDDLE;
@@ -178,11 +178,11 @@ public final class CropSticks {
    * <p>Both derived properties are worked out here rather than left to a neighbour update, because a
    * neighbour update reaches the blocks around a placement and never the placement itself.
    */
-  public static BlockState stick(BlockView world, BlockPos pos, boolean dead) {
-    return ModBlocks.CROP_STICK.getDefaultState()
-            .with(CAPPED, capped(world, pos))
-            .with(PART, partAt(world, pos))
-            .with(DEAD, dead);
+  public static BlockState stick(BlockGetter world, BlockPos pos, boolean dead) {
+    return ModBlocks.CROP_STICK.defaultBlockState()
+            .setValue(CAPPED, capped(world, pos))
+            .setValue(PART, partAt(world, pos))
+            .setValue(DEAD, dead);
   }
 
   /**
@@ -191,40 +191,40 @@ public final class CropSticks {
    * <p>Walks past sections only, so it stops at a bare stick. The bottom section is the one that
    * grows, ripens and decides how tall the plant is; everything above it follows.
    */
-  public static BlockPos plantBase(BlockView world, BlockPos pos) {
+  public static BlockPos plantBase(BlockGetter world, BlockPos pos) {
     BlockPos cursor = pos;
 
     for (int step = 1; step < MAX_HEIGHT; step++) {
-      if (!isSticked(world.getBlockState(cursor.down()))) {
+      if (!isSticked(world.getBlockState(cursor.below()))) {
         break;
       }
 
-      cursor = cursor.down();
+      cursor = cursor.below();
     }
 
     return cursor;
   }
 
   /** The topmost section of the plant, counted up from wherever this position sits in it. */
-  public static BlockPos plantTop(BlockView world, BlockPos pos) {
+  public static BlockPos plantTop(BlockGetter world, BlockPos pos) {
     BlockPos cursor = pos;
 
     for (int step = 1; step < MAX_HEIGHT; step++) {
-      if (!isSticked(world.getBlockState(cursor.up()))) {
+      if (!isSticked(world.getBlockState(cursor.above()))) {
         break;
       }
 
-      cursor = cursor.up();
+      cursor = cursor.above();
     }
 
     return cursor;
   }
 
   /** How many sections the plant standing on this base has, counted upward. */
-  public static int plantHeight(BlockView world, BlockPos base) {
+  public static int plantHeight(BlockGetter world, BlockPos base) {
     int height = 0;
 
-    while (height < MAX_HEIGHT && isSticked(world.getBlockState(base.up(height)))) {
+    while (height < MAX_HEIGHT && isSticked(world.getBlockState(base.above(height)))) {
       height++;
     }
 
@@ -238,15 +238,15 @@ public final class CropSticks {
    * That is right for the bottom of a column and wrong for everything above it, where directly
    * below is another stick. Every tier measures the same bed by asking from here.
    */
-  public static BlockPos base(BlockView world, BlockPos pos) {
+  public static BlockPos base(BlockGetter world, BlockPos pos) {
     BlockPos cursor = pos;
 
     for (int step = 1; step < MAX_HEIGHT; step++) {
-      if (!isColumn(world.getBlockState(cursor.down()))) {
+      if (!isColumn(world.getBlockState(cursor.below()))) {
         break;
       }
 
-      cursor = cursor.down();
+      cursor = cursor.below();
     }
 
     return cursor;

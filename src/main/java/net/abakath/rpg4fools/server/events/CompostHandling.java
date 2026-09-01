@@ -8,25 +8,25 @@ import net.abakath.rpg4fools.world.CropSticks;
 import net.abakath.rpg4fools.world.CropWalls;
 import net.abakath.rpg4fools.world.WalledCropBlock;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ComposterBlock;
-import net.minecraft.block.CropBlock;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ShovelItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ShovelItem;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ComposterBlock;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * Everything the player does with compost, in one place.
@@ -67,16 +67,16 @@ public final class CompostHandling {
    * Server only, like the auto replant next door and for the same reason: everything here grants an
    * interaction rather than refusing one, and the client has nothing it needs to predict.
    */
-  private static ActionResult onUseBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
-    if (!(world instanceof ServerWorld serverWorld)) {
-      return ActionResult.PASS;
+  private static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hit) {
+    if (!(world instanceof ServerLevel serverWorld)) {
+      return InteractionResult.PASS;
     }
 
     BlockPos pos = hit.getBlockPos();
     BlockState state = world.getBlockState(pos);
-    ItemStack stack = player.getStackInHand(hand);
+    ItemStack stack = player.getItemInHand(hand);
 
-    if (state.isOf(Blocks.COMPOSTER)) {
+    if (state.is(Blocks.COMPOSTER)) {
       return useComposter(serverWorld, player, pos, state, stack);
     }
 
@@ -86,7 +86,7 @@ public final class CompostHandling {
       return useSoil(serverWorld, player, soil, state, stack);
     }
 
-    return ActionResult.PASS;
+    return InteractionResult.PASS;
   }
 
   /**
@@ -100,37 +100,37 @@ public final class CompostHandling {
    * whatever happens to be behind it, and a section of a sticked plant sits over another stick, so
    * for both the bed is under the root rather than under the block that was clicked.
    */
-  private static BlockPos soilUnder(World world, BlockPos pos, BlockState state) {
-    if (state.isOf(Blocks.FARMLAND)) {
+  private static BlockPos soilUnder(Level world, BlockPos pos, BlockState state) {
+    if (state.is(Blocks.FARMLAND)) {
       return pos;
     }
 
     BlockPos below;
 
     if (state.getBlock() instanceof WalledCropBlock) {
-      below = CropWalls.root(state, pos).down();
+      below = CropWalls.root(state, pos).below();
     } else if (CropSticks.isColumn(state)) {
-      below = CropSticks.base(world, pos).down();
+      below = CropSticks.base(world, pos).below();
     } else {
-      below = pos.down();
+      below = pos.below();
     }
 
-    return world.getBlockState(below).isOf(Blocks.FARMLAND) ? below : null;
+    return world.getBlockState(below).is(Blocks.FARMLAND) ? below : null;
   }
 
-  private static ActionResult useComposter(ServerWorld world, PlayerEntity player, BlockPos pos,
+  private static InteractionResult useComposter(ServerLevel world, Player player, BlockPos pos,
                                            BlockState state, ItemStack stack) {
     PendingCompost pending = PendingCompost.get(world);
     Compost labelled = pending.marked(world, pos);
 
-    if (labelled != Compost.NONE && state.get(ComposterBlock.LEVEL) == FULL) {
+    if (labelled != Compost.NONE && state.getValue(ComposterBlock.LEVEL) == FULL) {
       return collect(world, player, pos, state, pending, labelled);
     }
 
     Compost catalyst = ModCompostItems.catalyst(stack);
 
     if (catalyst == null) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     // One label per batch. A second catalyst would only overwrite the first, and eating it to do
@@ -141,15 +141,15 @@ public final class CompostHandling {
 
     pending.mark(pos, catalyst);
 
-    if (!player.getAbilities().creativeMode) {
-      stack.decrement(1);
+    if (!player.getAbilities().instabuild) {
+      stack.shrink(1);
     }
 
-    world.playSound(null, pos, SoundEvents.BLOCK_COMPOSTER_FILL_SUCCESS, SoundCategory.BLOCKS, 1.0F, 1.0F);
-    world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
+    world.playSound(null, pos, SoundEvents.COMPOSTER_FILL_SUCCESS, SoundSource.BLOCKS, 1.0F, 1.0F);
+    world.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
             6, 0.3, 0.1, 0.3, 0.0);
 
-    return ActionResult.SUCCESS;
+    return InteractionResult.SUCCESS;
   }
 
   /**
@@ -159,28 +159,28 @@ public final class CompostHandling {
    * is not bone meal. Everything else about it - the level going to zero, the sound - is kept the
    * same so an emptied composter behaves the way the player already expects.
    */
-  private static ActionResult collect(ServerWorld world, PlayerEntity player, BlockPos pos,
+  private static InteractionResult collect(ServerLevel world, Player player, BlockPos pos,
                                       BlockState state, PendingCompost pending, Compost kind) {
     pending.clear(pos);
 
-    Block.dropStack(world, pos, new ItemStack(ModCompostItems.compostFor(kind)));
+    Block.popResource(world, pos, new ItemStack(ModCompostItems.compostFor(kind)));
 
-    BlockState emptied = state.with(ComposterBlock.LEVEL, 0);
-    world.setBlockState(pos, emptied, Block.NOTIFY_LISTENERS);
-    world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(player, emptied));
-    world.playSound(null, pos, SoundEvents.BLOCK_COMPOSTER_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
+    BlockState emptied = state.setValue(ComposterBlock.LEVEL, 0);
+    world.setBlock(pos, emptied, Block.UPDATE_CLIENTS);
+    world.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, emptied));
+    world.playSound(null, pos, SoundEvents.COMPOSTER_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
 
-    return ActionResult.SUCCESS;
+    return InteractionResult.SUCCESS;
   }
 
-  private static ActionResult useSoil(ServerWorld world, PlayerEntity player, BlockPos soil,
+  private static InteractionResult useSoil(ServerLevel world, Player player, BlockPos soil,
                                       BlockState clicked, ItemStack stack) {
     if (stack.getItem() instanceof ShovelItem) {
       // A ripe crop is a harvest first. Scraping the bed underneath one would take the harvest away
       // from every tool in the game except the shovel, which is the wrong trade for a feature about
       // soil.
-      if (clicked.getBlock() instanceof CropBlock crop && crop.isMature(clicked)) {
-        return ActionResult.PASS;
+      if (clicked.getBlock() instanceof CropBlock crop && crop.isMaxAge(clicked)) {
+        return InteractionResult.PASS;
       }
 
       return clear(world, player, soil, world.getBlockState(soil));
@@ -189,7 +189,7 @@ public final class CompostHandling {
     Compost kind = ModCompostItems.compost(stack);
 
     if (kind == null) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     return apply(world, player, soil, stack, kind);
@@ -203,23 +203,23 @@ public final class CompostHandling {
    * nothing bare at all is refused and costs nothing; a click that finds some is spent, because
    * refusing a partial application would leave a plot impossible to finish.
    */
-  private static ActionResult apply(ServerWorld world, PlayerEntity player, BlockPos centre,
+  private static InteractionResult apply(ServerLevel world, Player player, BlockPos centre,
                                     ItemStack stack, Compost kind) {
     int treated = 0;
 
     for (int x = -REACH; x <= REACH; x++) {
       for (int z = -REACH; z <= REACH; z++) {
-        BlockPos pos = centre.add(x, 0, z);
+        BlockPos pos = centre.offset(x, 0, z);
         BlockState state = world.getBlockState(pos);
 
-        if (!state.isOf(Blocks.FARMLAND) || Compost.composted(state)) {
+        if (!state.is(Blocks.FARMLAND) || Compost.composted(state)) {
           continue;
         }
 
-        world.setBlockState(pos, state.with(Compost.PROPERTY, kind), Block.NOTIFY_LISTENERS);
+        world.setBlock(pos, state.setValue(Compost.PROPERTY, kind), Block.UPDATE_CLIENTS);
         CompostedChunks.get(world).remember(new ChunkPos(pos));
 
-        world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
+        world.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
                 4, 0.3, 0.1, 0.3, 0.0);
 
         treated++;
@@ -230,13 +230,13 @@ public final class CompostHandling {
       return refuse(world, centre);
     }
 
-    if (!player.getAbilities().creativeMode) {
-      stack.decrement(1);
+    if (!player.getAbilities().instabuild) {
+      stack.shrink(1);
     }
 
-    world.playSound(null, centre, SoundEvents.ITEM_BONE_MEAL_USE, SoundCategory.BLOCKS, 1.0F, 0.9F);
+    world.playSound(null, centre, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, 1.0F, 0.9F);
 
-    return ActionResult.SUCCESS;
+    return InteractionResult.SUCCESS;
   }
 
   /**
@@ -251,23 +251,23 @@ public final class CompostHandling {
    * farmland with a hoe is being kept free for something else, and scraping is what a shovel does
    * anyway.
    */
-  private static ActionResult clear(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state) {
+  private static InteractionResult clear(ServerLevel world, Player player, BlockPos pos, BlockState state) {
     if (!Compost.composted(state)) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
-    BlockState bare = state.with(Compost.PROPERTY, Compost.NONE);
-    world.setBlockState(pos, bare, Block.NOTIFY_LISTENERS);
-    world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(player, bare));
-    world.playSound(null, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
+    BlockState bare = state.setValue(Compost.PROPERTY, Compost.NONE);
+    world.setBlock(pos, bare, Block.UPDATE_CLIENTS);
+    world.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, bare));
+    world.playSound(null, pos, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1.0F, 1.0F);
 
-    return ActionResult.SUCCESS;
+    return InteractionResult.SUCCESS;
   }
 
   /** A click that was understood and had nothing to do. Says so, and spends nothing. */
-  private static ActionResult refuse(ServerWorld world, BlockPos pos) {
-    world.playSound(null, pos, SoundEvents.BLOCK_COMPOSTER_FILL, SoundCategory.BLOCKS, 0.8F, 1.0F);
+  private static InteractionResult refuse(ServerLevel world, BlockPos pos) {
+    world.playSound(null, pos, SoundEvents.COMPOSTER_FILL, SoundSource.BLOCKS, 0.8F, 1.0F);
 
-    return ActionResult.FAIL;
+    return InteractionResult.FAIL;
   }
 }

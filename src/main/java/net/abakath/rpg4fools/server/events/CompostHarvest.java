@@ -2,16 +2,15 @@ package net.abakath.rpg4fools.server.events;
 
 import net.abakath.rpg4fools.world.Compost;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.CropBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 
 /**
@@ -39,27 +38,27 @@ public final class CompostHarvest {
     PlayerBlockBreakEvents.AFTER.register(CompostHarvest::afterBreak);
   }
 
-  private static void afterBreak(World world, PlayerEntity player, BlockPos pos, BlockState state,
+  private static void afterBreak(Level world, Player player, BlockPos pos, BlockState state,
                                  BlockEntity blockEntity) {
-    if (!(world instanceof ServerWorld serverWorld) || player.isCreative()) {
+    if (!(world instanceof ServerLevel serverWorld) || player.isCreative()) {
       return;
     }
 
     // Only a ripe crop pays. An unripe one drops seeds and nothing else, and doubling that would
     // make breaking a young field a way to farm seeds off compost.
-    if (!(state.getBlock() instanceof CropBlock crop) || !crop.isMature(state)) {
+    if (!(state.getBlock() instanceof CropBlock crop) || !crop.isMaxAge(state)) {
       return;
     }
 
-    if (Compost.at(serverWorld, pos.down()) != Compost.RICH) {
+    if (Compost.at(serverWorld, pos.below()) != Compost.RICH) {
       return;
     }
 
-    ItemStack tool = player.getMainHandStack();
-    List<ItemStack> extra = Block.getDroppedStacks(state, serverWorld, pos, blockEntity, player, tool);
+    ItemStack tool = player.getMainHandItem();
+    List<ItemStack> extra = Block.getDrops(state, serverWorld, pos, blockEntity, player, tool);
 
     for (ItemStack stack : extra) {
-      Block.dropStack(serverWorld, pos, stack);
+      Block.popResource(serverWorld, pos, stack);
     }
   }
 }

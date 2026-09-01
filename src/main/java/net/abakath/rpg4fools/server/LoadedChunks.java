@@ -2,14 +2,13 @@ package net.abakath.rpg4fools.server;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.WorldChunk;
-
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +26,7 @@ import java.util.function.Consumer;
  * chunk is resolved on use and skipped if it has gone.
  */
 public final class LoadedChunks {
-  private static final Map<RegistryKey<World>, Set<Long>> BY_WORLD = new ConcurrentHashMap<>();
+  private static final Map<ResourceKey<Level>, Set<Long>> BY_WORLD = new ConcurrentHashMap<>();
 
   private LoadedChunks() {
   }
@@ -37,7 +36,7 @@ public final class LoadedChunks {
     ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> positions(world).remove(chunk.getPos().toLong()));
 
     // A world going away takes its whole set with it, so an unloaded dimension does not leak.
-    ServerWorldEvents.UNLOAD.register((server, world) -> BY_WORLD.remove(world.getRegistryKey()));
+    ServerWorldEvents.UNLOAD.register((server, world) -> BY_WORLD.remove(world.dimension()));
   }
 
   /**
@@ -46,17 +45,17 @@ public final class LoadedChunks {
    * <p>Iterates a copy of the position set. The action is free to change blocks, which can load or
    * unload chunks and would otherwise be modifying the set being walked.
    */
-  public static void forEachChunk(ServerWorld world, Consumer<WorldChunk> action) {
+  public static void forEachChunk(ServerLevel world, Consumer<LevelChunk> action) {
     for (long position : Set.copyOf(positions(world))) {
-      Chunk chunk = world.getChunk(ChunkPos.getPackedX(position), ChunkPos.getPackedZ(position), ChunkStatus.FULL, false);
+      ChunkAccess chunk = world.getChunk(ChunkPos.getX(position), ChunkPos.getZ(position), ChunkStatus.FULL, false);
 
-      if (chunk instanceof WorldChunk loaded) {
+      if (chunk instanceof LevelChunk loaded) {
         action.accept(loaded);
       }
     }
   }
 
-  private static Set<Long> positions(ServerWorld world) {
-    return BY_WORLD.computeIfAbsent(world.getRegistryKey(), key -> ConcurrentHashMap.newKeySet());
+  private static Set<Long> positions(ServerLevel world) {
+    return BY_WORLD.computeIfAbsent(world.dimension(), key -> ConcurrentHashMap.newKeySet());
   }
 }

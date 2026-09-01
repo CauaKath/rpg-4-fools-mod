@@ -1,6 +1,6 @@
 package net.abakath.rpg4fools.world;
 
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.StringRepresentable;
 
 /**
  * Where a section sits in the plant it belongs to.
@@ -17,7 +17,7 @@ import net.minecraft.util.StringIdentifiable;
  * itself, because its foot and crown are the ends of the plant; a stick asks about any column block,
  * because a stick above a plant is the top of that column whether or not it is part of the plant.
  */
-public enum ColumnPart implements StringIdentifiable {
+public enum ColumnPart implements StringRepresentable {
   /** The whole plant, one section tall. What a tomato on a single stick looks like. */
   SINGLE("single"),
   /** Rooted, with more plant above. */
@@ -34,7 +34,7 @@ public enum ColumnPart implements StringIdentifiable {
   }
 
   @Override
-  public String asString() {
+  public String getSerializedName() {
     return name;
   }
 }

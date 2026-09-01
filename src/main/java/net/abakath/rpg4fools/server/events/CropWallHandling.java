@@ -7,24 +7,23 @@ import net.abakath.rpg4fools.world.CropItems;
 import net.abakath.rpg4fools.world.CropWalls;
 import net.abakath.rpg4fools.world.WallArm;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CropBlock;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.BlockHitResult;
 import java.util.Optional;
 
 /**
@@ -60,16 +59,16 @@ public class CropWallHandling {
    * to nothing either way: it would place the held block one space over, where the seed cannot stand
    * and the panel is simply not what was asked for.
    */
-  private static ActionResult onUseBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
-    if (!(world instanceof ServerWorld serverWorld)) {
-      return ActionResult.PASS;
+  private static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hit) {
+    if (!(world instanceof ServerLevel serverWorld)) {
+      return InteractionResult.PASS;
     }
 
-    ItemStack stack = player.getStackInHand(hand);
+    ItemStack stack = player.getItemInHand(hand);
     BlockPos pos = hit.getBlockPos();
     BlockState state = world.getBlockState(pos);
 
-    return stack.isOf(ModItems.CROP_WALL)
+    return stack.is(ModItems.CROP_WALL)
             ? wall(serverWorld, player, stack, pos, state)
             : sow(serverWorld, player, stack, pos, state);
   }
@@ -85,29 +84,29 @@ public class CropWallHandling {
    * <p>Only the crop standing in the ground. A panel used anywhere else - on more wall, on a cell of
    * a plant that is already spreading - is ordinary placement, and is passed to vanilla.
    */
-  private static ActionResult wall(ServerWorld world, PlayerEntity player, ItemStack stack,
+  private static InteractionResult wall(ServerLevel world, Player player, ItemStack stack,
                                    BlockPos pos, BlockState state) {
     CropDefinition definition = ModBlocks.definitionFor(state.getBlock());
 
     if (definition == null || !definition.walled()) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     // The same roster entry answers for the walled block too, and a panel used on one of those means
     // the player is building, not converting.
-    if (!state.isOf(ModBlocks.blockFor(definition))) {
-      return ActionResult.PASS;
+    if (!state.is(ModBlocks.blockFor(definition))) {
+      return InteractionResult.PASS;
     }
 
     BlockState planted = root(world, pos, definition, facing(player))
-            .with(CropBlock.AGE, state.get(CropBlock.AGE));
+            .setValue(CropBlock.AGE, state.getValue(CropBlock.AGE));
 
-    if (!planted.canPlaceAt(world, pos)) {
-      return ActionResult.PASS;
+    if (!planted.canSurvive(world, pos)) {
+      return InteractionResult.PASS;
     }
 
-    replace(world, player, stack, pos, planted, SoundEvents.BLOCK_WOOD_PLACE);
-    return ActionResult.SUCCESS;
+    replace(world, player, stack, pos, planted, SoundEvents.WOOD_PLACE);
+    return InteractionResult.SUCCESS;
   }
 
   /**
@@ -121,41 +120,41 @@ public class CropWallHandling {
    * second set of roots into the middle of it. The cell a player wants covered is reached by letting
    * the plant spread into it.
    */
-  private static ActionResult sow(ServerWorld world, PlayerEntity player, ItemStack stack,
+  private static InteractionResult sow(ServerLevel world, Player player, ItemStack stack,
                                   BlockPos pos, BlockState state) {
     // Aiming a seed at a panel mostly means hitting the farmland behind it, so the ground a panel
     // stands in counts as the panel. Farmland with nothing above it is left to vanilla, which plants
     // the crop the ordinary way.
-    BlockPos target = state.isOf(Blocks.FARMLAND) ? pos.up() : pos;
+    BlockPos target = state.is(Blocks.FARMLAND) ? pos.above() : pos;
 
     if (!CropWalls.isWall(world.getBlockState(target))) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
-    if (!world.getBlockState(target.down()).isOf(Blocks.FARMLAND)) {
-      return ActionResult.PASS;
+    if (!world.getBlockState(target.below()).is(Blocks.FARMLAND)) {
+      return InteractionResult.PASS;
     }
 
     Optional<BlockState> planted = CropItems.plantedBy(stack);
 
     if (planted.isEmpty()) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     CropDefinition definition = ModBlocks.definitionFor(planted.get().getBlock());
 
     if (definition == null || !definition.walled()) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     BlockState sown = root(world, target, definition, facing(player));
 
-    if (touchesPlant(world, target, sown.get(CropWalls.AXIS))) {
-      return ActionResult.PASS;
+    if (touchesPlant(world, target, sown.getValue(CropWalls.AXIS))) {
+      return InteractionResult.PASS;
     }
 
-    replace(world, player, stack, target, sown, SoundEvents.ITEM_CROP_PLANT);
-    return ActionResult.SUCCESS;
+    replace(world, player, stack, target, sown, SoundEvents.CROP_PLANTED);
+    return InteractionResult.SUCCESS;
   }
 
   /**
@@ -165,11 +164,11 @@ public class CropWallHandling {
    * but an update reaches the blocks around a change and never the change itself - so without this a
    * newly sown cell would draw no arms at all until something else disturbed the wall.
    */
-  private static BlockState root(ServerWorld world, BlockPos pos, CropDefinition definition, Direction.Axis fallback) {
-    return CropWalls.joins(world, pos, ModBlocks.walledFor(definition).getDefaultState()
-            .with(CropWalls.AXIS, CropWalls.axisAt(world, pos, fallback))
-            .with(CropWalls.ARM, WallArm.CENTER)
-            .with(CropWalls.ROW, 0));
+  private static BlockState root(ServerLevel world, BlockPos pos, CropDefinition definition, Direction.Axis fallback) {
+    return CropWalls.joins(world, pos, ModBlocks.walledFor(definition).defaultBlockState()
+            .setValue(CropWalls.AXIS, CropWalls.axisAt(world, pos, fallback))
+            .setValue(CropWalls.ARM, WallArm.CENTER)
+            .setValue(CropWalls.ROW, 0));
   }
 
   /**
@@ -179,13 +178,13 @@ public class CropWallHandling {
    * able to reach the other, and refusing the second one would be refusing a placement that is not
    * actually crowded.
    */
-  private static boolean touchesPlant(ServerWorld world, BlockPos pos, Direction.Axis axis) {
+  private static boolean touchesPlant(ServerLevel world, BlockPos pos, Direction.Axis axis) {
     Direction along = CropWalls.positive(axis);
 
-    return CropWalls.isCrop(world.getBlockState(pos.up()))
-            || CropWalls.isCrop(world.getBlockState(pos.down()))
-            || CropWalls.isCrop(world.getBlockState(pos.offset(along)))
-            || CropWalls.isCrop(world.getBlockState(pos.offset(along.getOpposite())));
+    return CropWalls.isCrop(world.getBlockState(pos.above()))
+            || CropWalls.isCrop(world.getBlockState(pos.below()))
+            || CropWalls.isCrop(world.getBlockState(pos.relative(along)))
+            || CropWalls.isCrop(world.getBlockState(pos.relative(along.getOpposite())));
   }
 
   /**
@@ -195,20 +194,20 @@ public class CropWallHandling {
    * at a wall means the wall runs east to west, so the axis wanted is the one across the line of
    * sight rather than along it.
    */
-  private static Direction.Axis facing(PlayerEntity player) {
-    return player.getHorizontalFacing().rotateYClockwise().getAxis();
+  private static Direction.Axis facing(Player player) {
+    return player.getDirection().getClockWise().getAxis();
   }
 
-  private static void replace(ServerWorld world, PlayerEntity player, ItemStack stack, BlockPos pos,
+  private static void replace(ServerLevel world, Player player, ItemStack stack, BlockPos pos,
                               BlockState placed, SoundEvent sound) {
-    world.setBlockState(pos, placed, Block.NOTIFY_ALL);
+    world.setBlock(pos, placed, Block.UPDATE_ALL);
 
-    world.emitGameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Emitter.of(player, placed));
-    world.playSound(null, pos, sound, SoundCategory.BLOCKS,
+    world.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, placed));
+    world.playSound(null, pos, sound, SoundSource.BLOCKS,
             1.0F, 0.8F + world.random.nextFloat() * 0.4F);
 
-    if (!player.getAbilities().creativeMode) {
-      stack.decrement(1);
+    if (!player.getAbilities().instabuild) {
+      stack.shrink(1);
     }
   }
 }

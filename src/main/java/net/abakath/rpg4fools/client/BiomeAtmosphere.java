@@ -3,10 +3,9 @@ package net.abakath.rpg4fools.client;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBiomeTags;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.world.biome.Biome;
-
+import net.minecraft.core.Holder;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.biome.Biome;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -47,7 +46,7 @@ public enum BiomeAtmosphere {
    *
    * <p>Only touched from the render thread.
    */
-  private static final Map<RegistryEntry<Biome>, BiomeAtmosphere> CACHE = new IdentityHashMap<>();
+  private static final Map<Holder<Biome>, BiomeAtmosphere> CACHE = new IdentityHashMap<>();
 
   private final TagKey<Biome> tag;
   private final int tintColor;
@@ -110,7 +109,7 @@ public enum BiomeAtmosphere {
     return fogEnd;
   }
 
-  public static BiomeAtmosphere of(RegistryEntry<Biome> entry) {
+  public static BiomeAtmosphere of(Holder<Biome> entry) {
     if (entry == null) {
       return DEFAULT;
     }
@@ -132,9 +131,9 @@ public enum BiomeAtmosphere {
     return resolved;
   }
 
-  private static BiomeAtmosphere match(RegistryEntry<Biome> entry) {
+  private static BiomeAtmosphere match(Holder<Biome> entry) {
     for (BiomeAtmosphere atmosphere : values()) {
-      if (atmosphere.tag != null && entry.isIn(atmosphere.tag)) {
+      if (atmosphere.tag != null && entry.is(atmosphere.tag)) {
         return atmosphere;
       }
     }

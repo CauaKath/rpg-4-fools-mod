@@ -5,9 +5,9 @@ import net.abakath.rpg4fools.enums.SubSeason;
 import net.abakath.rpg4fools.world.CurrentSeason;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.math.ChunkPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.level.ChunkPos;
 
 /**
  * Client-side view of the current season.
@@ -99,7 +99,7 @@ public final class ClientSeasonState {
     CurrentSeason.set(subSeason);
     progress = ColorMath.clamp01((float) (day - 1) / MONTH_DURATION);
 
-    refreshTintedChunks(MinecraftClient.getInstance());
+    refreshTintedChunks(Minecraft.getInstance());
   }
 
   /**
@@ -112,15 +112,15 @@ public final class ClientSeasonState {
    * Scheduling a rebuild queues the same work while the existing geometry keeps drawing, so the
    * recolour arrives without the blank frames.
    */
-  private static void refreshTintedChunks(MinecraftClient client) {
-    ClientWorld world = client.world;
-    if (world == null || client.worldRenderer == null || client.player == null) {
+  private static void refreshTintedChunks(Minecraft client) {
+    ClientLevel world = client.level;
+    if (world == null || client.levelRenderer == null || client.player == null) {
       return;
     }
 
     // The colour providers read through BiomeColors, which memoises per position. Without this the
     // rebuilt chunks would come back carrying the previous day's colours.
-    world.reloadColor();
+    world.clearTintCaches();
 
     // Every section the storage holds, marked one at a time.
     //
@@ -135,16 +135,16 @@ public final class ClientSeasonState {
     // coordinates lands on every slot once, wherever the storage happens to be centred, and the
     // camera sitting off the player cannot leave a column out. The view distance is read back from
     // the options because WorldRenderer reloads itself whenever the two disagree.
-    int radius = client.options.getClampedViewDistance();
-    ChunkPos center = client.player.getChunkPos();
+    int radius = client.options.getEffectiveRenderDistance();
+    ChunkPos center = client.player.chunkPosition();
 
-    int bottom = world.getBottomSectionCoord();
-    int top = world.getTopSectionCoord();
+    int bottom = world.getMinSection();
+    int top = world.getMaxSection();
 
     for (int x = center.x - radius; x <= center.x + radius; x++) {
       for (int z = center.z - radius; z <= center.z + radius; z++) {
         for (int y = bottom; y < top; y++) {
-          client.worldRenderer.scheduleBlockRender(x, y, z);
+          client.levelRenderer.setSectionDirty(x, y, z);
         }
       }
     }

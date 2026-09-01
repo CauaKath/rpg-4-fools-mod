@@ -3,20 +3,20 @@ package net.abakath.rpg4fools.world;
 import com.mojang.serialization.MapCodec;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModItems;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.CropBlock;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * A farmland crop that fruits more than once.
@@ -35,37 +35,37 @@ import net.minecraft.world.event.GameEvent;
  * sprite alone and nothing has to be tracked on the blockstate.
  */
 public class RegrowingCropBlock extends ModCropBlock {
-  public static final MapCodec<RegrowingCropBlock> CODEC = createCodec(RegrowingCropBlock::new);
+  public static final MapCodec<RegrowingCropBlock> CODEC = simpleCodec(RegrowingCropBlock::new);
 
-  public RegrowingCropBlock(Settings settings) {
+  public RegrowingCropBlock(Properties settings) {
     super(settings);
   }
 
   @Override
-  public MapCodec<? extends CropBlock> getCodec() {
+  public MapCodec<? extends CropBlock> codec() {
     return CODEC;
   }
 
   @Override
-  public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+  public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
     // Nothing ripe to take. The parent handles bone meal and the empty click.
-    if (!isMature(state)) {
-      return super.onUse(state, world, pos, player, hit);
+    if (!isMaxAge(state)) {
+      return super.useWithoutItem(state, world, pos, player, hit);
     }
 
-    if (!(world instanceof ServerWorld serverWorld)) {
-      return ActionResult.SUCCESS;
+    if (!(world instanceof ServerLevel serverWorld)) {
+      return InteractionResult.SUCCESS;
     }
 
-    CropHarvest.drop(serverWorld, pos, pos.down(), new ItemStack(produce(), 1 + serverWorld.random.nextInt(3)));
+    CropHarvest.drop(serverWorld, pos, pos.below(), new ItemStack(produce(), 1 + serverWorld.random.nextInt(3)));
 
     BlockState picked = pick(state);
-    serverWorld.setBlockState(pos, picked, Block.NOTIFY_LISTENERS);
-    serverWorld.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(player, picked));
-    serverWorld.playSound(null, pos, SoundEvents.BLOCK_CROP_BREAK, SoundCategory.BLOCKS,
+    serverWorld.setBlock(pos, picked, Block.UPDATE_CLIENTS);
+    serverWorld.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, picked));
+    serverWorld.playSound(null, pos, SoundEvents.CROP_BREAK, SoundSource.BLOCKS,
             1.0F, 0.8F + serverWorld.random.nextFloat() * 0.4F);
 
-    return ActionResult.SUCCESS;
+    return InteractionResult.SUCCESS;
   }
 
   /**
@@ -73,7 +73,7 @@ public class RegrowingCropBlock extends ModCropBlock {
    * survives being picked. withAge would not: it starts from the default state and would drop it.
    */
   private BlockState pick(BlockState state) {
-    return state.with(getAgeProperty(), ModBlocks.definitionFor(this).regrowAge());
+    return state.setValue(getAgeProperty(), ModBlocks.definitionFor(this).regrowAge());
   }
 
   private Item produce() {

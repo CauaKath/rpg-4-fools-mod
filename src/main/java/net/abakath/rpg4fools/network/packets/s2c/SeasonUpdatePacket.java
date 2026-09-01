@@ -2,21 +2,21 @@ package net.abakath.rpg4fools.network.packets.s2c;
 
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.models.DayData;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * Sends the current in game date to a player. This class is loaded on both sides, so it must not
  * reference any client only type. The receiving side lives in
  * {@link net.abakath.rpg4fools.client.ClientModMessages}.
  */
-public class SeasonUpdatePacket implements CustomPayload {
+public class SeasonUpdatePacket implements CustomPacketPayload {
   public DayData dayData;
 
-  public static final Id<SeasonUpdatePacket> ID = CustomPayload.id(new Identifier(RPG4Fools.MOD_ID, "season_update").toString());
-  public static final PacketCodec<PacketByteBuf, SeasonUpdatePacket> CODEC = PacketCodec.of((value, buf) -> {
+  public static final Type<SeasonUpdatePacket> ID = CustomPacketPayload.createType(new ResourceLocation(RPG4Fools.MOD_ID, "season_update").toString());
+  public static final StreamCodec<FriendlyByteBuf, SeasonUpdatePacket> CODEC = StreamCodec.ofMember((value, buf) -> {
     buf.writeNullable(value.dayData, (buffer, data) -> {
       buffer.writeInt(data.getYear());
       buffer.writeInt(data.getMonth().ordinal());
@@ -30,7 +30,7 @@ public class SeasonUpdatePacket implements CustomPayload {
   }
 
   @Override
-  public Id<? extends CustomPayload> getId() {
+  public Type<? extends CustomPacketPayload> type() {
     return ID;
   }
 }

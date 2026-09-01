@@ -2,7 +2,7 @@ package net.abakath.rpg4fools.client;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Allocation free HSB helpers for packed 0xRRGGBB ints.
@@ -128,7 +128,7 @@ public final class ColorMath {
     return (r << 16) | (g << 8) | b;
   }
 
-  public static int packRgb(Vec3d color) {
+  public static int packRgb(Vec3 color) {
     int r = Math.round(clamp01((float) color.x) * 255.0f);
     int g = Math.round(clamp01((float) color.y) * 255.0f);
     int b = Math.round(clamp01((float) color.z) * 255.0f);
@@ -136,8 +136,8 @@ public final class ColorMath {
     return (r << 16) | (g << 8) | b;
   }
 
-  public static Vec3d unpackRgb(int rgb) {
-    return new Vec3d(
+  public static Vec3 unpackRgb(int rgb) {
+    return new Vec3(
             ((rgb >> 16) & 0xFF) / 255.0,
             ((rgb >> 8) & 0xFF) / 255.0,
             (rgb & 0xFF) / 255.0

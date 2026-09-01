@@ -1,19 +1,19 @@
 package net.abakath.rpg4fools.server.events;
 
 import net.abakath.rpg4fools.init.ModCompostItems;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.AxeItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * Bark, off the log an axe was about to strip anyway.
@@ -35,15 +35,15 @@ public final class BarkStripping {
     UseBlockCallback.EVENT.register(BarkStripping::onUseBlock);
   }
 
-  private static ActionResult onUseBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
-    if (!(world instanceof ServerWorld serverWorld)) {
-      return ActionResult.PASS;
+  private static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hit) {
+    if (!(world instanceof ServerLevel serverWorld)) {
+      return InteractionResult.PASS;
     }
 
-    ItemStack stack = player.getStackInHand(hand);
+    ItemStack stack = player.getItemInHand(hand);
 
     if (!(stack.getItem() instanceof AxeItem)) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     BlockPos pos = hit.getBlockPos();
@@ -52,17 +52,17 @@ public final class BarkStripping {
     Item bark = ModCompostItems.barkFor(state.getBlock());
 
     if (bark == null) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     // The strip that is about to happen is what pays for the bark, and a player who cannot change
     // the block is not about to strip anything.
-    if (!player.canModifyBlocks()) {
-      return ActionResult.PASS;
+    if (!player.mayBuild()) {
+      return InteractionResult.PASS;
     }
 
-    Block.dropStack(serverWorld, pos, new ItemStack(bark));
+    Block.popResource(serverWorld, pos, new ItemStack(bark));
 
-    return ActionResult.PASS;
+    return InteractionResult.PASS;
   }
 }

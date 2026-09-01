@@ -4,11 +4,11 @@ import net.abakath.rpg4fools.enums.SubSeason;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.color.world.BiomeColors;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.Items;
+import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 /**
  * Registers the season aware block and item tints.
@@ -96,7 +96,7 @@ public final class SeasonColorProviders {
       if (world == null || pos == null) {
         return applySeasonTint(DEFAULT_GRASS_COLOR);
       }
-      return applySeasonTint(BiomeColors.getGrassColor(world, pos));
+      return applySeasonTint(BiomeColors.getAverageGrassColor(world, pos));
     }, GRASS_BLOCKS);
 
     ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) -> {
@@ -106,7 +106,7 @@ public final class SeasonColorProviders {
       if (world == null || pos == null) {
         return applySeasonTint(DEFAULT_FOLIAGE_COLOR);
       }
-      return applySeasonTint(BiomeColors.getFoliageColor(world, pos));
+      return applySeasonTint(BiomeColors.getAverageFoliageColor(world, pos));
     }, FOLIAGE_BLOCKS);
   }
 
@@ -144,7 +144,7 @@ public final class SeasonColorProviders {
     registerFixedColorItem(LILY_PAD_COLOR, Items.LILY_PAD);
   }
 
-  private static void registerFixedColorItem(int baseColor, ItemConvertible... items) {
+  private static void registerFixedColorItem(int baseColor, ItemLike... items) {
     ColorProviderRegistry.ITEM.register(
             (stack, tintIndex) -> tintIndex == TINTED_LAYER ? applySeasonTint(baseColor) : -1,
             items

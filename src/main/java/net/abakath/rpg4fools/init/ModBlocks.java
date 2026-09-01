@@ -11,14 +11,13 @@ import net.abakath.rpg4fools.world.ModCropBlock;
 import net.abakath.rpg4fools.world.RegrowingCropBlock;
 import net.abakath.rpg4fools.world.StickedCropBlock;
 import net.abakath.rpg4fools.world.WalledCropBlock;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.piston.PistonBehavior;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.PushReaction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -34,17 +33,17 @@ import java.util.Map;
  */
 public class ModBlocks {
   public static final Block DEAD_CROP = register("dead_crop", new DeadCropBlock(
-          AbstractBlock.Settings.create()
+          BlockBehaviour.Properties.of()
                   // Ticks so a village farm nobody had loaded when spring came can still be sown
                   // again on its first tick, the way an out of season crop is settled late.
-                  .ticksRandomly()
-                  .breakInstantly()
-                  .noCollision()
+                  .randomTicks()
+                  .instabreak()
+                  .noCollission()
                   // No loot table of its own. A dead crop is a loss, not a harvest, and saying so
                   // here avoids shipping an empty loot table file.
-                  .dropsNothing()
-                  .sounds(BlockSoundGroup.CROP)
-                  .pistonBehavior(PistonBehavior.DESTROY)
+                  .noLootTable()
+                  .sound(SoundType.CROP)
+                  .pushReaction(PushReaction.DESTROY)
   ));
 
   /**
@@ -52,14 +51,14 @@ public class ModBlocks {
    * season hook has to keep looking at it: that hook is the only thing that can revive it.
    */
   public static final Block DORMANT_SWEET_BERRY_BUSH = register("dormant_sweet_berry_bush", new DormantBerryBushBlock(
-          AbstractBlock.Settings.create()
+          BlockBehaviour.Properties.of()
                   // Still ticks. Revival is decided at the head of the random tick, so a block that
                   // stopped ticking would never come back.
-                  .ticksRandomly()
-                  .noCollision()
-                  .dropsNothing()
-                  .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
-                  .pistonBehavior(PistonBehavior.DESTROY)
+                  .randomTicks()
+                  .noCollission()
+                  .noLootTable()
+                  .sound(SoundType.SWEET_BERRY_BUSH)
+                  .pushReaction(PushReaction.DESTROY)
   ));
 
   /**
@@ -71,12 +70,12 @@ public class ModBlocks {
    * season ends, not something a season can do anything to.
    */
   public static final Block CROP_STICK = register("crop_stick", new CropStickBlock(
-          AbstractBlock.Settings.create()
-                  .noCollision()
-                  .breakInstantly()
-                  .nonOpaque()
-                  .sounds(BlockSoundGroup.WOOD)
-                  .pistonBehavior(PistonBehavior.DESTROY)
+          BlockBehaviour.Properties.of()
+                  .noCollission()
+                  .instabreak()
+                  .noOcclusion()
+                  .sound(SoundType.WOOD)
+                  .pushReaction(PushReaction.DESTROY)
   ));
 
   /**
@@ -87,12 +86,12 @@ public class ModBlocks {
    * half of what it is for is being scenery. See {@link CropWallBlock}.
    */
   public static final Block CROP_WALL = register("crop_wall", new CropWallBlock(
-          AbstractBlock.Settings.create()
-                  .noCollision()
-                  .breakInstantly()
-                  .nonOpaque()
-                  .sounds(BlockSoundGroup.WOOD)
-                  .pistonBehavior(PistonBehavior.DESTROY)
+          BlockBehaviour.Properties.of()
+                  .noCollission()
+                  .instabreak()
+                  .noOcclusion()
+                  .sound(SoundType.WOOD)
+                  .pushReaction(PushReaction.DESTROY)
   ));
 
   private static final Map<CropDefinition, Block> LIVE = new LinkedHashMap<>();
@@ -104,12 +103,12 @@ public class ModBlocks {
   static {
     for (CropDefinition definition : ModCrops.ALL) {
       if (definition.kind() == CropDefinition.Kind.FARMLAND) {
-        AbstractBlock.Settings settings = AbstractBlock.Settings.create()
-                .ticksRandomly()
-                .noCollision()
-                .breakInstantly()
-                .sounds(BlockSoundGroup.CROP)
-                .pistonBehavior(PistonBehavior.DESTROY);
+        BlockBehaviour.Properties settings = BlockBehaviour.Properties.of()
+                .randomTicks()
+                .noCollission()
+                .instabreak()
+                .sound(SoundType.CROP)
+                .pushReaction(PushReaction.DESTROY);
 
         // Same crop in every way a farmland crop is asked about; the roster only decides whether
         // picking it leaves the plant standing.
@@ -121,12 +120,12 @@ public class ModBlocks {
         // season leaves sticks behind, and none of that is a state the plain crop should carry.
         if (definition.sticked()) {
           register(definition, STICKED, definition.stickedBlockName(), new StickedCropBlock(
-                  AbstractBlock.Settings.create()
-                          .ticksRandomly()
-                          .noCollision()
-                          .breakInstantly()
-                          .sounds(BlockSoundGroup.CROP)
-                          .pistonBehavior(PistonBehavior.DESTROY)
+                  BlockBehaviour.Properties.of()
+                          .randomTicks()
+                          .noCollission()
+                          .instabreak()
+                          .sound(SoundType.CROP)
+                          .pushReaction(PushReaction.DESTROY)
           ));
         }
 
@@ -135,12 +134,12 @@ public class ModBlocks {
         // into the panel it grew on, rather than dropping, when it loses its root.
         if (definition.walled()) {
           register(definition, WALLED, definition.walledBlockName(), new WalledCropBlock(
-                  AbstractBlock.Settings.create()
-                          .ticksRandomly()
-                          .noCollision()
-                          .breakInstantly()
-                          .sounds(BlockSoundGroup.CROP)
-                          .pistonBehavior(PistonBehavior.DESTROY)
+                  BlockBehaviour.Properties.of()
+                          .randomTicks()
+                          .noCollission()
+                          .instabreak()
+                          .sound(SoundType.CROP)
+                          .pushReaction(PushReaction.DESTROY)
           ));
         }
 
@@ -148,21 +147,21 @@ public class ModBlocks {
       }
 
       register(definition, LIVE, definition.blockName(), new ModBerryBushBlock(
-              AbstractBlock.Settings.create()
-                      .ticksRandomly()
-                      .noCollision()
-                      .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
-                      .pistonBehavior(PistonBehavior.DESTROY)
+              BlockBehaviour.Properties.of()
+                      .randomTicks()
+                      .noCollission()
+                      .sound(SoundType.SWEET_BERRY_BUSH)
+                      .pushReaction(PushReaction.DESTROY)
       ));
 
       // Dormant bushes drop nothing, matching the dormant sweet berry bush this mod already ships.
       register(definition, DORMANT, definition.dormantBlockName(), new DormantBerryBushBlock(
-              AbstractBlock.Settings.create()
-                      .ticksRandomly()
-                      .noCollision()
-                      .dropsNothing()
-                      .sounds(BlockSoundGroup.SWEET_BERRY_BUSH)
-                      .pistonBehavior(PistonBehavior.DESTROY)
+              BlockBehaviour.Properties.of()
+                      .randomTicks()
+                      .noCollission()
+                      .noLootTable()
+                      .sound(SoundType.SWEET_BERRY_BUSH)
+                      .pushReaction(PushReaction.DESTROY)
       ));
     }
   }
@@ -234,7 +233,7 @@ public class ModBlocks {
   }
 
   private static Block register(String name, Block block) {
-    return Registry.register(Registries.BLOCK, new Identifier(RPG4Fools.MOD_ID, name), block);
+    return Registry.register(BuiltInRegistries.BLOCK, new ResourceLocation(RPG4Fools.MOD_ID, name), block);
   }
 
   /**

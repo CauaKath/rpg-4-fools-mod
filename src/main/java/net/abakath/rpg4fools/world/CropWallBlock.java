@@ -1,20 +1,19 @@
 package net.abakath.rpg4fools.world;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.block.ShapeContext;
-
 import java.util.EnumMap;
 import java.util.Map;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A trellis panel with nothing growing on it.
@@ -34,31 +33,31 @@ import java.util.Map;
  * so nothing should sow one.
  */
 public class CropWallBlock extends Block {
-  public static final MapCodec<CropWallBlock> CODEC = createCodec(CropWallBlock::new);
+  public static final MapCodec<CropWallBlock> CODEC = simpleCodec(CropWallBlock::new);
 
   /** The post down the middle, which is all an unjoined panel is. */
-  private static final VoxelShape POST = Block.createCuboidShape(7.0, 0.0, 7.0, 9.0, 16.0, 9.0);
+  private static final VoxelShape POST = Block.box(7.0, 0.0, 7.0, 9.0, 16.0, 9.0);
 
   /** One arm reaching out to a neighbour, per direction, added to the post as the joins say. */
   private static final Map<Direction, VoxelShape> ARMS = arms();
 
-  public CropWallBlock(Settings settings) {
+  public CropWallBlock(Properties settings) {
     super(settings);
 
-    BlockState state = getDefaultState()
-            .with(CropWalls.DEAD, false)
-            .with(CropWalls.ARM, WallArm.CENTER)
-            .with(CropWalls.ROW, 0);
+    BlockState state = defaultBlockState()
+            .setValue(CropWalls.DEAD, false)
+            .setValue(CropWalls.ARM, WallArm.CENTER)
+            .setValue(CropWalls.ROW, 0);
 
     for (Direction direction : CropWalls.sideDirections()) {
-      state = state.with(CropWalls.side(direction), false);
+      state = state.setValue(CropWalls.side(direction), false);
     }
 
-    setDefaultState(state);
+    registerDefaultState(state);
   }
 
   @Override
-  protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+  protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
     builder.add(CropWalls.DEAD, CropWalls.ARM, CropWalls.ROW);
 
     for (Direction direction : CropWalls.sideDirections()) {
@@ -67,7 +66,7 @@ public class CropWallBlock extends Block {
   }
 
   @Override
-  public MapCodec<CropWallBlock> getCodec() {
+  public MapCodec<CropWallBlock> codec() {
     return CODEC;
   }
 
@@ -79,12 +78,12 @@ public class CropWallBlock extends Block {
    * already something you can hit.
    */
   @Override
-  public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+  public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
     VoxelShape shape = POST;
 
     for (Direction direction : CropWalls.sideDirections()) {
-      if (state.get(CropWalls.side(direction))) {
-        shape = VoxelShapes.union(shape, ARMS.get(direction));
+      if (state.getValue(CropWalls.side(direction))) {
+        shape = Shapes.or(shape, ARMS.get(direction));
       }
     }
 
@@ -92,8 +91,8 @@ public class CropWallBlock extends Block {
   }
 
   @Override
-  public BlockState getPlacementState(ItemPlacementContext context) {
-    return CropWalls.joins(context.getWorld(), context.getBlockPos(), getDefaultState());
+  public BlockState getStateForPlacement(BlockPlaceContext context) {
+    return CropWalls.joins(context.getLevel(), context.getClickedPos(), defaultBlockState());
   }
 
   /**
@@ -103,22 +102,22 @@ public class CropWallBlock extends Block {
    * half: a wall someone built stays where they put it even if the ground under it is mined out.
    */
   @Override
-  public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState,
-                                             WorldAccess world, BlockPos pos, BlockPos neighborPos) {
+  public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
+                                             LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
     if (direction.getAxis().isVertical()) {
       return state;
     }
 
-    return state.with(CropWalls.side(direction), CropWalls.joins(world, pos, direction));
+    return state.setValue(CropWalls.side(direction), CropWalls.joins(world, pos, direction));
   }
 
   private static Map<Direction, VoxelShape> arms() {
     Map<Direction, VoxelShape> arms = new EnumMap<>(Direction.class);
 
-    arms.put(Direction.NORTH, Block.createCuboidShape(7.0, 0.0, 0.0, 9.0, 16.0, 7.0));
-    arms.put(Direction.SOUTH, Block.createCuboidShape(7.0, 0.0, 9.0, 9.0, 16.0, 16.0));
-    arms.put(Direction.WEST, Block.createCuboidShape(0.0, 0.0, 7.0, 7.0, 16.0, 9.0));
-    arms.put(Direction.EAST, Block.createCuboidShape(9.0, 0.0, 7.0, 16.0, 16.0, 9.0));
+    arms.put(Direction.NORTH, Block.box(7.0, 0.0, 0.0, 9.0, 16.0, 7.0));
+    arms.put(Direction.SOUTH, Block.box(7.0, 0.0, 9.0, 9.0, 16.0, 16.0));
+    arms.put(Direction.WEST, Block.box(0.0, 0.0, 7.0, 7.0, 16.0, 9.0));
+    arms.put(Direction.EAST, Block.box(9.0, 0.0, 7.0, 16.0, 16.0, 9.0));
 
     return arms;
   }

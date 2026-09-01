@@ -2,7 +2,7 @@ package net.abakath.rpg4fools.client;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The finished atmosphere at a position: what colour to pull the fog towards, and how close the fog
@@ -86,7 +86,7 @@ public record ResolvedAtmosphere(
   }
 
   /** Applies a weakened biome tint and then the season grade to a sky colour. */
-  public Vec3d applyToSkyColor(Vec3d vanillaColor) {
+  public Vec3 applyToSkyColor(Vec3 vanillaColor) {
     int packed = ColorMath.packRgb(vanillaColor);
     int tinted = ColorMath.lerpRgb(packed, tintColor, colorBlend * SKY_BLEND_SCALE);
 

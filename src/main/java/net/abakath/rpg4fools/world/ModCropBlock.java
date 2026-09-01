@@ -2,8 +2,8 @@ package net.abakath.rpg4fools.world;
 
 import com.mojang.serialization.MapCodec;
 import net.abakath.rpg4fools.init.ModItems;
-import net.minecraft.block.CropBlock;
-import net.minecraft.item.ItemConvertible;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.CropBlock;
 
 /**
  * A farmland crop of this mod's own.
@@ -13,19 +13,19 @@ import net.minecraft.item.ItemConvertible;
  * roster is asked instead, which also keeps one source of truth for what belongs to what.
  */
 public class ModCropBlock extends CropBlock {
-  public static final MapCodec<ModCropBlock> CODEC = createCodec(ModCropBlock::new);
+  public static final MapCodec<ModCropBlock> CODEC = simpleCodec(ModCropBlock::new);
 
-  public ModCropBlock(Settings settings) {
+  public ModCropBlock(Properties settings) {
     super(settings);
   }
 
   @Override
-  public MapCodec<? extends CropBlock> getCodec() {
+  public MapCodec<? extends CropBlock> codec() {
     return CODEC;
   }
 
   @Override
-  protected ItemConvertible getSeedsItem() {
+  protected ItemLike getBaseSeedId() {
     return ModItems.seedFor(this);
   }
 }

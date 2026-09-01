@@ -1,11 +1,11 @@
 package net.abakath.rpg4fools.client;
 
 import net.abakath.rpg4fools.init.ModBlocks;
-import net.minecraft.block.Block;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.level.block.Block;
 
 /**
  * Render layers for the mod's blocks.
@@ -21,7 +21,7 @@ public final class ModBlockRenderers {
 
   public static void register() {
     BlockRenderLayerMap.INSTANCE.putBlocks(
-            RenderLayer.getCutout(),
+            RenderType.cutout(),
             ModBlocks.DEAD_CROP,
             ModBlocks.DORMANT_SWEET_BERRY_BUSH,
             ModBlocks.CROP_STICK,
@@ -30,7 +30,7 @@ public final class ModBlockRenderers {
 
     // Everything the roster registered, so a crop added later is not left rendering black.
     BlockRenderLayerMap.INSTANCE.putBlocks(
-            RenderLayer.getCutout(),
+            RenderType.cutout(),
             ModBlocks.cropBlocks().toArray(new Block[0])
     );
   }

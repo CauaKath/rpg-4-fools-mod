@@ -4,13 +4,13 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.abakath.rpg4fools.client.FogTransition;
 import net.abakath.rpg4fools.client.ResolvedAtmosphere;
 import net.abakath.rpg4fools.client.SeasonAtmosphere;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BackgroundRenderer;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.CameraSubmersionType;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.FogType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -30,31 +30,31 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * <p>Runs at TAIL so vanilla has already set its own values, and only for FOG_TERRAIN. FOG_SKY uses
  * the same method, and overriding that too would wash the horizon out.
  */
-@Mixin(BackgroundRenderer.class)
-public class BackgroundRendererFogDistanceMixin {
-  @Inject(method = "applyFog", at = @At("TAIL"))
+@Mixin(FogRenderer.class)
+public class FogRendererFogDistanceMixin {
+  @Inject(method = "setupFog", at = @At("TAIL"))
   private static void rpg4fools$applyBiomeFog(Camera camera,
-                                              BackgroundRenderer.FogType fogType,
+                                              FogRenderer.FogMode fogType,
                                               float viewDistance,
                                               boolean thickFog,
                                               float tickDelta,
                                               CallbackInfo ci) {
-    if (fogType != BackgroundRenderer.FogType.FOG_TERRAIN) {
+    if (fogType != FogRenderer.FogMode.FOG_TERRAIN) {
       return;
     }
 
-    if (camera == null || camera.getSubmersionType() != CameraSubmersionType.NONE) {
+    if (camera == null || camera.getFluidInCamera() != FogType.NONE) {
       return;
     }
 
-    MinecraftClient client = MinecraftClient.getInstance();
-    ClientWorld world = client.world;
+    Minecraft client = Minecraft.getInstance();
+    ClientLevel world = client.level;
 
-    if (world == null || !world.getRegistryKey().equals(World.OVERWORLD)) {
+    if (world == null || !world.dimension().equals(Level.OVERWORLD)) {
       return;
     }
 
-    ResolvedAtmosphere atmosphere = SeasonAtmosphere.resolve(world, BlockPos.ofFloored(camera.getPos()));
+    ResolvedAtmosphere atmosphere = SeasonAtmosphere.resolve(world, BlockPos.containing(camera.getPosition()));
 
     // Eased rather than applied straight. The biome blend moves in steps as samples cross a border,
     // and with a swamp at 24 blocks against a forest at 146 a single step is a visible jump. Note

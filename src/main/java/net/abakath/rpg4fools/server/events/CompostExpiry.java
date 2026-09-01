@@ -6,17 +6,16 @@ import net.abakath.rpg4fools.world.Compost;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkSection;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -46,7 +45,7 @@ public final class CompostExpiry {
   /** How many blocks are cleared per tick. Matched to the crop queue next door. */
   private static final int PER_TICK = 400;
 
-  private static final Map<RegistryKey<World>, Deque<BlockPos>> WAITING = new ConcurrentHashMap<>();
+  private static final Map<ResourceKey<Level>, Deque<BlockPos>> WAITING = new ConcurrentHashMap<>();
 
   /**
    * Whether the first sweep has run.
@@ -102,7 +101,7 @@ public final class CompostExpiry {
    * it is standing in for the scans that were skipped while the season was still unknown.
    */
   private static void sweep(MinecraftServer server, boolean expired) {
-    for (ServerWorld world : server.getWorlds()) {
+    for (ServerLevel world : server.getAllLevels()) {
       CompostedChunks composted = CompostedChunks.get(world);
       List<BlockPos> found = new ArrayList<>();
 
@@ -125,20 +124,20 @@ public final class CompostExpiry {
    * farmland before looking at a single position in it, exactly as the crop scan does. Almost every
    * section in the world is dismissed on that check.
    */
-  private static List<BlockPos> collect(Chunk chunk) {
+  private static List<BlockPos> collect(ChunkAccess chunk) {
     List<BlockPos> found = new ArrayList<>();
-    ChunkSection[] sections = chunk.getSectionArray();
+    LevelChunkSection[] sections = chunk.getSections();
 
     for (int index = 0; index < sections.length; index++) {
-      ChunkSection section = sections[index];
+      LevelChunkSection section = sections[index];
 
-      if (section.isEmpty() || !section.hasAny(Compost::composted)) {
+      if (section.hasOnlyAir() || !section.maybeHas(Compost::composted)) {
         continue;
       }
 
-      int startX = chunk.getPos().getStartX();
-      int startY = ChunkSectionPos.getBlockCoord(chunk.sectionIndexToCoord(index));
-      int startZ = chunk.getPos().getStartZ();
+      int startX = chunk.getPos().getMinBlockX();
+      int startY = SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(index));
+      int startZ = chunk.getPos().getMinBlockZ();
 
       for (int y = 0; y < SECTION_SIZE; y++) {
         for (int z = 0; z < SECTION_SIZE; z++) {
@@ -154,7 +153,7 @@ public final class CompostExpiry {
     return found;
   }
 
-  private static void enqueue(ServerWorld world, List<BlockPos> positions) {
+  private static void enqueue(ServerLevel world, List<BlockPos> positions) {
     if (positions.isEmpty()) {
       return;
     }
@@ -168,7 +167,7 @@ public final class CompostExpiry {
       sweep(server, false);
     }
 
-    for (ServerWorld world : server.getWorlds()) {
+    for (ServerLevel world : server.getAllLevels()) {
       Deque<BlockPos> queue = waiting(world);
 
       if (queue.isEmpty()) {
@@ -184,7 +183,7 @@ public final class CompostExpiry {
 
         // Skipped rather than forced, like the crop queue: a chunk that has gone away since being
         // queued is scanned again when it comes back.
-        if (!world.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+        if (!world.hasChunk(pos.getX() >> 4, pos.getZ() >> 4)) {
           continue;
         }
 
@@ -196,12 +195,12 @@ public final class CompostExpiry {
           continue;
         }
 
-        world.setBlockState(pos, state.with(Compost.PROPERTY, Compost.NONE), Block.NOTIFY_LISTENERS);
+        world.setBlock(pos, state.setValue(Compost.PROPERTY, Compost.NONE), Block.UPDATE_CLIENTS);
       }
     }
   }
 
-  private static Deque<BlockPos> waiting(ServerWorld world) {
-    return WAITING.computeIfAbsent(world.getRegistryKey(), key -> new ArrayDeque<>());
+  private static Deque<BlockPos> waiting(ServerLevel world) {
+    return WAITING.computeIfAbsent(world.dimension(), key -> new ArrayDeque<>());
   }
 }

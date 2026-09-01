@@ -4,21 +4,20 @@ import net.abakath.rpg4fools.world.CropHarvest;
 import net.abakath.rpg4fools.world.CropSeasons;
 import net.abakath.rpg4fools.world.RegrowingCropBlock;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.CropBlock;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.BlockHitResult;
 import java.util.List;
 
 /**
@@ -55,58 +54,58 @@ public class CropAutoReplant {
    * roll is the server's. Passing on the client lets vanilla send the use packet as usual, and the
    * server copy of this handler is what answers it.
    */
-  private static ActionResult onUseBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
-    if (!(world instanceof ServerWorld serverWorld)) {
-      return ActionResult.PASS;
+  private static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hit) {
+    if (!(world instanceof ServerLevel serverWorld)) {
+      return InteractionResult.PASS;
     }
 
     // Sneaking is how a player says they meant the vanilla interaction - placing a block into the
     // crop's space, most of all. Harvesting through that would make a tilled row impossible to
     // build on.
-    if (player.isSneaking()) {
-      return ActionResult.PASS;
+    if (player.isShiftKeyDown()) {
+      return InteractionResult.PASS;
     }
 
     BlockPos pos = hit.getBlockPos();
     BlockState state = world.getBlockState(pos);
 
-    if (!(state.getBlock() instanceof CropBlock crop) || !crop.isMature(state)) {
-      return ActionResult.PASS;
+    if (!(state.getBlock() instanceof CropBlock crop) || !crop.isMaxAge(state)) {
+      return InteractionResult.PASS;
     }
 
     // A crop that fruits again is picked, not torn up, and it does that itself in onUse - the same
     // division of labour the berry bushes already keep. Replanting one would throw away the plant
     // this feature exists to leave standing.
     if (crop instanceof RegrowingCropBlock) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     if (!CropSeasons.isCrop(state)) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     harvest(serverWorld, player, hand, pos, state, crop);
 
-    return ActionResult.SUCCESS;
+    return InteractionResult.SUCCESS;
   }
 
   /**
    * Takes the crop and sows it again. Package visible because {@link HoeAreaHarvest} sweeps a square
    * of crops through this same method, so that a wider harvest cannot drift from a single one.
    */
-  static void harvest(ServerWorld world, PlayerEntity player, Hand hand, BlockPos pos,
+  static void harvest(ServerLevel world, Player player, InteractionHand hand, BlockPos pos,
                       BlockState state, CropBlock crop) {
-    ItemStack tool = player.getStackInHand(hand);
-    List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, tool);
+    ItemStack tool = player.getItemInHand(hand);
+    List<ItemStack> drops = Block.getDrops(state, world, pos, null, player, tool);
 
-    takeSeed(drops, crop.getPickStack(world, pos, state));
+    takeSeed(drops, crop.getCloneItemStack(world, pos, state));
 
-    CropHarvest.drop(world, pos, pos.down(), drops);
+    CropHarvest.drop(world, pos, pos.below(), drops);
 
-    BlockState sown = crop.withAge(0);
-    world.setBlockState(pos, sown, Block.NOTIFY_LISTENERS);
-    world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(player, sown));
-    world.playSound(null, pos, SoundEvents.ITEM_CROP_PLANT, SoundCategory.BLOCKS,
+    BlockState sown = crop.getStateForAge(0);
+    world.setBlock(pos, sown, Block.UPDATE_CLIENTS);
+    world.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, sown));
+    world.playSound(null, pos, SoundEvents.CROP_PLANTED, SoundSource.BLOCKS,
             1.0F, 0.8F + world.random.nextFloat() * 0.4F);
   }
 
@@ -122,11 +121,11 @@ public class CropAutoReplant {
     for (int i = 0; i < drops.size(); i++) {
       ItemStack drop = drops.get(i);
 
-      if (!drop.isOf(seed.getItem())) {
+      if (!drop.is(seed.getItem())) {
         continue;
       }
 
-      drop.decrement(1);
+      drop.shrink(1);
 
       if (drop.isEmpty()) {
         drops.remove(i);

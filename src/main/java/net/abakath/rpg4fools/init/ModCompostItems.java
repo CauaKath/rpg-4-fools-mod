@@ -2,14 +2,13 @@ package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.world.Compost;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -154,6 +153,6 @@ public final class ModCompostItems {
   }
 
   private static Item register(String name) {
-    return Registry.register(Registries.ITEM, new Identifier(RPG4Fools.MOD_ID, name), new Item(new Item.Settings()));
+    return Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(RPG4Fools.MOD_ID, name), new Item(new Item.Properties()));
   }
 }

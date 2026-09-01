@@ -2,9 +2,9 @@ package net.abakath.rpg4fools.client;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 
 /**
  * How much the current weather thickens the fog.
@@ -51,12 +51,12 @@ public final class WeatherFog {
    * <p>Precipitation type comes from the biome rather than from the world, since whether it snows
    * is a property of where you are standing, not of the sky.
    */
-  public static float multiplierAt(World world, BlockPos pos) {
+  public static float multiplierAt(Level world, BlockPos pos) {
     if (world == null || pos == null) {
       return 1.0f;
     }
 
-    float rainGradient = world.getRainGradient(1.0f);
+    float rainGradient = world.getRainLevel(1.0f);
 
     if (rainGradient <= 0.0f) {
       return 1.0f;
@@ -64,13 +64,13 @@ public final class WeatherFog {
 
     // Weather cannot reach through a roof, so a cave or a house should not thicken. This also keeps
     // the cave mist, which is meant to ignore the sky entirely, out of the weather path.
-    if (!world.isSkyVisible(pos)) {
+    if (!world.canSeeSky(pos)) {
       return 1.0f;
     }
 
     Biome biome = world.getBiome(pos).value();
-    boolean snowing = biome.getPrecipitation(pos) == Biome.Precipitation.SNOW;
+    boolean snowing = biome.getPrecipitationAt(pos) == Biome.Precipitation.SNOW;
 
-    return multiplier(rainGradient, world.getThunderGradient(1.0f), snowing);
+    return multiplier(rainGradient, world.getThunderLevel(1.0f), snowing);
   }
 }

@@ -2,9 +2,9 @@ package net.abakath.rpg4fools.client;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeKeys;
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 
 /**
  * Atmosphere for underground space.
@@ -60,20 +60,20 @@ public enum CaveAtmosphere {
     return fogEnd;
   }
 
-  public static CaveAtmosphere of(RegistryEntry<Biome> entry) {
+  public static CaveAtmosphere of(Holder<Biome> entry) {
     if (entry == null) {
       return GENERIC;
     }
 
-    if (entry.matchesKey(BiomeKeys.DRIPSTONE_CAVES)) {
+    if (entry.is(Biomes.DRIPSTONE_CAVES)) {
       return DRIPSTONE;
     }
 
-    if (entry.matchesKey(BiomeKeys.LUSH_CAVES)) {
+    if (entry.is(Biomes.LUSH_CAVES)) {
       return LUSH;
     }
 
-    if (entry.matchesKey(BiomeKeys.DEEP_DARK)) {
+    if (entry.is(Biomes.DEEP_DARK)) {
       return DEEP_DARK;
     }
 

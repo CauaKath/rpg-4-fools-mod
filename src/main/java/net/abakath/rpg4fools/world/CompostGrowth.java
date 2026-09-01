@@ -1,10 +1,10 @@
 package net.abakath.rpg4fools.world;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.CropBlock;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The extra growth roll warm soil buys.
@@ -28,7 +28,7 @@ public final class CompostGrowth {
   private CompostGrowth() {
   }
 
-  public static void boost(ServerWorld world, BlockPos pos, BlockState state, Random random) {
+  public static void boost(ServerLevel world, BlockPos pos, BlockState state, RandomSource random) {
     if (BOOSTING.get()) {
       return;
     }
@@ -37,7 +37,7 @@ public final class CompostGrowth {
       return;
     }
 
-    if (Compost.at(world, pos.down()) != Compost.WARM) {
+    if (Compost.at(world, pos.below()) != Compost.WARM) {
       return;
     }
 

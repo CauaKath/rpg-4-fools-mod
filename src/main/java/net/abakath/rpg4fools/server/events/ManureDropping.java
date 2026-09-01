@@ -3,13 +3,13 @@ package net.abakath.rpg4fools.server.events;
 import net.abakath.rpg4fools.init.ModCompostItems;
 import net.abakath.rpg4fools.init.ModEntityTags;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 
 /**
  * Manure, left behind by animals that graze.
@@ -34,24 +34,24 @@ public class ManureDropping implements ServerTickEvents.EndTick {
 
   @Override
   public void onEndTick(MinecraftServer server) {
-    if (server.getTicks() % INTERVAL != 0) {
+    if (server.getTickCount() % INTERVAL != 0) {
       return;
     }
 
-    for (ServerWorld world : server.getWorlds()) {
+    for (ServerLevel world : server.getAllLevels()) {
       sweep(world);
     }
   }
 
-  private static void sweep(ServerWorld world) {
-    for (Entity entity : world.iterateEntities()) {
-      if (!(entity instanceof AnimalEntity animal)) {
+  private static void sweep(ServerLevel world) {
+    for (Entity entity : world.getAllEntities()) {
+      if (!(entity instanceof Animal animal)) {
         continue;
       }
 
       // Babies eat and do not graze. Waiting for an animal to grow up before it pays is also what
       // stops a pen of newborns from being a faster source than a pen of adults.
-      if (animal.isBaby() || !animal.getType().isIn(ModEntityTags.MANURE_PRODUCERS)) {
+      if (animal.isBaby() || !animal.getType().is(ModEntityTags.MANURE_PRODUCERS)) {
         continue;
       }
 
@@ -59,9 +59,9 @@ public class ManureDropping implements ServerTickEvents.EndTick {
         continue;
       }
 
-      BlockPos pos = animal.getBlockPos();
+      BlockPos pos = animal.blockPosition();
 
-      Block.dropStack(world, pos, new ItemStack(ModCompostItems.MANURE));
+      Block.popResource(world, pos, new ItemStack(ModCompostItems.MANURE));
     }
   }
 }

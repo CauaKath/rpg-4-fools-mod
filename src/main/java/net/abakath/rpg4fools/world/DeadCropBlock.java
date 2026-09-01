@@ -1,15 +1,15 @@
 package net.abakath.rpg4fools.world;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.PlantBlock;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * What a crop leaves behind when its season ends.
@@ -21,8 +21,8 @@ import net.minecraft.world.BlockView;
  * crops tag and this block is deliberately outside it, so nothing ever examines it again. Breaking
  * it is the only way it leaves the world.
  */
-public class DeadCropBlock extends PlantBlock {
-  public static final MapCodec<DeadCropBlock> CODEC = createCodec(DeadCropBlock::new);
+public class DeadCropBlock extends BushBlock {
+  public static final MapCodec<DeadCropBlock> CODEC = simpleCodec(DeadCropBlock::new);
 
   /**
    * Flat and wide, following the sprite.
@@ -30,19 +30,19 @@ public class DeadCropBlock extends PlantBlock {
    * <p>The art is trampled growth about six pixels deep, so a taller box would have the player
    * clicking empty air above it. Wide because collapsed stalks sprawl.
    */
-  private static final VoxelShape SHAPE = Block.createCuboidShape(1.0, 0.0, 1.0, 15.0, 6.0, 15.0);
+  private static final VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 6.0, 15.0);
 
-  public DeadCropBlock(Settings settings) {
+  public DeadCropBlock(Properties settings) {
     super(settings);
   }
 
   @Override
-  protected MapCodec<DeadCropBlock> getCodec() {
+  protected MapCodec<DeadCropBlock> codec() {
     return CODEC;
   }
 
   @Override
-  public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+  public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
     return SHAPE;
   }
 
@@ -54,7 +54,7 @@ public class DeadCropBlock extends PlantBlock {
    * break.
    */
   @Override
-  protected boolean canPlantOnTop(BlockState floor, BlockView world, BlockPos pos) {
-    return floor.isOf(Blocks.FARMLAND) || floor.isIn(BlockTags.DIRT);
+  protected boolean mayPlaceOn(BlockState floor, BlockGetter world, BlockPos pos) {
+    return floor.is(Blocks.FARMLAND) || floor.is(BlockTags.DIRT);
   }
 }
