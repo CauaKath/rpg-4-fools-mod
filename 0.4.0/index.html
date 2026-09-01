@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RPG 4 Fools 0.4.0</title>
-<meta name="description" content="Crop sticks: a trellis up to three high, and a tomato that climbs it a section at a time and fruits the whole way up.">
+<meta name="description" content="A trellis a tomato climbs, a wall a cucumber spreads across, compost worked into the soil three ways, and a hoe that harvests the square around the crop it clicked.">
 <meta property="og:title" content="RPG 4 Fools 0.4.0">
-<meta property="og:description" content="Crop sticks: a trellis up to three high, and a tomato that climbs it a section at a time and fruits the whole way up.">
+<meta property="og:description" content="A trellis a tomato climbs, a wall a cucumber spreads across, compost worked into the soil three ways, and a hoe that harvests the square around the crop it clicked.">
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="../assets/site.css?v=edb3bfc7">
 </head>
@@ -19,11 +19,11 @@
 
   <header class="masthead">
     <span class="version">0.4.0 · In development</span>
-    <h1>A tomato worth climbing</h1>
+    <h1>A field worth building on</h1>
     <p class="standfirst">
-      Crop sticks: a trellis you build on farmland, up to three high. A tomato grown up one is a
-      single tall plant rather than three stacked bushes — it climbs a section at a time, fruits
-      the whole way up, and pays out once for all of it.
+      Two ways to grow a plant off the ground — a trellis a tomato climbs, a wall a cucumber
+      spreads across — three things to work into the soil under them, and a hoe that brings in
+      the whole patch instead of one plant at a time.
     </p>
     <div class="ribbon" aria-hidden="true"><div></div><div></div><div></div><div></div></div>
   </header>
@@ -245,6 +245,292 @@
         <h3>Yours are left alone</h3>
         <p>Putting sticks on a plot claims it. A field will sow itself over its own trellises and
           never over one you built.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Six</span>
+      <h2>Six sticks make a wall</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Three sticks by two, for two crop walls. A wall is scenery before it is farming equipment: it
+      joins its neighbours the way a pane does, needs nothing to hold it up, may be any size and may
+      be built anywhere at all — half of what it is for is being the fence around a garden. Only the
+      plant on it cares about farmland, and only under the one cell it was sown in.
+    </p>
+
+    <div class="also">
+      <div>
+        <h3>Sow the wall or the ground</h3>
+        <p>Either works, the same bargain the trellis strikes. A lattice a few pixels thick is not
+          something anyone should have to aim at.</p>
+      </div>
+      <div>
+        <h3>Cucumber only, for now</h3>
+        <p>A flag of its own on the crop roster, separate from the one that climbs sticks. The two
+          supports have different shapes and different art, so a plant drawn for one has nothing to
+          show on the other.</p>
+      </div>
+      <div>
+        <h3>The wall outlives the plant</h3>
+        <p>A season takes the vine and leaves the lattice. What died on it stays as dried debris
+          until new growth comes through and clears it.</p>
+      </div>
+    </div>
+
+    <div class="yield">
+      <span class="drop"><img src="../assets/sprites/item/crop_wall.png" alt="">Crop Wall · 6 sticks make 2</span>
+      <span class="note">Panels are the fence; a panel with a vine on it is the crop. Every rule
+        that asks whether a cell is free treats one carrying dead growth as free.</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Seven</span>
+      <h2>A cucumber fills a box</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      A plant is a box three cells wide and three tall, with the cell it was sown in at the bottom of
+      the middle column. It fills that box by spreading into whichever panel it can reach, one cell
+      at a time, so its shape is never the same twice — and a cell high in the box may have nothing
+      at all beneath it, because a vine on a wall is holding on rather than standing up.
+    </p>
+
+    <div class="specimen">
+      <div class="specimen-head">
+        <h3>Cucumber on a full wall</h3>
+        <span class="label">Nine cells · ripe</span>
+        <span class="seasons-of"><span class="chip summer">Summer</span></span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 96px); justify-content: center; gap: 2px; padding: 8px 0;">
+        <img src="../assets/sprites/block/cucumber_crop_wall_side_row2_stage7.png" alt="" width="96" height="96">
+        <img src="../assets/sprites/block/cucumber_crop_wall_center_row2_stage7.png" alt="" width="96" height="96">
+        <img src="../assets/sprites/block/cucumber_crop_wall_side_row2_stage7.png" alt="" width="96" height="96">
+        <img src="../assets/sprites/block/cucumber_crop_wall_side_row1_stage7.png" alt="" width="96" height="96">
+        <img src="../assets/sprites/block/cucumber_crop_wall_center_row1_stage7.png" alt="" width="96" height="96">
+        <img src="../assets/sprites/block/cucumber_crop_wall_side_row1_stage7.png" alt="" width="96" height="96">
+        <img src="../assets/sprites/block/cucumber_crop_wall_side_row0_stage7.png" alt="" width="96" height="96">
+        <img src="../assets/sprites/block/cucumber_crop_wall_center_row0_stage7.png" alt="" width="96" height="96">
+        <img src="../assets/sprites/block/cucumber_crop_wall_side_row0_stage7.png" alt="" width="96" height="96">
+      </div>
+      <div class="yield">
+        <span class="drop"><img src="../assets/sprites/item/cucumber.png" alt="">Cucumber · 2 hunger</span>
+        <span class="note">The middle column is drawn as the stem the plant was sown as; the arms
+          reach out of it. Each row has art of its own, so the vine reads as one plant climbing
+          rather than nine copies of a tile.</span>
+      </div>
+    </div>
+
+    <div class="also">
+      <div>
+        <h3>Every cell knows its address</h3>
+        <p>Which arm, which row, stored on the cell itself. A plant whose shape has holes in it
+          cannot be walked back to its root the way a stick column can.</p>
+      </div>
+      <div>
+        <h3>One plant, one harvest</h3>
+        <p>Picking anywhere on it picks all of it, one to three cucumbers a cell, and the whole
+          crop lands at the root's feet.</p>
+      </div>
+      <div>
+        <h3>It spreads again</h3>
+        <p>Picking leaves the plant at the adult age — so a wall you extend after a harvest is a
+          wall the same plant will grow into.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Eight</span>
+      <h2>Three things to work into the soil</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Compost is made in the composter you already have, out of one extra ingredient. Drop a catalyst
+      into it and the batch is labelled; fill it as usual and it hands over that compost instead of
+      bone meal. The three catalysts are gathered three different ways on purpose — ash is burnt,
+      bark is stripped, manure is waited for — so the pipeline is not three trips to the same furnace.
+    </p>
+
+    <div class="fates">
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="../assets/sprites/item/manure.png" alt="Manure">
+          <span class="arrow">→</span>
+          <img src="../assets/sprites/item/rich_compost.png" alt="Rich compost">
+        </div>
+        <h3>Manure · waited for</h3>
+        <p>Left behind by animals that graze, about one an animal every six minutes. A pen that is
+          kept is a pen that pays.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="../assets/sprites/item/ash.png" alt="Ash">
+          <span class="arrow">→</span>
+          <img src="../assets/sprites/item/warm_compost.png" alt="Warm compost">
+        </div>
+        <h3>Ash · burnt</h3>
+        <p>Smelted from leaves or saplings, which vanilla has no recipe for. Logs already give
+          charcoal; the garden waste had nowhere to go.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="../assets/sprites/item/oak_bark.png" alt="Oak bark">
+          <span class="arrow">→</span>
+          <img src="../assets/sprites/item/creeping_compost.png" alt="Creeping compost">
+        </div>
+        <h3>Bark · stripped</h3>
+        <p>Knocked off a log by an axe. The strip still happens exactly as it did; the bark is what
+          was going to be wasted.</p>
+      </div>
+    </div>
+
+    <div class="also">
+      <div>
+        <h3>Eight barks, one job</h3>
+        <p>Oak through cherry, each with the colour you already know. Any of them labels a batch as
+          creeping — the eight sprites are worth keeping, the eight behaviours are not.</p>
+      </div>
+      <div>
+        <h3>A labelled composter says so</h3>
+        <p>Coloured dust drifts off it in the colour of the compost it will hand over, so the one
+          you walked away from mid batch is not a mystery.</p>
+      </div>
+      <div>
+        <h3>One label per batch</h3>
+        <p>A second catalyst is refused rather than eaten. Collecting is what clears the label, and
+          a full labelled composter empties on the click that collects it.</p>
+      </div>
+      <div>
+        <h3>Nine squares a go</h3>
+        <p>Compost works into every bare piece of farmland in the 3×3 around where it was used.
+          Clicking the plant works as well as clicking the dirt.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Nine</span>
+      <h2>Rich, warm, creeping</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Three kinds, one axis each, and never two at once. Treated soil is still ordinary farmland
+      underneath — every check in the game that asks whether something is farmland still says yes —
+      it just has something in it, and shows it.
+    </p>
+
+    <div class="fates">
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="../assets/sprites/block/rich_farmland.png" alt="Rich farmland">
+        </div>
+        <h3>Rich · feeds the harvest</h3>
+        <p>One more roll of the crop's own loot table. Tools and Fortune still decide the numbers,
+          and a crop that is picked rather than torn up is paid the same bonus.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="../assets/sprites/block/warm_farmland.png" alt="Warm farmland">
+        </div>
+        <h3>Warm · hurries the growing</h3>
+        <p>A second growth roll rather than a changed formula, so light, moisture and neighbours
+          still count — and any mod's crop gets it without being asked.</p>
+      </div>
+      <div class="fate">
+        <div class="fate-figure">
+          <img src="../assets/sprites/block/creeping_farmland.png" alt="Creeping farmland">
+        </div>
+        <h3>Creeping · hurries the spreading</h3>
+        <p>Half the wait for a vine to take the next panel, or a tomato to climb the next stick.
+          Nothing at all to a plant with nowhere to go.</p>
+      </div>
+    </div>
+
+    <div class="yield">
+      <span class="note">Applying over soil that already carries something is refused rather than
+        allowed to overwrite, so topping up the edge of a plot cannot quietly replace the middle of
+        it. A shovel scrapes a square back to bare farmland — though never out from under a ripe
+        crop, which is a harvest first. Compost is taken back out of the ground when the season it
+        was laid in ends.</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Ten</span>
+      <h2>A hoe brings in more than one</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Right click a ripe crop with a hoe in hand and the square around it comes in too. What a
+      harvest is does not change — every plant in the square is taken by its own rule, so wheat is
+      torn up and sown again, and anything on a trellis or a wall is picked and left standing. It is
+      a wider click, not a different kind of harvest.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption>The square is flat, at the height of the crop that was clicked.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Hoe</th>
+            <th scope="col">Reach</th>
+            <th scope="col">Crops at most</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Wood, stone</th>
+            <td>The one clicked</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <th scope="row">Iron, gold</th>
+            <td>3×3</td>
+            <td>9</td>
+          </tr>
+          <tr>
+            <th scope="row">Diamond</th>
+            <td>5×5</td>
+            <td>25</td>
+          </tr>
+          <tr class="mine">
+            <th scope="row">Netherite</th>
+            <td>7×7</td>
+            <td>49</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="also">
+      <div>
+        <h3>One durability a click</h3>
+        <p>However much came in, and only when something did. A wooden hoe reaches nothing extra
+          and is charged nothing for it.</p>
+      </div>
+      <div>
+        <h3>A trellis still pays once</h3>
+        <p>Plants harvested whole from a root are counted by root, so a square covering four cells
+          of one cucumber wall does not pay four times.</p>
+      </div>
+      <div>
+        <h3>Berry bushes are left alone</h3>
+        <p>They are not sown on farmland and never were part of this. Picking a hedgerow with a
+          farming tool is not what the tool is for.</p>
+      </div>
+      <div>
+        <h3>Sneak still means sneak</h3>
+        <p>The same bargain the single crop harvest keeps: a sneaking click is the vanilla one, so
+          a tilled row stays possible to build on.</p>
       </div>
     </div>
   </section>
