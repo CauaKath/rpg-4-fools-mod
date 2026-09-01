@@ -24,7 +24,8 @@ public final class ModBlockRenderers {
             RenderLayer.getCutout(),
             ModBlocks.DEAD_CROP,
             ModBlocks.DORMANT_SWEET_BERRY_BUSH,
-            ModBlocks.CROP_STICK
+            ModBlocks.CROP_STICK,
+            ModBlocks.CROP_WALL
     );
 
     // Everything the roster registered, so a crop added later is not left rendering black.

@@ -134,6 +134,11 @@ public final class Resowing {
    * <p>Sticked crops are kept out. They are in the crops tag and they are CropBlocks, so they would
    * otherwise be picked here - and a field would come back carrying trellises that were never built,
    * with nothing above them to climb. A trellis is decided deliberately in {@link #sownAt} instead.
+   *
+   * <p>Walled crops are kept out for a harder reason: there is no deliberate case to fall back on.
+   * A wall is a build, not something a field puts up, so nothing here ever sows one - and a walled
+   * cell sown into a field would be a cell with no wall around it and an address pointing at a root
+   * that does not exist.
    */
   private static List<Block> inSeason(Season season) {
     List<Block> crops = new ArrayList<>();
@@ -148,6 +153,7 @@ public final class Resowing {
       BlockState state = block.getDefaultState();
 
       if (block instanceof CropBlock && !(block instanceof StickedCropBlock)
+              && !(block instanceof WalledCropBlock)
               && !NOT_SOWN.contains(block) && CropSeasons.isInSeason(state, season)) {
         crops.add(block);
       }

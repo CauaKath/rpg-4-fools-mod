@@ -85,6 +85,19 @@ public class CropTransition {
       return true;
     }
 
+    // A walled crop leaves its wall behind, for the same reason a sticked one leaves its sticks: the
+    // wall is not part of the plant. Nothing tries to sow the plot again, unlike every branch below.
+    // A wall is a build rather than a plot - nobody put one up on behalf of a village - so a wall
+    // that loses its crop stays a wall until a player sows it again.
+    if (CropWalls.isCrop(state)) {
+      if (inSeason) {
+        return false;
+      }
+
+      world.setBlockState(pos, CropWalls.wall(world, pos, true));
+      return true;
+    }
+
     // A sticked crop leaves its trellis behind. The sticks are not part of the plant, so an ending
     // season takes the crop and returns the stick to standing empty. Every section settles for
     // itself, so a full column comes down to a full column of empty sticks - except the foot, which

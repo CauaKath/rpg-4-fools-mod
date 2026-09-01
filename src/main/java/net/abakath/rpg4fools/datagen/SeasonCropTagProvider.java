@@ -93,6 +93,13 @@ public class SeasonCropTagProvider extends FabricTagProvider.BlockTagProvider {
         seasons.put(ModBlocks.stickedFor(definition), definition.seasons());
       }
 
+      // The walled form, for the same reason: the hook is what strips a wall back to bare panels
+      // when the season ends, and it only looks at what the crops tag names. The panel itself stays
+      // untagged, having nothing to grow and no season to be out of.
+      if (definition.walled()) {
+        seasons.put(ModBlocks.walledFor(definition), definition.seasons());
+      }
+
       if (definition.kind() == CropDefinition.Kind.BUSH) {
         seasons.put(ModBlocks.dormantFor(definition), definition.seasons());
       }

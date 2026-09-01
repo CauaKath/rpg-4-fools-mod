@@ -29,6 +29,7 @@ public final class ModItemGroups {
                     .displayName(Text.translatable("itemGroup.rpg4fools.crops"))
                     .entries((context, entries) -> {
                       entries.add(ModItems.CROP_STICK);
+                      entries.add(ModItems.CROP_WALL);
 
                       for (CropDefinition definition : ModCrops.ALL) {
                         entries.add(ModItems.seedItem(definition));
