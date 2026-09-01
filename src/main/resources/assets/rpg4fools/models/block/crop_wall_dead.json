@@ -1,52 +1,7 @@
 {
   "__comment": "Dead growth left on a panel by a season. The same cross a living cell is drawn as, in straw.",
-  "ambientocclusion": false,
+  "parent": "rpg4fools:block/crop_cross",
   "textures": {
-    "cross": "rpg4fools:block/crop_wall_dead",
-    "particle": "rpg4fools:block/crop_wall_dead"
-  },
-  "elements": [
-    {
-      "from": [0.8, 0, 8],
-      "to": [15.2, 16, 8],
-      "shade": false,
-      "rotation": {
-        "origin": [8, 8, 8],
-        "axis": "y",
-        "angle": 45,
-        "rescale": true
-      },
-      "faces": {
-        "north": {
-          "uv": [0, 0, 16, 16],
-          "texture": "#cross"
-        },
-        "south": {
-          "uv": [0, 0, 16, 16],
-          "texture": "#cross"
-        }
-      }
-    },
-    {
-      "from": [8, 0, 0.8],
-      "to": [8, 16, 15.2],
-      "shade": false,
-      "rotation": {
-        "origin": [8, 8, 8],
-        "axis": "y",
-        "angle": 45,
-        "rescale": true
-      },
-      "faces": {
-        "west": {
-          "uv": [0, 0, 16, 16],
-          "texture": "#cross"
-        },
-        "east": {
-          "uv": [0, 0, 16, 16],
-          "texture": "#cross"
-        }
-      }
-    }
-  ]
+    "cross": "rpg4fools:block/crop_wall_dead"
+  }
 }

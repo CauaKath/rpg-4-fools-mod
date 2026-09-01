@@ -1,52 +1,7 @@
 {
-  "__comment": "One cell of a plant spread over a wall, drawn as vanilla draws a crop: two planes crossed at 45 degrees. Spans the whole block, so the plant is seen from either side of the wall and from along it.",
-  "ambientocclusion": false,
+  "__comment": "One cell of a plant spread over a wall, drawn as vanilla draws a crop. Spans the whole block, so the plant is seen from either side of the wall and from along it.",
+  "parent": "rpg4fools:block/crop_cross",
   "textures": {
-    "cross": "rpg4fools:block/cucumber_crop_wall_crown_stage4",
-    "particle": "rpg4fools:block/cucumber_crop_wall_crown_stage4"
-  },
-  "elements": [
-    {
-      "from": [0.8, 0, 8],
-      "to": [15.2, 16, 8],
-      "shade": false,
-      "rotation": {
-        "origin": [8, 8, 8],
-        "axis": "y",
-        "angle": 45,
-        "rescale": true
-      },
-      "faces": {
-        "north": {
-          "uv": [0, 0, 16, 16],
-          "texture": "#cross"
-        },
-        "south": {
-          "uv": [0, 0, 16, 16],
-          "texture": "#cross"
-        }
-      }
-    },
-    {
-      "from": [8, 0, 0.8],
-      "to": [8, 16, 15.2],
-      "shade": false,
-      "rotation": {
-        "origin": [8, 8, 8],
-        "axis": "y",
-        "angle": 45,
-        "rescale": true
-      },
-      "faces": {
-        "west": {
-          "uv": [0, 0, 16, 16],
-          "texture": "#cross"
-        },
-        "east": {
-          "uv": [0, 0, 16, 16],
-          "texture": "#cross"
-        }
-      }
-    }
-  ]
+    "cross": "rpg4fools:block/cucumber_crop_wall_crown_stage4"
+  }
 }
