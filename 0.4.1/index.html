@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RPG 4 Fools 0.4.1</title>
+<meta name="description" content="The world no longer redraws itself at dawn, the season tint is worked out once a day instead of once per block, and the date is sent when it changes rather than twenty times a second.">
+<meta property="og:title" content="RPG 4 Fools 0.4.1">
+<meta property="og:description" content="The world no longer redraws itself at dawn, the season tint is worked out once a day instead of once per block, and the date is sent when it changes rather than twenty times a second.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="../assets/site.css?v=edb3bfc7">
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <a class="back" href="../">&larr; All versions</a>
+  </div>
+
+  <header class="masthead">
+    <span class="version">0.4.1 · Released 1 Sep 2026</span>
+    <h1>A quieter turn of the day</h1>
+    <p class="standfirst">
+      A fixes release. The world stopped redrawing itself every morning, the season tint is
+      worked out once a day instead of once per block, and the date is sent when it changes
+      rather than twenty times a second. Nothing new to plant.
+    </p>
+    <div class="ribbon" aria-hidden="true"><div></div><div></div><div></div><div></div></div>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">One</span>
+      <h2>Dawn no longer blanks the world</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      The season tint is not painted over the world at render time. It is baked into the chunks
+      themselves when they are built, which is what lets a hillside of grass carry the colour of
+      the month at no cost per frame. The catch is that the tint only reaches the world when the
+      chunks are rebuilt, and the tint moves every in-game day.
+    </p>
+    <p>
+      That daily rebuild was being asked for in the bluntest way available: throw the whole
+      renderer away and start again. Doing so frees every chunk the graphics card is holding, so
+      for the second or two it takes to build them back, there is nothing to draw. The world went
+      empty and filled back in, once every morning, in full view.
+    </p>
+    <p>
+      It now asks for a rebuild instead of a rebuild from nothing. The chunks already on the
+      graphics card keep being drawn while the new ones are prepared behind them, and each is
+      swapped in as it finishes. The same work happens; you no longer watch it happen.
+    </p>
+
+    <div class="also">
+      <div>
+        <h3>The colours still turn</h3>
+        <p>The cached biome colours are cleared first, so a rebuilt chunk asks what month it is
+          rather than reusing yesterday's answer.</p>
+      </div>
+      <div>
+        <h3>Once a day, as before</h3>
+        <p>The rebuild happens on the same schedule it always did. This changes how it is asked
+          for, not how often.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Two</span>
+      <h2>The colour of the month, worked out once</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Every tinted block asks what colour it should be: grass, leaves, vines, ferns, sugar cane,
+      lily pads. The answer is the current sub-season's grade eased towards the next one,
+      according to how far through the month you are — three numbers, a hue shift and two
+      multipliers.
+    </p>
+    <p>
+      Those three numbers were being worked out from scratch for every single block face, on
+      every rebuild, to arrive at the same answer every time. They depend on nothing but the
+      date, and the date moves once a day.
+    </p>
+    <p>
+      They are now worked out once and kept until the date moves. A block face compares two
+      values and reads the answer. The fog and sky did the same arithmetic every frame, and now
+      do the same comparison.
+    </p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Three</span>
+      <h2>The date is sent when it changes</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      The server told every player the date twenty times a second, for a date that changes once
+      every twenty minutes. The client threw away all but the first of them — it checks whether
+      the day has actually moved before doing anything — so this was twenty-four thousand
+      messages a day to deliver one fact.
+    </p>
+    <p>
+      It is now sent when the day turns, and to a player as they join, since they have missed the
+      last one. Everything that hung off it went the same way: a persistent-state lookup, an
+      allocation and a write to every player's saved data, all of which happened every tick and
+      now happen once a day.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption>Per player, per in-game day.</caption>
+        <thead>
+          <tr>
+            <th scope="col"></th>
+            <th scope="col">Before</th>
+            <th scope="col">After</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Date messages</th>
+            <td>24,000</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <th scope="row">Saved-data writes</th>
+            <td>96,000</td>
+            <td>0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Also</span>
+      <h2>Two things that were hiding behind it</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Sending the date constantly was covering for two bugs. Neither could be seen while every
+      tick papered over the last one, and both had to be fixed before the sending could stop.
+    </p>
+
+    <div class="also">
+      <div>
+        <h3>The HUD survives a respawn</h3>
+        <p>The date was kept on your player, and your player is rebuilt when you die or change
+          dimension — so the date was lost each time, and silently refilled a tick later. It is
+          no longer kept somewhere that gets thrown away.</p>
+      </div>
+      <div>
+        <h3>A second world is its own world</h3>
+        <p>The handler that watches the calendar outlives the world in single player. A second
+          world inherited the first one's season and ran a season change across every loaded
+          chunk on its first tick. It now starts fresh.</p>
+      </div>
+      <div>
+        <h3>The banner reads the clock</h3>
+        <p>The day-change message fades in and out over its first eight seconds. It takes its
+          timing from the world clock now, which the client keeps for itself.</p>
+      </div>
+      <div>
+        <h3>Nothing else moved</h3>
+        <p>No crops, sprites, recipes or seasons changed. Existing worlds carry on exactly as
+          they were.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>RPG 4 Fools 0.4.1</span>
+    <span>Minecraft 1.20.6 · Fabric</span>
+    <span>Block sprites shown at 4×, items at 2×</span>
+    <span><a href="https://github.com/CauaKath/rpg-4-fools-mod">Source on GitHub</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
