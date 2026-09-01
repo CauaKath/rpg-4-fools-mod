@@ -141,13 +141,7 @@ public final class Resowing {
    */
   private static List<Block> inSeason(Season season) {
     List<Block> crops = new ArrayList<>();
-    Optional<HolderSet.Named<Block>> tagged = BuiltInRegistries.BLOCK.getTag(ModBlockTags.CROPS);
-
-    if (tagged.isEmpty()) {
-      return crops;
-    }
-
-    for (Holder<Block> entry : tagged.get()) {
+    for (Holder<Block> entry : BuiltInRegistries.BLOCK.getTagOrEmpty(ModBlockTags.CROPS)) {
       Block block = entry.value();
       BlockState state = block.defaultBlockState();
 

@@ -17,6 +17,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -97,9 +98,10 @@ public class StickedCropBlock extends RegrowingCropBlock {
    * fires neighbour updates on whatever is left, and each survivor asks the question again.
    */
   @Override
-  public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
-                                              LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
-    BlockState updated = super.updateShape(state, direction, neighborState, world, pos, neighborPos);
+  public BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess tickAccess,
+                                BlockPos pos, Direction direction, BlockPos neighborPos,
+                                BlockState neighborState, RandomSource random) {
+    BlockState updated = super.updateShape(state, world, tickAccess, pos, direction, neighborPos, neighborState, random);
 
     if (updated.isAir()) {
       return updated;
@@ -284,7 +286,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
     int picked = 0;
 
     for (int section = 0; section < sections; section++) {
-      picked += 1 + serverWorld.random.nextInt(3);
+      picked += 1 + serverWorld.getRandom().nextInt(3);
     }
 
     CropHarvest.drop(serverWorld, base, base.below(), new ItemStack(produce(), picked));
@@ -293,7 +295,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
     serverWorld.gameEvent(GameEvent.BLOCK_CHANGE, base,
             GameEvent.Context.of(player, serverWorld.getBlockState(base)));
     serverWorld.playSound(null, base, SoundEvents.CROP_BREAK, SoundSource.BLOCKS,
-            1.0F, 0.8F + serverWorld.random.nextFloat() * 0.4F);
+            1.0F, 0.8F + serverWorld.getRandom().nextFloat() * 0.4F);
 
     return InteractionResult.SUCCESS;
   }

@@ -1,7 +1,7 @@
 package net.abakath.rpg4fools.server;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -32,11 +32,11 @@ public final class LoadedChunks {
   }
 
   public static void register() {
-    ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> positions(world).add(chunk.getPos().toLong()));
-    ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> positions(world).remove(chunk.getPos().toLong()));
+    ServerChunkEvents.CHUNK_LOAD.register((world, chunk, generated) -> positions(world).add(chunk.getPos().pack()));
+    ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> positions(world).remove(chunk.getPos().pack()));
 
     // A world going away takes its whole set with it, so an unloaded dimension does not leak.
-    ServerWorldEvents.UNLOAD.register((server, world) -> BY_WORLD.remove(world.dimension()));
+    ServerLevelEvents.UNLOAD.register((server, world) -> BY_WORLD.remove(world.dimension()));
   }
 
   /**

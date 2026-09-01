@@ -6,7 +6,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.VegetationBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -21,7 +21,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * crops tag and this block is deliberately outside it, so nothing ever examines it again. Breaking
  * it is the only way it leaves the world.
  */
-public class DeadCropBlock extends BushBlock {
+public class DeadCropBlock extends VegetationBlock {
   public static final MapCodec<DeadCropBlock> CODEC = simpleCodec(DeadCropBlock::new);
 
   /**
@@ -37,7 +37,7 @@ public class DeadCropBlock extends BushBlock {
   }
 
   @Override
-  protected MapCodec<DeadCropBlock> codec() {
+  protected MapCodec<? extends VegetationBlock> codec() {
     return CODEC;
   }
 

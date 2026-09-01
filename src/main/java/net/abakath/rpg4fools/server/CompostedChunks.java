@@ -3,11 +3,16 @@ package net.abakath.rpg4fools.server;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.world.CurrentSeason;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.abakath.rpg4fools.RPG4Fools;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import java.util.Optional;
+import java.util.stream.LongStream;
 
 /**
  * Which chunks were composted during the season now running.
@@ -33,55 +38,48 @@ public class CompostedChunks extends SavedData {
   private final LongOpenHashSet chunks = new LongOpenHashSet();
   private Season season = null;
 
-  private static final Factory<CompostedChunks> type = new Factory<>(
+  /**
+   * The season is absent rather than empty on a state that has never rolled over, which is what
+   * rollOver reads to tell "no season recorded yet" from "recorded, and it has moved on".
+   */
+  private static final Codec<CompostedChunks> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+          Codec.STRING.optionalFieldOf(SEASON).forGetter(state -> Optional.ofNullable(state.season).map(Season::name)),
+          Codec.LONG_STREAM.optionalFieldOf(CHUNKS, LongStream.empty()).forGetter(state -> LongStream.of(state.chunks.toLongArray()))
+  ).apply(instance, CompostedChunks::fromStored));
+
+  private static final SavedDataType<CompostedChunks> TYPE = new SavedDataType<>(
+          Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "composted_chunks"),
           CompostedChunks::new,
-          CompostedChunks::createFromNbt,
+          CODEC,
           null
   );
 
   public static CompostedChunks get(ServerLevel world) {
-    CompostedChunks state = world.getDataStorage()
-            .computeIfAbsent(type, "rpg4fools_composted_chunks");
+    CompostedChunks state = world.getDataStorage().computeIfAbsent(TYPE);
 
     state.rollOver();
 
     return state;
   }
 
-  public static CompostedChunks createFromNbt(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+  private static CompostedChunks fromStored(Optional<String> season, LongStream stored) {
     CompostedChunks state = new CompostedChunks();
 
-    if (nbt.contains(SEASON)) {
-      state.season = Season.valueOf(nbt.getString(SEASON));
-    }
-
-    for (long chunk : nbt.getLongArray(CHUNKS)) {
-      state.chunks.add(chunk);
-    }
+    season.ifPresent(name -> state.season = Season.valueOf(name));
+    stored.forEach(state.chunks::add);
 
     return state;
   }
 
-  @Override
-  public CompoundTag save(CompoundTag nbt, HolderLookup.Provider registryLookup) {
-    if (season != null) {
-      nbt.putString(SEASON, season.name());
-    }
-
-    nbt.putLongArray(CHUNKS, chunks.toLongArray());
-
-    return nbt;
-  }
-
   public void remember(ChunkPos chunk) {
-    if (chunks.add(chunk.toLong())) {
+    if (chunks.add(chunk.pack())) {
       setDirty();
     }
   }
 
   /** Whether the compost standing in this chunk was applied during the season now running. */
   public boolean current(ChunkPos chunk) {
-    return chunks.contains(chunk.toLong());
+    return chunks.contains(chunk.pack());
   }
 
   /**

@@ -6,7 +6,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -101,13 +103,14 @@ public class CropStickBlock extends Block {
    * above it comes down in turn, each dropping its own stick and whatever was growing on it.
    */
   @Override
-  public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
-                                              LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+  public BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess tickAccess,
+                                BlockPos pos, Direction direction, BlockPos neighborPos,
+                                BlockState neighborState, RandomSource random) {
     if (!state.canSurvive(world, pos)) {
       return Blocks.AIR.defaultBlockState();
     }
 
-    return super.updateShape(state, direction, neighborState, world, pos, neighborPos)
+    return super.updateShape(state, world, tickAccess, pos, direction, neighborPos, neighborState, random)
             .setValue(CropSticks.CAPPED, CropSticks.capped(world, pos))
             .setValue(CropSticks.PART, CropSticks.partAt(world, pos));
   }

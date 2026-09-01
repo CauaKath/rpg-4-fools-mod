@@ -13,7 +13,7 @@ import net.abakath.rpg4fools.world.StickedCropBlock;
 import net.abakath.rpg4fools.world.WalledCropBlock;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -38,7 +38,7 @@ public class ModBlocks {
                   // again on its first tick, the way an out of season crop is settled late.
                   .randomTicks()
                   .instabreak()
-                  .noCollission()
+                  .noCollision()
                   // No loot table of its own. A dead crop is a loss, not a harvest, and saying so
                   // here avoids shipping an empty loot table file.
                   .noLootTable()
@@ -55,7 +55,7 @@ public class ModBlocks {
                   // Still ticks. Revival is decided at the head of the random tick, so a block that
                   // stopped ticking would never come back.
                   .randomTicks()
-                  .noCollission()
+                  .noCollision()
                   .noLootTable()
                   .sound(SoundType.SWEET_BERRY_BUSH)
                   .pushReaction(PushReaction.DESTROY)
@@ -71,7 +71,7 @@ public class ModBlocks {
    */
   public static final Block CROP_STICK = register("crop_stick", new CropStickBlock(
           BlockBehaviour.Properties.of()
-                  .noCollission()
+                  .noCollision()
                   .instabreak()
                   .noOcclusion()
                   .sound(SoundType.WOOD)
@@ -87,7 +87,7 @@ public class ModBlocks {
    */
   public static final Block CROP_WALL = register("crop_wall", new CropWallBlock(
           BlockBehaviour.Properties.of()
-                  .noCollission()
+                  .noCollision()
                   .instabreak()
                   .noOcclusion()
                   .sound(SoundType.WOOD)
@@ -105,7 +105,7 @@ public class ModBlocks {
       if (definition.kind() == CropDefinition.Kind.FARMLAND) {
         BlockBehaviour.Properties settings = BlockBehaviour.Properties.of()
                 .randomTicks()
-                .noCollission()
+                .noCollision()
                 .instabreak()
                 .sound(SoundType.CROP)
                 .pushReaction(PushReaction.DESTROY);
@@ -122,7 +122,7 @@ public class ModBlocks {
           register(definition, STICKED, definition.stickedBlockName(), new StickedCropBlock(
                   BlockBehaviour.Properties.of()
                           .randomTicks()
-                          .noCollission()
+                          .noCollision()
                           .instabreak()
                           .sound(SoundType.CROP)
                           .pushReaction(PushReaction.DESTROY)
@@ -136,7 +136,7 @@ public class ModBlocks {
           register(definition, WALLED, definition.walledBlockName(), new WalledCropBlock(
                   BlockBehaviour.Properties.of()
                           .randomTicks()
-                          .noCollission()
+                          .noCollision()
                           .instabreak()
                           .sound(SoundType.CROP)
                           .pushReaction(PushReaction.DESTROY)
@@ -149,7 +149,7 @@ public class ModBlocks {
       register(definition, LIVE, definition.blockName(), new ModBerryBushBlock(
               BlockBehaviour.Properties.of()
                       .randomTicks()
-                      .noCollission()
+                      .noCollision()
                       .sound(SoundType.SWEET_BERRY_BUSH)
                       .pushReaction(PushReaction.DESTROY)
       ));
@@ -158,7 +158,7 @@ public class ModBlocks {
       register(definition, DORMANT, definition.dormantBlockName(), new DormantBerryBushBlock(
               BlockBehaviour.Properties.of()
                       .randomTicks()
-                      .noCollission()
+                      .noCollision()
                       .noLootTable()
                       .sound(SoundType.SWEET_BERRY_BUSH)
                       .pushReaction(PushReaction.DESTROY)
@@ -233,7 +233,7 @@ public class ModBlocks {
   }
 
   private static Block register(String name, Block block) {
-    return Registry.register(BuiltInRegistries.BLOCK, new ResourceLocation(RPG4Fools.MOD_ID, name), block);
+    return Registry.register(BuiltInRegistries.BLOCK, Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, name), block);
   }
 
   /**

@@ -7,7 +7,7 @@ import net.abakath.rpg4fools.client.SeasonAtmosphere;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FogType;
@@ -54,7 +54,7 @@ public class FogRendererFogDistanceMixin {
       return;
     }
 
-    ResolvedAtmosphere atmosphere = SeasonAtmosphere.resolve(world, BlockPos.containing(camera.getPosition()));
+    ResolvedAtmosphere atmosphere = SeasonAtmosphere.resolve(world, BlockPos.containing(camera.position()));
 
     // Eased rather than applied straight. The biome blend moves in steps as samples cross a border,
     // and with a swamp at 24 blocks against a forest at 146 a single step is a visible jump. Note

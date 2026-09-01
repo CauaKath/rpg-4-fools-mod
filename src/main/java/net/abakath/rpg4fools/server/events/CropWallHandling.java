@@ -204,7 +204,7 @@ public class CropWallHandling {
 
     world.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, placed));
     world.playSound(null, pos, sound, SoundSource.BLOCKS,
-            1.0F, 0.8F + world.random.nextFloat() * 0.4F);
+            1.0F, 0.8F + world.getRandom().nextFloat() * 0.4F);
 
     if (!player.getAbilities().instabuild) {
       stack.shrink(1);

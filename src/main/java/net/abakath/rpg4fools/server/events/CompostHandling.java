@@ -217,7 +217,7 @@ public final class CompostHandling {
         }
 
         world.setBlock(pos, state.setValue(Compost.PROPERTY, kind), Block.UPDATE_CLIENTS);
-        CompostedChunks.get(world).remember(new ChunkPos(pos));
+        CompostedChunks.get(world).remember(ChunkPos.containing(pos));
 
         world.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
                 4, 0.3, 0.1, 0.3, 0.0);

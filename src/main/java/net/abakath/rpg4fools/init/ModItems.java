@@ -4,11 +4,11 @@ import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.world.CropDefinition;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemNameBlockItem;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import java.util.LinkedHashMap;
@@ -57,13 +57,13 @@ public final class ModItems {
       Block block = ModBlocks.blockFor(definition);
 
       if (definition.kind() == CropDefinition.Kind.FARMLAND) {
-        SEEDS.put(definition, register(definition.seedName(), new ItemNameBlockItem(block, new Item.Properties())));
+        SEEDS.put(definition, register(definition.seedName(), new BlockItem(block, new Item.Properties().useItemDescriptionPrefix())));
         PRODUCE.put(definition, register(definition.produceName(), new Item(new Item.Properties().food(food(definition)))));
         continue;
       }
 
       Item berry = register(definition.produceName(),
-              new ItemNameBlockItem(block, new Item.Properties().food(food(definition))));
+              new BlockItem(block, new Item.Properties().food(food(definition)).useItemDescriptionPrefix()));
 
       SEEDS.put(definition, berry);
       PRODUCE.put(definition, berry);
@@ -114,6 +114,6 @@ public final class ModItems {
   }
 
   private static Item register(String name, Item item) {
-    return Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(RPG4Fools.MOD_ID, name), item);
+    return Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, name), item);
   }
 }

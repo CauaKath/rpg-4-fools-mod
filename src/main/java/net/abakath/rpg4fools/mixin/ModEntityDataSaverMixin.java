@@ -32,8 +32,6 @@ public abstract class ModEntityDataSaverMixin implements IEntityDataSaver {
 
   @Inject(method = "load", at = @At("HEAD"))
   protected void injectReadMethod(CompoundTag nbt, CallbackInfo info) {
-    if (nbt.contains("rpg4fools.abakath_data", 10)) {
-      persistentData = nbt.getCompound("rpg4fools.abakath_data");
-    }
+    nbt.getCompound("rpg4fools.abakath_data").ifPresent(data -> persistentData = data);
   }
 }

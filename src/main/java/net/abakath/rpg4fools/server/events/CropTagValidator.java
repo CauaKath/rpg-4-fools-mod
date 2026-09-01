@@ -36,13 +36,13 @@ public class CropTagValidator {
   }
 
   private static void validate(MinecraftServer server) {
-    Registry<Block> blocks = server.registryAccess().registryOrThrow(Registries.BLOCK);
-    Optional<HolderSet.Named<Block>> crops = blocks.getTag(ModBlockTags.CROPS);
+    Registry<Block> blocks = server.registryAccess().lookupOrThrow(Registries.BLOCK);
+    Iterable<Holder<Block>> crops = blocks.getTagOrEmpty(ModBlockTags.CROPS);
 
     // A tag that never loaded looks exactly like a tag nobody put anything in, and both leave every
     // crop seasonless without a word anywhere. That silence is what let the tags ship in the wrong
     // directory unnoticed, so it gets a line of its own.
-    if (crops.isEmpty() || crops.get().size() == 0) {
+    if (!crops.iterator().hasNext()) {
       RPG4Fools.LOGGER.warn(
               "#{} loaded no blocks. Every crop will be treated as growing in every season. "
                       + "The mod's own tag files are missing or were not read.",
@@ -53,9 +53,9 @@ public class CropTagValidator {
 
     List<String> seasonless = new ArrayList<>();
 
-    for (Holder<Block> crop : crops.get()) {
+    for (Holder<Block> crop : crops) {
       if (hasNoSeason(crop)) {
-        seasonless.add(crop.unwrapKey().map(key -> key.location().toString()).orElse("unregistered block"));
+        seasonless.add(crop.unwrapKey().map(key -> key.identifier().toString()).orElse("unregistered block"));
       }
     }
 

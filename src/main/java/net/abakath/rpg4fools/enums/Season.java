@@ -2,7 +2,7 @@ package net.abakath.rpg4fools.enums;
 
 import net.abakath.rpg4fools.RPG4Fools;
 import net.minecraft.ChatFormatting;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public enum Season {
     SPRING,
@@ -19,12 +19,12 @@ public enum Season {
         };
     }
 
-    public ResourceLocation getSeasonTexture() {
+    public Identifier getSeasonTexture() {
         return switch (this) {
-            case SPRING -> new ResourceLocation(RPG4Fools.MOD_ID, "textures/gui/spring.png");
-            case SUMMER -> new ResourceLocation(RPG4Fools.MOD_ID, "textures/gui/summer.png");
-            case AUTUMN -> new ResourceLocation(RPG4Fools.MOD_ID, "textures/gui/autumn.png");
-            case WINTER -> new ResourceLocation(RPG4Fools.MOD_ID, "textures/gui/winter.png");
+            case SPRING -> Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "textures/gui/spring.png");
+            case SUMMER -> Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "textures/gui/summer.png");
+            case AUTUMN -> Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "textures/gui/autumn.png");
+            case WINTER -> Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "textures/gui/winter.png");
         };
     }
 

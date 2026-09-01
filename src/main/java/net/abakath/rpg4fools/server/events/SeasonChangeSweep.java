@@ -48,7 +48,7 @@ public final class SeasonChangeSweep {
     }
 
     RPG4Fools.LOGGER.info("{} queued {} crop(s) for the change to {}, found in {} ms, {} waiting",
-            world.dimension().location(), crops.size(), season.getName(),
+            world.dimension().identifier(), crops.size(), season.getName(),
             (System.nanoTime() - started) / 1_000_000, CropSettling.waitingIn(world));
   }
 }

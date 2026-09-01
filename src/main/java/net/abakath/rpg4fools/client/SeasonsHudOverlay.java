@@ -51,7 +51,7 @@ public class SeasonsHudOverlay implements HudRenderCallback {
 
     // Read from the world rather than from the date packet. The message fades over its first 160
     // ticks, which needs a tick accurate value, and the client already advances world time itself.
-    long dayTime = client.level.getDayTime();
+    long dayTime = client.level.getOverworldClockTime();
 
     Months currentMonth = Months.values()[month];
     Holiday holiday = Holiday.getHoliday(day, (month + 1));

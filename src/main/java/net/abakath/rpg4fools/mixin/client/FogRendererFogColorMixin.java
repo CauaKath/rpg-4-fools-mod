@@ -5,7 +5,7 @@ import net.abakath.rpg4fools.client.ResolvedAtmosphere;
 import net.abakath.rpg4fools.client.SeasonAtmosphere;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FogType;
@@ -52,7 +52,7 @@ public class FogRendererFogColorMixin {
       return;
     }
 
-    ResolvedAtmosphere atmosphere = SeasonAtmosphere.resolve(world, BlockPos.containing(camera.getPosition()));
+    ResolvedAtmosphere atmosphere = SeasonAtmosphere.resolve(world, BlockPos.containing(camera.position()));
 
     int graded = atmosphere.applyToFogColor(packRgb(fogRed, fogGreen, fogBlue));
 

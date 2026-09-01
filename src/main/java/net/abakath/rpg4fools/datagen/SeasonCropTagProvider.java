@@ -5,9 +5,11 @@ import net.abakath.rpg4fools.init.ModBlockTags;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModCrops;
 import net.abakath.rpg4fools.world.CropDefinition;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.data.tags.TagAppender;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import java.util.EnumMap;
@@ -30,28 +32,32 @@ import java.util.concurrent.CompletableFuture;
  *
  * <p>Run ./gradlew runDatagen after editing. Output lands in src/main/generated and is committed.
  */
-public class SeasonCropTagProvider extends FabricTagProvider.BlockTagProvider {
+public class SeasonCropTagProvider extends FabricTagsProvider.BlockTagsProvider {
   private static final Map<Block, Set<Season>> CROP_SEASONS = createCropSeasons();
 
-  public SeasonCropTagProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+  public SeasonCropTagProvider(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
     super(output, registriesFuture);
   }
 
   @Override
   protected void addTags(HolderLookup.Provider wrapperLookup) {
-    FabricTagBuilder crops = getOrCreateTagBuilder(ModBlockTags.CROPS);
+    TagAppender<Block> crops = builder(ModBlockTags.CROPS);
 
     // Built up front rather than on demand so a season nobody grows in still gets a tag file.
     // Without it the tag would be missing rather than empty, which reads as "not loaded" instead
     // of "nothing grows then".
-    Map<Season, FabricTagBuilder> seasonBuilders = new EnumMap<>(Season.class);
+    Map<Season, TagAppender<Block>> seasonBuilders = new EnumMap<>(Season.class);
     for (Season season : Season.values()) {
-      seasonBuilders.put(season, getOrCreateTagBuilder(ModBlockTags.forSeason(season)));
+      seasonBuilders.put(season, builder(ModBlockTags.forSeason(season)));
     }
 
+    // TagAppender takes registry keys rather than blocks now, so each block is looked back up once
+    // and the key reused for both the crops tag and its seasons.
     CROP_SEASONS.forEach((block, seasons) -> {
-      crops.add(block);
-      seasons.forEach(season -> seasonBuilders.get(season).add(block));
+      ResourceKey<Block> key = block.builtInRegistryHolder().key();
+
+      crops.add(key);
+      seasons.forEach(season -> seasonBuilders.get(season).add(key));
     });
   }
 

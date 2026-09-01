@@ -98,7 +98,7 @@ public class CropAutoReplant {
     ItemStack tool = player.getItemInHand(hand);
     List<ItemStack> drops = Block.getDrops(state, world, pos, null, player, tool);
 
-    takeSeed(drops, crop.getCloneItemStack(world, pos, state));
+    takeSeed(drops, state.getCloneItemStack(world, pos, false));
 
     CropHarvest.drop(world, pos, pos.below(), drops);
 
@@ -106,7 +106,7 @@ public class CropAutoReplant {
     world.setBlock(pos, sown, Block.UPDATE_CLIENTS);
     world.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, sown));
     world.playSound(null, pos, SoundEvents.CROP_PLANTED, SoundSource.BLOCKS,
-            1.0F, 0.8F + world.random.nextFloat() * 0.4F);
+            1.0F, 0.8F + world.getRandom().nextFloat() * 0.4F);
   }
 
   /**
