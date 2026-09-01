@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Biome.class)
 public abstract class BiomePrecipitationMixin {
   @Inject(method = "getPrecipitationAt", at = @At("RETURN"), cancellable = true)
-  private void rpg4fools$applyWinterSnowLine(BlockPos pos, CallbackInfoReturnable<Biome.Precipitation> cir) {
+  private void rpg4fools$applyWinterSnowLine(BlockPos pos, int seaLevel, CallbackInfoReturnable<Biome.Precipitation> cir) {
     Biome.Precipitation vanilla = cir.getReturnValue();
 
     // NONE means the biome has no precipitation at all. That is what keeps desert, savanna and

@@ -3,10 +3,8 @@ package net.abakath.rpg4fools.client;
 import net.abakath.rpg4fools.enums.SubSeason;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry;
 import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
@@ -85,29 +83,25 @@ public final class SeasonColorProviders {
   public static void register() {
     registerBiomeTintedBlocks();
     registerFixedColorBlocks();
-    registerItems();
   }
 
+  /**
+   * Tints are collected into a list rather than answered per index now, so each of these adds the
+   * one colour its models ask for at {@link #TINTED_LAYER} instead of returning -1 for every other
+   * index.
+   */
   private static void registerBiomeTintedBlocks() {
-    ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) -> {
-      if (tintIndex != TINTED_LAYER) {
-        return -1;
-      }
-      if (world == null || pos == null) {
-        return applySeasonTint(DEFAULT_GRASS_COLOR);
-      }
-      return applySeasonTint(BiomeColors.getAverageGrassColor(world, pos));
-    }, GRASS_BLOCKS);
+    BlockColorRegistry.register((state, world, pos, tints) -> tints.add(
+            world == null || pos == null
+                    ? applySeasonTint(DEFAULT_GRASS_COLOR)
+                    : applySeasonTint(BiomeColors.getAverageGrassColor(world, pos))
+    ), GRASS_BLOCKS);
 
-    ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) -> {
-      if (tintIndex != TINTED_LAYER) {
-        return -1;
-      }
-      if (world == null || pos == null) {
-        return applySeasonTint(DEFAULT_FOLIAGE_COLOR);
-      }
-      return applySeasonTint(BiomeColors.getAverageFoliageColor(world, pos));
-    }, FOLIAGE_BLOCKS);
+    BlockColorRegistry.register((state, world, pos, tints) -> tints.add(
+            world == null || pos == null
+                    ? applySeasonTint(DEFAULT_FOLIAGE_COLOR)
+                    : applySeasonTint(BiomeColors.getAverageFoliageColor(world, pos))
+    ), FOLIAGE_BLOCKS);
   }
 
   /**
@@ -125,31 +119,13 @@ public final class SeasonColorProviders {
   }
 
   private static void registerFixedColorBlock(Block block, int baseColor) {
-    ColorProviderRegistry.BLOCK.register(
-            (state, world, pos, tintIndex) -> tintIndex == TINTED_LAYER ? applySeasonTint(baseColor) : -1,
-            block
-    );
+    BlockColorRegistry.register((state, world, pos, tints) -> tints.add(applySeasonTint(baseColor)), block);
   }
 
-  /**
-   * Inventory icons follow the season too. Previously the grass items were pinned to a constant and
-   * the leaf items to their vanilla colour, so the inventory disagreed with the world.
-   */
-  private static void registerItems() {
-    registerFixedColorItem(DEFAULT_GRASS_COLOR, Items.GRASS_BLOCK, Items.SHORT_GRASS, Items.TALL_GRASS, Items.FERN, Items.LARGE_FERN, Items.SUGAR_CANE);
-    registerFixedColorItem(DEFAULT_FOLIAGE_COLOR, Items.OAK_LEAVES, Items.JUNGLE_LEAVES, Items.ACACIA_LEAVES, Items.DARK_OAK_LEAVES, Items.VINE);
-    registerFixedColorItem(BIRCH_FOLIAGE_COLOR, Items.BIRCH_LEAVES);
-    registerFixedColorItem(SPRUCE_FOLIAGE_COLOR, Items.SPRUCE_LEAVES);
-    registerFixedColorItem(MANGROVE_FOLIAGE_COLOR, Items.MANGROVE_LEAVES);
-    registerFixedColorItem(LILY_PAD_COLOR, Items.LILY_PAD);
-  }
-
-  private static void registerFixedColorItem(int baseColor, ItemLike... items) {
-    ColorProviderRegistry.ITEM.register(
-            (stack, tintIndex) -> tintIndex == TINTED_LAYER ? applySeasonTint(baseColor) : -1,
-            items
-    );
-  }
+  // Inventory icons no longer follow the season. Item tinting moved out of code entirely: a tint is
+  // an ItemTintSource named by an item model definition, so grading these would mean registering a
+  // custom source type and shipping model overrides for every vanilla item involved. That is a
+  // feature rather than a port step, so it is left for a follow up and the world is graded alone.
 
   /**
    * Grades a biome colour by the current season. The tint is interpolated between the current sub

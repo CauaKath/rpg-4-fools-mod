@@ -4,15 +4,17 @@ import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.world.CropDefinition;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Items the mod adds.
@@ -37,7 +39,7 @@ public final class ModItems {
    * the ground, and a seed into a stick already standing - are handled elsewhere, in
    * {@link net.abakath.rpg4fools.server.events.CropStickHandling}.
    */
-  public static final Item CROP_STICK = register("crop_stick", new BlockItem(ModBlocks.CROP_STICK, new Item.Properties()));
+  public static final Item CROP_STICK = register("crop_stick", props -> new BlockItem(ModBlocks.CROP_STICK, props));
 
   /**
    * The wall panel, as a thing to carry.
@@ -47,7 +49,7 @@ public final class ModItems {
    * in the ground, and a seed into a panel already standing - are handled in
    * {@link net.abakath.rpg4fools.server.events.CropWallHandling}.
    */
-  public static final Item CROP_WALL = register("crop_wall", new BlockItem(ModBlocks.CROP_WALL, new Item.Properties()));
+  public static final Item CROP_WALL = register("crop_wall", props -> new BlockItem(ModBlocks.CROP_WALL, props));
 
   private static final Map<CropDefinition, Item> SEEDS = new LinkedHashMap<>();
   private static final Map<CropDefinition, Item> PRODUCE = new LinkedHashMap<>();
@@ -57,13 +59,13 @@ public final class ModItems {
       Block block = ModBlocks.blockFor(definition);
 
       if (definition.kind() == CropDefinition.Kind.FARMLAND) {
-        SEEDS.put(definition, register(definition.seedName(), new BlockItem(block, new Item.Properties().useItemDescriptionPrefix())));
-        PRODUCE.put(definition, register(definition.produceName(), new Item(new Item.Properties().food(food(definition)))));
+        SEEDS.put(definition, register(definition.seedName(), props -> new BlockItem(block, props.useItemDescriptionPrefix())));
+        PRODUCE.put(definition, register(definition.produceName(), props -> new Item(props.food(food(definition)))));
         continue;
       }
 
       Item berry = register(definition.produceName(),
-              new BlockItem(block, new Item.Properties().food(food(definition)).useItemDescriptionPrefix()));
+              props -> new BlockItem(block, props.food(food(definition)).useItemDescriptionPrefix()));
 
       SEEDS.put(definition, berry);
       PRODUCE.put(definition, berry);
@@ -113,7 +115,14 @@ public final class ModItems {
             .build();
   }
 
-  private static Item register(String name, Item item) {
-    return Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, name), item);
+  /**
+   * An item has to be told its own registry key before it is constructed, so the key is built here
+   * and handed to the factory as part of the properties.
+   */
+  private static Item register(String name, Function<Item.Properties, Item> factory) {
+    ResourceKey<Item> key =
+            ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, name));
+
+    return Registry.register(BuiltInRegistries.ITEM, key, factory.apply(new Item.Properties().setId(key)));
   }
 }

@@ -3,12 +3,13 @@ package net.abakath.rpg4fools.mixin;
 import net.abakath.rpg4fools.utils.IEntityDataSaver;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 public abstract class ModEntityDataSaverMixin implements IEntityDataSaver {
@@ -23,15 +24,17 @@ public abstract class ModEntityDataSaverMixin implements IEntityDataSaver {
     return persistentData;
   }
 
+  // Entity data is written through ValueOutput rather than a raw CompoundTag now, so the blob goes
+  // in under a codec instead of being put directly.
   @Inject(method = "saveWithoutId", at = @At("HEAD"))
-  protected void injectWriteMethod(CompoundTag nbt, CallbackInfoReturnable info) {
+  protected void injectWriteMethod(ValueOutput output, CallbackInfo info) {
     if(persistentData != null) {
-      nbt.put("rpg4fools.abakath_data", persistentData);
+      output.store("rpg4fools.abakath_data", CompoundTag.CODEC, persistentData);
     }
   }
 
   @Inject(method = "load", at = @At("HEAD"))
-  protected void injectReadMethod(CompoundTag nbt, CallbackInfo info) {
-    nbt.getCompound("rpg4fools.abakath_data").ifPresent(data -> persistentData = data);
+  protected void injectReadMethod(ValueInput input, CallbackInfo info) {
+    input.read("rpg4fools.abakath_data", CompoundTag.CODEC).ifPresent(data -> persistentData = data);
   }
 }

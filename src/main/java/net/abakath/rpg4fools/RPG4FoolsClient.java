@@ -7,12 +7,15 @@ import net.abakath.rpg4fools.client.SeasonColorProviders;
 import net.abakath.rpg4fools.client.SeasonsHudOverlay;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.minecraft.resources.Identifier;
 
 public class RPG4FoolsClient implements ClientModInitializer {
   @Override
   public void onInitializeClient() {
-    HudRenderCallback.EVENT.register(new SeasonsHudOverlay());
+    HudElementRegistry.addLast(
+            Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "seasons_overlay"),
+            new SeasonsHudOverlay());
 
     ClientModMessages.registerS2CReceivers();
     SeasonColorProviders.register();

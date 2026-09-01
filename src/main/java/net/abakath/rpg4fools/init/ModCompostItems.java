@@ -4,7 +4,9 @@ import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.world.Compost;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -153,6 +155,9 @@ public final class ModCompostItems {
   }
 
   private static Item register(String name) {
-    return Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, name), new Item(new Item.Properties()));
+    ResourceKey<Item> key =
+            ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, name));
+
+    return Registry.register(BuiltInRegistries.ITEM, key, new Item(new Item.Properties().setId(key)));
   }
 }

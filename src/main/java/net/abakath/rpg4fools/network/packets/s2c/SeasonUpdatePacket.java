@@ -15,7 +15,7 @@ import net.minecraft.resources.Identifier;
 public class SeasonUpdatePacket implements CustomPacketPayload {
   public DayData dayData;
 
-  public static final Type<SeasonUpdatePacket> ID = CustomPacketPayload.createType(Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "season_update").toString());
+  public static final Type<SeasonUpdatePacket> ID = new Type<>(Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "season_update"));
   public static final StreamCodec<FriendlyByteBuf, SeasonUpdatePacket> CODEC = StreamCodec.ofMember((value, buf) -> {
     buf.writeNullable(value.dayData, (buffer, data) -> {
       buffer.writeInt(data.getYear());
