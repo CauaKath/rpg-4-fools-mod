@@ -1,5 +1,6 @@
 package net.abakath.rpg4fools.client;
 
+import net.abakath.rpg4fools.enums.SubSeason;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
@@ -59,6 +60,24 @@ public final class SeasonColorProviders {
    * conversion is per thread. This keeps the tint path free of allocations.
    */
   private static final ThreadLocal<float[]> HSB_SCRATCH = ThreadLocal.withInitial(() -> new float[3]);
+
+  /**
+   * The interpolated grade, held alongside the date it was worked out for.
+   *
+   * <p>The three factors depend only on the sub season and the progress through it, both of which
+   * move once per in game day, but they were being recomputed for every tinted quad. Holding them
+   * turns the per quad cost into a comparison.
+   */
+  private record Grade(SubSeason subSeason, float progress,
+                       float hueShift, float saturationFactor, float brightnessFactor) {
+  }
+
+  /**
+   * Written by whichever chunk build thread first notices the date has moved on. Racing threads
+   * compute the same value from the same inputs, so the worst case is duplicated arithmetic rather
+   * than a wrong colour.
+   */
+  private static volatile Grade grade = gradeFor(SubSeason.EARLY_SPRING, 0.0f);
 
   private SeasonColorProviders() {
   }
@@ -138,21 +157,44 @@ public final class SeasonColorProviders {
    * twelve hard steps.
    */
   private static int applySeasonTint(int rgb) {
-    SeasonTint current = SeasonTint.of(ClientSeasonState.getSubSeason());
-    SeasonTint next = current.next();
-    float t = ClientSeasonState.getProgress();
-
-    float hueShift = lerp(current.getHueShift(), next.getHueShift(), t);
-    float saturationFactor = lerp(current.getSaturationFactor(), next.getSaturationFactor(), t);
-    float brightnessFactor = lerp(current.getBrightnessFactor(), next.getBrightnessFactor(), t);
+    Grade current = grade();
 
     float[] hsb = HSB_SCRATCH.get();
     ColorMath.rgbToHsb(rgb, hsb);
 
     return ColorMath.hsbToRgb(
-            hsb[0] + hueShift,
-            hsb[1] * saturationFactor,
-            hsb[2] * brightnessFactor
+            hsb[0] + current.hueShift(),
+            hsb[1] * current.saturationFactor(),
+            hsb[2] * current.brightnessFactor()
+    );
+  }
+
+  /** The grade for the current date, recomputed only when the date has moved since the last call. */
+  private static Grade grade() {
+    SubSeason subSeason = ClientSeasonState.getSubSeason();
+    float progress = ClientSeasonState.getProgress();
+
+    Grade cached = grade;
+    if (cached.subSeason() == subSeason && cached.progress() == progress) {
+      return cached;
+    }
+
+    Grade fresh = gradeFor(subSeason, progress);
+    grade = fresh;
+
+    return fresh;
+  }
+
+  private static Grade gradeFor(SubSeason subSeason, float progress) {
+    SeasonTint current = SeasonTint.of(subSeason);
+    SeasonTint next = current.next();
+
+    return new Grade(
+            subSeason,
+            progress,
+            lerp(current.getHueShift(), next.getHueShift(), progress),
+            lerp(current.getSaturationFactor(), next.getSaturationFactor(), progress),
+            lerp(current.getBrightnessFactor(), next.getBrightnessFactor(), progress)
     );
   }
 

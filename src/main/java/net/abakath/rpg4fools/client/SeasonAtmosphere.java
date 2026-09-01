@@ -1,5 +1,6 @@
 package net.abakath.rpg4fools.client;
 
+import net.abakath.rpg4fools.enums.SubSeason;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -69,6 +70,19 @@ public final class SeasonAtmosphere {
   /** Scratch buffer for the colour conversion, kept per thread to stay allocation free. */
   private static final ThreadLocal<float[]> HSB_SCRATCH = ThreadLocal.withInitial(() -> new float[3]);
 
+  /**
+   * The interpolated atmosphere grade, held alongside the date it was worked out for. The factors
+   * move once per in game day, but the fog and sky hooks were re-interpolating them every frame.
+   *
+   * <p>The strength scaling is deliberately left out. It varies per call, so only the part that
+   * depends on the date alone is worth holding.
+   */
+  private record Grade(SubSeason subSeason, float progress, float hueShift,
+                       float saturationFactor, float brightnessFactor, float fogPresenceBoost) {
+  }
+
+  private static volatile Grade grade = gradeFor(SubSeason.EARLY_SPRING, 0.0f);
+
   private SeasonAtmosphere() {
   }
 
@@ -134,13 +148,39 @@ public final class SeasonAtmosphere {
    * while keeping it completely clear in summer.
    */
   private static float surfaceFogPresence(BiomeAggregate aggregate) {
-    float t = ClientSeasonState.getProgress();
-    AtmosphereTint current = AtmosphereTint.of(ClientSeasonState.getSubSeason());
-    AtmosphereTint next = current.next();
-
-    float boost = lerp(current.getFogPresenceBoost(), next.getFogPresenceBoost(), t);
+    float boost = grade().fogPresenceBoost();
 
     return ColorMath.clamp01(aggregate.fogPresence() + boost * aggregate.effectiveStrength());
+  }
+
+  /** The grade for the current date, recomputed only when the date has moved since the last call. */
+  private static Grade grade() {
+    SubSeason subSeason = ClientSeasonState.getSubSeason();
+    float progress = ClientSeasonState.getProgress();
+
+    Grade cached = grade;
+    if (cached.subSeason() == subSeason && cached.progress() == progress) {
+      return cached;
+    }
+
+    Grade fresh = gradeFor(subSeason, progress);
+    grade = fresh;
+
+    return fresh;
+  }
+
+  private static Grade gradeFor(SubSeason subSeason, float progress) {
+    AtmosphereTint current = AtmosphereTint.of(subSeason);
+    AtmosphereTint next = current.next();
+
+    return new Grade(
+            subSeason,
+            progress,
+            lerp(current.getHueShift(), next.getHueShift(), progress),
+            lerp(current.getSaturationFactor(), next.getSaturationFactor(), progress),
+            lerp(current.getBrightnessFactor(), next.getBrightnessFactor(), progress),
+            lerp(current.getFogPresenceBoost(), next.getFogPresenceBoost(), progress)
+    );
   }
 
   /**
@@ -272,13 +312,11 @@ public final class SeasonAtmosphere {
       return rgb;
     }
 
-    float t = ClientSeasonState.getProgress();
-    AtmosphereTint current = AtmosphereTint.of(ClientSeasonState.getSubSeason());
-    AtmosphereTint next = current.next();
+    Grade current = grade();
 
-    float hueShift = lerp(current.getHueShift(), next.getHueShift(), t) * strength;
-    float saturationFactor = applyStrength(lerp(current.getSaturationFactor(), next.getSaturationFactor(), t), strength);
-    float brightnessFactor = applyStrength(lerp(current.getBrightnessFactor(), next.getBrightnessFactor(), t), strength);
+    float hueShift = current.hueShift() * strength;
+    float saturationFactor = applyStrength(current.saturationFactor(), strength);
+    float brightnessFactor = applyStrength(current.brightnessFactor(), strength);
 
     float[] hsb = HSB_SCRATCH.get();
     ColorMath.rgbToHsb(rgb, hsb);
