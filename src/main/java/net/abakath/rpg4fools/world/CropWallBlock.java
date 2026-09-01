@@ -106,8 +106,7 @@ public class CropWallBlock extends Block {
       return state;
     }
 
-    return state.with(CropWalls.side(direction),
-            CropWalls.isPanel(neighborState) || neighborState.isSideSolidFullSquare(world, neighborPos, direction.getOpposite()));
+    return state.with(CropWalls.side(direction), CropWalls.joins(world, pos, direction));
   }
 
   private static Map<Direction, VoxelShape> arms() {

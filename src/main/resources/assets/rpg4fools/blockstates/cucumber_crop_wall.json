@@ -7,7 +7,15 @@
     },
     {
       "when": {
-        "axis": "x"
+        "north": "true"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_side"
+      }
+    },
+    {
+      "when": {
+        "east": "true"
       },
       "apply": {
         "model": "rpg4fools:block/crop_wall_side",
@@ -16,27 +24,19 @@
     },
     {
       "when": {
-        "axis": "x"
+        "south": "true"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_side_alt"
+      }
+    },
+    {
+      "when": {
+        "west": "true"
       },
       "apply": {
         "model": "rpg4fools:block/crop_wall_side_alt",
         "y": 90
-      }
-    },
-    {
-      "when": {
-        "axis": "z"
-      },
-      "apply": {
-        "model": "rpg4fools:block/crop_wall_side"
-      }
-    },
-    {
-      "when": {
-        "axis": "z"
-      },
-      "apply": {
-        "model": "rpg4fools:block/crop_wall_side_alt"
       }
     },
     {

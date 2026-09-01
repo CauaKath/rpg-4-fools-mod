@@ -158,12 +158,18 @@ public class CropWallHandling {
     return ActionResult.SUCCESS;
   }
 
-  /** The root cell of a fresh plant: middle column, bottom row, on the axis the wall suggests. */
+  /**
+   * The root cell of a fresh plant: middle column, bottom row, on the axis the wall suggests.
+   *
+   * <p>Carries the panel's joins from the start. A cell works those out on neighbour update as well,
+   * but an update reaches the blocks around a change and never the change itself - so without this a
+   * newly sown cell would draw no arms at all until something else disturbed the wall.
+   */
   private static BlockState root(ServerWorld world, BlockPos pos, CropDefinition definition, Direction.Axis fallback) {
-    return ModBlocks.walledFor(definition).getDefaultState()
+    return CropWalls.joins(world, pos, ModBlocks.walledFor(definition).getDefaultState()
             .with(CropWalls.AXIS, CropWalls.axisAt(world, pos, fallback))
             .with(CropWalls.ARM, WallArm.CENTER)
-            .with(CropWalls.ROW, 0);
+            .with(CropWalls.ROW, 0));
   }
 
   /**

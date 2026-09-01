@@ -55,6 +55,12 @@ import java.util.List;
  * <p>A cell that cannot find its root turns back into a bare panel rather than popping off. That is
  * what a break looks like here: cut the root out and the vine goes, cell by cell, while the wall the
  * player built stays standing.
+ *
+ * <p>It also carries the panel's four joins, and for the same reason it carries the panel's models: a
+ * covered cell has to be the same piece of wall it was before the vine arrived. Driving the arms off
+ * the plant's axis instead was wrong twice over - a cell drew arms into empty air where the wall did
+ * not continue, and it drew none where the wall turned a corner, so the timber changed shape the
+ * moment something grew on it.
  */
 public class WalledCropBlock extends RegrowingCropBlock {
   public static final MapCodec<WalledCropBlock> CODEC = createCodec(WalledCropBlock::new);
@@ -73,10 +79,17 @@ public class WalledCropBlock extends RegrowingCropBlock {
 
   public WalledCropBlock(Settings settings) {
     super(settings);
-    setDefaultState(getDefaultState()
+
+    BlockState state = getDefaultState()
             .with(CropWalls.AXIS, Direction.Axis.X)
             .with(CropWalls.ARM, WallArm.CENTER)
-            .with(CropWalls.ROW, 0));
+            .with(CropWalls.ROW, 0);
+
+    for (Direction direction : CropWalls.sideDirections()) {
+      state = state.with(CropWalls.side(direction), false);
+    }
+
+    setDefaultState(state);
   }
 
   @Override
@@ -88,6 +101,10 @@ public class WalledCropBlock extends RegrowingCropBlock {
   protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
     super.appendProperties(builder);
     builder.add(CropWalls.AXIS, CropWalls.ARM, CropWalls.ROW);
+
+    for (Direction direction : CropWalls.sideDirections()) {
+      builder.add(CropWalls.side(direction));
+    }
   }
 
   @Override
@@ -133,7 +150,12 @@ public class WalledCropBlock extends RegrowingCropBlock {
       return CropWalls.wall(world, pos, false);
     }
 
-    return state;
+    if (direction.getAxis().isVertical()) {
+      return state;
+    }
+
+    // The same answer a bare panel gives, so the timber does not change shape when a vine covers it.
+    return state.with(CropWalls.side(direction), CropWalls.joins(world, pos, direction));
   }
 
   /**
@@ -334,10 +356,12 @@ public class WalledCropBlock extends RegrowingCropBlock {
     Direction.Axis axis = rootState.get(CropWalls.AXIS);
     int offset = axis == Direction.Axis.X ? target.getX() - root.getX() : target.getZ() - root.getZ();
 
-    world.setBlockState(target, getDefaultState()
+    // The joins are worked out here as well as on neighbour update, because a neighbour update reaches
+    // the blocks around a change and never the change itself.
+    world.setBlockState(target, CropWalls.joins(world, target, getDefaultState()
             .with(CropWalls.AXIS, axis)
             .with(CropWalls.ARM, WallArm.at(offset))
-            .with(CropWalls.ROW, target.getY() - root.getY()), Block.NOTIFY_ALL);
+            .with(CropWalls.ROW, target.getY() - root.getY())), Block.NOTIFY_ALL);
   }
 
   /** Writes one age to every cell, so the plant is never caught half ripe. */

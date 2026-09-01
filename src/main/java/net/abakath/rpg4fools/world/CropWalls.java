@@ -123,8 +123,11 @@ public final class CropWalls {
    * <p>More panel, or anything with a flat face to meet - the bargain vanilla panes strike. A wall
    * that stopped short of the building it was leaning on would read as a mistake rather than as a
    * trellis.
+   *
+   * <p>Asked by both blocks. A panel and a panel with a vine on it are the same piece of wall and have
+   * to reach the same answer, or the timber would change shape as a plant grew over it.
    */
-  private static boolean joins(BlockView world, BlockPos pos, Direction direction) {
+  public static boolean joins(BlockView world, BlockPos pos, Direction direction) {
     BlockPos neighbour = pos.offset(direction);
     BlockState state = world.getBlockState(neighbour);
 
