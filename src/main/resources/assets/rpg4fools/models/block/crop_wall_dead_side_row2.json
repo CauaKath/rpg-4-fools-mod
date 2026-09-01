@@ -1,0 +1,7 @@
+{
+  "__comment": "Growth a season left on a panel, drawn as the cell of the plant it was. Still pointed at the shared sheet: the per cell art is drawn separately, and until it lands every cell falls back to the one sprite this always used.",
+  "parent": "rpg4fools:block/crop_cross",
+  "textures": {
+    "cross": "rpg4fools:block/crop_wall_dead"
+  }
+}

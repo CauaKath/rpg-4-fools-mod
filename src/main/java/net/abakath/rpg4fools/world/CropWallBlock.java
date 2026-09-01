@@ -45,7 +45,10 @@ public class CropWallBlock extends Block {
   public CropWallBlock(Settings settings) {
     super(settings);
 
-    BlockState state = getDefaultState().with(CropWalls.DEAD, false);
+    BlockState state = getDefaultState()
+            .with(CropWalls.DEAD, false)
+            .with(CropWalls.ARM, WallArm.CENTER)
+            .with(CropWalls.ROW, 0);
 
     for (Direction direction : CropWalls.sideDirections()) {
       state = state.with(CropWalls.side(direction), false);
@@ -56,7 +59,7 @@ public class CropWallBlock extends Block {
 
   @Override
   protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-    builder.add(CropWalls.DEAD);
+    builder.add(CropWalls.DEAD, CropWalls.ARM, CropWalls.ROW);
 
     for (Direction direction : CropWalls.sideDirections()) {
       builder.add(CropWalls.side(direction));

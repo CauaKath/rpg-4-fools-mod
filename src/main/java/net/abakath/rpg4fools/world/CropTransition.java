@@ -94,8 +94,7 @@ public class CropTransition {
         return false;
       }
 
-      world.setBlockState(pos, CropWalls.wall(world, pos, true));
-      return true;
+      return wither(world, pos, state);
     }
 
     // A sticked crop leaves its trellis behind. The sticks are not part of the plant, so an ending
@@ -126,6 +125,44 @@ public class CropTransition {
     }
 
     world.setBlockState(pos, ModBlocks.DEAD_CROP.getDefaultState());
+    return true;
+  }
+
+  /**
+   * Takes a whole walled plant down at once, leaving every cell it held as debris on its panel.
+   *
+   * <p>Cell by cell would not work here, and used to be what happened. Only the root of a walled
+   * plant stands on its own; every other cell is held up by it, and reverts to a bare panel the
+   * moment it cannot find one. So converting the root first had the neighbour update sweep outwards
+   * and wipe the rest clean before this ever reached them, and which cells kept their debris came
+   * down to the order the sweep happened to visit them in. The root therefore goes last, by which
+   * point there is no plant left for the cascade to revert.
+   *
+   * <p>Only the season comes through here. A player breaking the root still leaves clean panels,
+   * which is the right answer for a plant that was alive when they took it: the reversion is about
+   * losing the plant, and this is about the plant having died.
+   */
+  private static boolean wither(ServerWorld world, BlockPos pos, BlockState state) {
+    BlockPos root = CropWalls.root(state, pos);
+    BlockState rootState = world.getBlockState(root);
+
+    // The root has already gone, so there is no plant to walk and this cell is on its own. Reached
+    // by the random tick hook, which finds cells the cascade has not caught up with yet.
+    if (!CropWalls.isRoot(rootState) || rootState.getBlock() != state.getBlock()) {
+      world.setBlockState(pos, CropWalls.dead(world, pos, state));
+      return true;
+    }
+
+    for (BlockPos cell : CropWalls.cells(world, root, rootState)) {
+      if (cell.equals(root)) {
+        continue;
+      }
+
+      world.setBlockState(cell, CropWalls.dead(world, cell, world.getBlockState(cell)));
+    }
+
+    world.setBlockState(root, CropWalls.dead(world, root, rootState));
+
     return true;
   }
 

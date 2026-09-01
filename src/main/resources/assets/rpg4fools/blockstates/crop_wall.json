@@ -41,10 +41,95 @@
     },
     {
       "when": {
-        "dead": "true"
+        "dead": "true",
+        "arm": "center",
+        "row": "0"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_wall_dead"
+        "model": "rpg4fools:block/crop_wall_dead_center_row0"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "arm": "right",
+        "row": "0"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_dead_side_row0"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "arm": "left",
+        "row": "0"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_dead_side_row0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "arm": "center",
+        "row": "1"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_dead_center_row1"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "arm": "right",
+        "row": "1"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_dead_side_row1"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "arm": "left",
+        "row": "1"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_dead_side_row1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "arm": "center",
+        "row": "2"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_dead_center_row2"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "arm": "right",
+        "row": "2"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_dead_side_row2"
+      }
+    },
+    {
+      "when": {
+        "dead": "true",
+        "arm": "left",
+        "row": "2"
+      },
+      "apply": {
+        "model": "rpg4fools:block/crop_wall_dead_side_row2",
+        "y": 180
       }
     }
   ]

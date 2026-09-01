@@ -1,7 +1,0 @@
-{
-  "__comment": "Dead growth left on a panel by a season. The same cross a living cell is drawn as, in straw.",
-  "parent": "rpg4fools:block/crop_cross",
-  "textures": {
-    "cross": "rpg4fools:block/crop_wall_dead"
-  }
-}
