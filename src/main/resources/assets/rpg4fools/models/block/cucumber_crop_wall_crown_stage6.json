@@ -1,7 +1,0 @@
-{
-  "__comment": "One cell of a plant spread over a wall, drawn as vanilla draws a crop. Spans the whole block, so the plant is seen from either side of the wall and from along it.",
-  "parent": "rpg4fools:block/crop_cross",
-  "textures": {
-    "cross": "rpg4fools:block/cucumber_crop_wall_crown_stage6"
-  }
-}
