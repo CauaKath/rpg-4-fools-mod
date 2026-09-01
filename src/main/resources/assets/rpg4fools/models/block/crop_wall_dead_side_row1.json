@@ -1,0 +1,7 @@
+{
+  "__comment": "Growth a season left on a panel, drawn as the cell of the plant it was. Built from the crop stick dead sheets: same four colours, same tangle, and the same joining rows, turned sideways as well as upright so the debris carries across the box as well as up it.",
+  "parent": "rpg4fools:block/crop_cross",
+  "textures": {
+    "cross": "rpg4fools:block/crop_wall_dead_side_row1"
+  }
+}

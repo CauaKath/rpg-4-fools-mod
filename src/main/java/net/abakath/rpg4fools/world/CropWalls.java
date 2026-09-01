@@ -62,10 +62,17 @@ public final class CropWalls {
    */
   public static final EnumProperty<Direction.Axis> AXIS = Properties.HORIZONTAL_AXIS;
 
-  /** Which column of the box a cell sits in. See {@link WallArm}. */
+  /**
+   * Which column of the box a cell sits in. See {@link WallArm}.
+   *
+   * <p>Carried by the panel as well as by the plant, so growth that died on a wall is drawn as the
+   * cell it was rather than as one sprite repeated nine times. Meaningless on a panel that is not
+   * {@link #DEAD}, in the same way {@link CropSticks#PART} is only worth reading on a stick that has
+   * something on it.
+   */
   public static final EnumProperty<WallArm> ARM = EnumProperty.of("arm", WallArm.class);
 
-  /** How many blocks above the root a cell sits. Zero for the root's own row. */
+  /** How many blocks above the root a cell sits. Zero for the root's own row. Carried by both, as {@link #ARM} is. */
   public static final IntProperty ROW = IntProperty.of("row", 0, ROWS - 1);
 
   /** The pane joins, one per horizontal direction, exactly as vanilla panes carry them. */
@@ -107,6 +114,20 @@ public final class CropWalls {
    */
   public static BlockState wall(BlockView world, BlockPos pos, boolean dead) {
     return joins(world, pos, ModBlocks.CROP_WALL.getDefaultState().with(DEAD, dead));
+  }
+
+  /**
+   * The panel a cell of a plant leaves behind, keeping the address the plant held there.
+   *
+   * <p>The address is what lets the debris be drawn as the cell it was. A plant is shaped by where
+   * its cells sit, so dead growth that forgot its arm and row would be the same sprite nine times
+   * over and would read as nothing that ever grew.
+   */
+  public static BlockState dead(BlockView world, BlockPos pos, BlockState cell) {
+    return joins(world, pos, ModBlocks.CROP_WALL.getDefaultState()
+            .with(DEAD, true)
+            .with(ARM, cell.get(ARM))
+            .with(ROW, cell.get(ROW)));
   }
 
   /** The same panel state with its four joins brought into line with what is actually around it. */
