@@ -1,6 +1,32 @@
 {
-  "parent": "rpg4fools:block/crop_cross",
+  "__comment": "Dead growth left on a panel by a season, drawn in the plane of the panel.",
+  "ambientocclusion": false,
   "textures": {
-    "cross": "rpg4fools:block/crop_wall_dead"
-  }
+    "vine": "rpg4fools:block/crop_wall_dead",
+    "particle": "rpg4fools:block/crop_wall_dead"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 6.6],
+      "to": [16, 16, 6.6],
+      "shade": false,
+      "faces": {
+        "north": {
+          "uv": [0, 0, 16, 16],
+          "texture": "#vine"
+        }
+      }
+    },
+    {
+      "from": [0, 0, 9.4],
+      "to": [16, 16, 9.4],
+      "shade": false,
+      "faces": {
+        "south": {
+          "uv": [0, 0, 16, 16],
+          "texture": "#vine"
+        }
+      }
+    }
+  ]
 }
