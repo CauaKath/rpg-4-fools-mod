@@ -35,6 +35,9 @@ SITE = "https://cauakath.github.io/rpg-4-fools-mod/"
 
 # Newest first, which is the order the index lists them in.
 VERSIONS = [
+    ("0.4.2", "What the wall keeps",
+     "A plant that dies on a wall leaves all of itself behind, shaped the way it grew, instead of "
+     "most of it being swept away as the wall puts itself back in order."),
     ("0.4.1", "A quieter turn of the day",
      "The world no longer redraws itself at dawn, the season tint is worked out once a day "
      "instead of once per block, and the date is sent when it changes rather than twenty times "
