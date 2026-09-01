@@ -1,6 +1,7 @@
 package net.abakath.rpg4fools;
 
 import net.abakath.rpg4fools.init.ModBlocks;
+import net.abakath.rpg4fools.init.ModCompostItems;
 import net.abakath.rpg4fools.init.ModEvents;
 import net.abakath.rpg4fools.init.ModItemGroups;
 import net.abakath.rpg4fools.init.ModItems;
@@ -21,6 +22,7 @@ public class RPG4Fools implements ModInitializer {
 	public void onInitialize() {
 		ModBlocks.registerBlocks();
 		ModItems.registerItems();
+		ModCompostItems.registerItems();
 		ModItemGroups.registerItemGroups();
 		ModEvents.registerEvents();
 		ModMessages.registerS2CPackets();

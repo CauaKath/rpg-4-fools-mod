@@ -31,6 +31,10 @@ public final class SeasonChangeSweep {
     for (ServerWorld world : server.getWorlds()) {
       sweep(world, season);
     }
+
+    // Compost lasts a growing season and this is the moment one ended, so everything in the ground
+    // has just expired. Queued rather than cleared here for the same reason the crops are.
+    CompostExpiry.sweep(server);
   }
 
   private static void sweep(ServerWorld world, Season season) {

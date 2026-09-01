@@ -196,7 +196,7 @@ public class WalledCropBlock extends RegrowingCropBlock {
     List<BlockPos> open = CropWalls.spreadable(world, root, rootState);
 
     if (!open.isEmpty()) {
-      if (random.nextInt(SPREAD_CHANCE) == 0) {
+      if (random.nextInt(spreadChance(world, root)) == 0) {
         spread(world, root, rootState, open.get(random.nextInt(open.size())));
       }
 
@@ -212,6 +212,20 @@ public class WalledCropBlock extends RegrowingCropBlock {
     if (rolls(world, root, random)) {
       setPlantAge(world, root, rootState, age + 1);
     }
+  }
+
+  /**
+   * How often the plant takes the next panel.
+   *
+   * <p>Halved over creeping soil. Spreading and ripening are already separate stages here, so this
+   * buys coverage and nothing else: a treated bed sheets across its wall sooner and then takes the
+   * same time to fruit as any other.
+   *
+   * <p>Measured at the root, like moisture and light. A plant is only ever as fed as its one bed,
+   * however far across the wall it has reached.
+   */
+  private int spreadChance(ServerWorld world, BlockPos root) {
+    return Compost.at(world, root.down()) == Compost.CREEPING ? SPREAD_CHANCE / 2 : SPREAD_CHANCE;
   }
 
   /**
@@ -286,7 +300,7 @@ public class WalledCropBlock extends RegrowingCropBlock {
       picked += 1 + serverWorld.random.nextInt(3);
     }
 
-    CropHarvest.drop(serverWorld, root, new ItemStack(produce(), picked));
+    CropHarvest.drop(serverWorld, root, root.down(), new ItemStack(produce(), picked));
     setPlantAge(serverWorld, root, rootState, adultAge());
 
     serverWorld.emitGameEvent(GameEvent.BLOCK_CHANGE, root,
