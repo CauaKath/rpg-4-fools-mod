@@ -156,7 +156,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
 
     // Height before fruit. While there is a stick above the plant, every roll goes into climbing it.
     if (CropSticks.isEmpty(world.getBlockState(top.up()))) {
-      if (random.nextInt(CLIMB_CHANCE) == 0) {
+      if (random.nextInt(climbChance(world, pos)) == 0) {
         climb(world, top);
       }
 
@@ -170,6 +170,21 @@ public class StickedCropBlock extends RegrowingCropBlock {
     if (rolls(world, pos, random)) {
       setPlantAge(world, pos, age + 1);
     }
+  }
+
+  /**
+   * How often the plant puts up its next section.
+   *
+   * <p>Halved over creeping soil, which is the whole of what that compost buys here. It hurries the
+   * plant up its trellis without touching how fast the fruit ripens, because climbing and ripening
+   * are already separate stages - so a treated bed reaches its full height sooner and then waits for
+   * the tomatoes exactly as long as an untreated one would.
+   *
+   * <p>Read at the bottom of the column, which is the only section that ticks and the only one
+   * standing on soil.
+   */
+  private int climbChance(ServerWorld world, BlockPos pos) {
+    return Compost.at(world, pos.down()) == Compost.CREEPING ? CLIMB_CHANCE / 2 : CLIMB_CHANCE;
   }
 
   /**
@@ -272,7 +287,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
       picked += 1 + serverWorld.random.nextInt(3);
     }
 
-    CropHarvest.drop(serverWorld, base, new ItemStack(produce(), picked));
+    CropHarvest.drop(serverWorld, base, base.down(), new ItemStack(produce(), picked));
     setPlantAge(serverWorld, base, adultAge());
 
     serverWorld.emitGameEvent(GameEvent.BLOCK_CHANGE, base,

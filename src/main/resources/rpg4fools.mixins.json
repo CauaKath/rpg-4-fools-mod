@@ -5,6 +5,7 @@
   "mixins": [
     "BiomePrecipitationMixin",
     "BlockStateRandomTickMixin",
+    "FarmlandCompostMixin",
     "ModEntityDataSaverMixin",
     "RPG4FoolsMixin"
   ],

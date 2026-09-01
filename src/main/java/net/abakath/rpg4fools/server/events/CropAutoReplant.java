@@ -97,7 +97,7 @@ public class CropAutoReplant {
 
     takeSeed(drops, crop.getPickStack(world, pos, state));
 
-    CropHarvest.drop(world, pos, drops);
+    CropHarvest.drop(world, pos, pos.down(), drops);
 
     BlockState sown = crop.withAge(0);
     world.setBlockState(pos, sown, Block.NOTIFY_LISTENERS);
