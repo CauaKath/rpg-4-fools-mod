@@ -6,8 +6,8 @@ import net.abakath.rpg4fools.models.DayData;
 import net.abakath.rpg4fools.network.packets.s2c.SeasonUpdatePacket;
 import net.abakath.rpg4fools.server.SeasonData;
 import net.abakath.rpg4fools.world.CurrentSeason;
-import net.abakath.rpg4fools.utils.IEntityDataSaver;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
@@ -27,14 +27,64 @@ public class DayChangingHandler implements ServerTickEvents.StartTick {
      */
     private Season lastSeason = null;
 
-    @Override
-    public void onStartTick(MinecraftServer server) {
-        if (server.getOverworld() != null) {
+    /**
+     * The day the last update went out for. The date only moves once every DAY_DURATION ticks, so
+     * everything below is gated on this rather than run every tick.
+     */
+    private int lastTotalDays = Integer.MIN_VALUE;
+
+    /**
+     * The server the two fields above were last filled in for.
+     *
+     * <p>This handler is registered once at mod init, so in single player it outlives the world. A
+     * second world would otherwise inherit the first one's day and season: the day would suppress
+     * the update that seeds CurrentSeason, and the season would fire a change sweep on the first
+     * tick that the null start above exists to avoid.
+     */
+    private MinecraftServer lastServer = null;
+
+    /**
+     * A joining player has missed whatever went out at the last day change, so it is repeated for
+     * them here. This is the only reason the date is ever sent outside a day change.
+     */
+    public static void register() {
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            if (server.getOverworld() == null) {
+                return;
+            }
+
             long time = server.getOverworld().getTimeOfDay();
 
             if (time <= 0) {
                 return;
             }
+
+            ServerPlayNetworking.send(handler.getPlayer(), new SeasonUpdatePacket(getDayData(time)));
+        });
+    }
+
+    @Override
+    public void onStartTick(MinecraftServer server) {
+        if (server.getOverworld() != null) {
+            if (server != lastServer) {
+                lastServer = server;
+                lastTotalDays = Integer.MIN_VALUE;
+                lastSeason = null;
+            }
+
+            long time = server.getOverworld().getTimeOfDay();
+
+            if (time <= 0) {
+                return;
+            }
+
+            int totalDays = totalDays(time);
+
+            if (totalDays == lastTotalDays) {
+                return;
+            }
+
+            lastTotalDays = totalDays;
 
             DayData dayData = getDayData(time);
             SeasonData seasonData = SeasonData.getServerState(server);
@@ -51,16 +101,18 @@ public class DayChangingHandler implements ServerTickEvents.StartTick {
             }
             lastSeason = season;
 
-            server.getPlayerManager().getPlayerList().forEach(player -> {
-                DayData.setPlayerDayData((IEntityDataSaver) player, dayData);
-                ServerPlayNetworking.send(player, new SeasonUpdatePacket(dayData));
-            });
+            server.getPlayerManager().getPlayerList().forEach(player ->
+                    ServerPlayNetworking.send(player, new SeasonUpdatePacket(dayData)));
         }
+    }
+
+    private static int totalDays(long time) {
+        return (int) Math.floor(((double) time / DAY_DURATION));
     }
 
     @NotNull
     private static DayData getDayData(long time) {
-        int totalDays = (int)  Math.floor(((double) time / DAY_DURATION));
+        int totalDays = totalDays(time);
         int year = (int) Math.ceil((double) (totalDays + 1) / YEAR_DURATION);
         int month = (int) Math.floor((double) (totalDays / MONTH_DURATION) - ((year - 1) * MONTHS_IN_YEAR));
         int day = totalDays - ((month * MONTH_DURATION) - 1) - ((year - 1) * YEAR_DURATION);

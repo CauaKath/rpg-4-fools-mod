@@ -2,7 +2,6 @@ package net.abakath.rpg4fools.client;
 
 import net.abakath.rpg4fools.enums.Holiday;
 import net.abakath.rpg4fools.enums.Months;
-import net.abakath.rpg4fools.utils.IEntityDataSaver;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -46,12 +45,13 @@ public class SeasonsHudOverlay implements HudRenderCallback {
     int x = getHalf(width) - getHalf(SEASON_OVERLAY_SCALE);
     int y = height - (SEASON_OVERLAY_SCALE * 3);
 
-    IEntityDataSaver playerData = (IEntityDataSaver) client.player;
+    int year = ClientSeasonState.getYear();
+    int month = ClientSeasonState.getMonthOrdinal();
+    int day = ClientSeasonState.getDay();
 
-    int year = playerData.getPersistentData().getInt("rpg4fools.year");
-    int month = playerData.getPersistentData().getInt("rpg4fools.month");
-    int day = playerData.getPersistentData().getInt("rpg4fools.day");
-    long dayTime = playerData.getPersistentData().getLong("rpg4fools.dayTime");
+    // Read from the world rather than from the date packet. The message fades over its first 160
+    // ticks, which needs a tick accurate value, and the client already advances world time itself.
+    long dayTime = client.world.getTimeOfDay();
 
     Months currentMonth = Months.values()[month];
     Holiday holiday = Holiday.getHoliday(day, (month + 1));

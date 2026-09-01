@@ -1,7 +1,6 @@
 package net.abakath.rpg4fools.client;
 
 import net.abakath.rpg4fools.network.packets.s2c.SeasonUpdatePacket;
-import net.abakath.rpg4fools.utils.IEntityDataSaver;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -25,14 +24,10 @@ public final class ClientModMessages {
       return;
     }
 
-    context.client().execute(() -> {
-      IEntityDataSaver player = (IEntityDataSaver) context.player();
-      player.getPersistentData().putInt("rpg4fools.year", packet.dayData.getYear());
-      player.getPersistentData().putInt("rpg4fools.month", packet.dayData.getMonth().ordinal());
-      player.getPersistentData().putInt("rpg4fools.day", packet.dayData.getDay());
-      player.getPersistentData().putLong("rpg4fools.dayTime", packet.dayData.getDayTime());
-
-      ClientSeasonState.update(packet.dayData.getMonth().ordinal(), packet.dayData.getDay());
-    });
+    context.client().execute(() -> ClientSeasonState.update(
+            packet.dayData.getYear(),
+            packet.dayData.getMonth().ordinal(),
+            packet.dayData.getDay()
+    ));
   }
 }

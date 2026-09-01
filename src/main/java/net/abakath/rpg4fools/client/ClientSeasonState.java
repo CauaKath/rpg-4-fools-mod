@@ -28,6 +28,15 @@ public final class ClientSeasonState {
   /** Progress through the current sub season, 0 on the first day and approaching 1 on the last. */
   private static volatile float progress = 0.0f;
 
+  /**
+   * The date as last sent. Held here rather than on the player, because the client player entity is
+   * rebuilt on respawn and on a dimension change, which would drop it. That went unnoticed while
+   * the date was resent every tick.
+   */
+  private static volatile int year = 1;
+  private static volatile int month = 0;
+  private static volatile int day = 1;
+
   private static int lastMonth = -1;
   private static int lastDay = -1;
 
@@ -42,6 +51,18 @@ public final class ClientSeasonState {
     return progress;
   }
 
+  public static int getYear() {
+    return year;
+  }
+
+  public static int getMonthOrdinal() {
+    return month;
+  }
+
+  public static int getDay() {
+    return day;
+  }
+
   /**
    * Updates the cached season from the current date. When the rendered tint changes the world
    * renderer is reloaded so every chunk picks up the new colour.
@@ -51,10 +72,16 @@ public final class ClientSeasonState {
    *
    * <p>Must be called from the client thread.
    */
-  public static void update(int monthOrdinal, int day) {
+  public static void update(int year, int monthOrdinal, int day) {
     if (monthOrdinal < 0 || monthOrdinal >= Months.values().length) {
       return;
     }
+
+    // Assigned before the guard below, so a repeat for a joining player still refreshes the date
+    // even though there is no tint work left to do for it.
+    ClientSeasonState.year = year;
+    ClientSeasonState.month = monthOrdinal;
+    ClientSeasonState.day = day;
 
     if (monthOrdinal == lastMonth && day == lastDay) {
       return;
