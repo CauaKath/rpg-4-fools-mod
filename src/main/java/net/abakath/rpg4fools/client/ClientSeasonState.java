@@ -6,6 +6,8 @@ import net.abakath.rpg4fools.world.CurrentSeason;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.util.math.ChunkPos;
 
 /**
  * Client-side view of the current season.
@@ -43,11 +45,11 @@ public final class ClientSeasonState {
   }
 
   /**
-   * Updates the cached season from the current date. When the rendered tint changes the world
-   * renderer is reloaded so every chunk picks up the new colour.
+   * Updates the cached season from the current date. When the rendered tint changes the loaded
+   * chunks are queued for a rebuild so every one of them picks up the new colour.
    *
-   * <p>The tint moves once per in game day, so this triggers one renderer reload per day rather
-   * than one per sub season. That is a deliberate trade of a rebuild for a smooth transition.
+   * <p>The tint moves once per in game day, so this queues one rebuild per day rather than one per
+   * sub season. That is a deliberate trade of a rebuild for a smooth transition.
    *
    * <p>Must be called from the client thread.
    */
@@ -70,9 +72,41 @@ public final class ClientSeasonState {
     CurrentSeason.set(subSeason);
     progress = ColorMath.clamp01((float) (day - 1) / MONTH_DURATION);
 
-    MinecraftClient client = MinecraftClient.getInstance();
-    if (client.worldRenderer != null) {
-      client.worldRenderer.reload();
+    refreshTintedChunks(MinecraftClient.getInstance());
+  }
+
+  /**
+   * Drops the cached biome colours and marks the loaded sections for a rebuild, so the new tint
+   * reaches the geometry it is baked into.
+   *
+   * <p>Deliberately not {@code WorldRenderer#reload}. That clears the built chunk storage and
+   * allocates a fresh one, which drops every uploaded vertex buffer, so the world draws empty until
+   * the rebuild catches up. Once a day that reads as the world visibly re-rendering itself.
+   * Scheduling a rebuild queues the same work while the existing geometry keeps drawing, so the
+   * recolour arrives without the blank frames.
+   */
+  private static void refreshTintedChunks(MinecraftClient client) {
+    ClientWorld world = client.world;
+    if (world == null || client.worldRenderer == null || client.player == null) {
+      return;
     }
+
+    // The colour providers read through BiomeColors, which memoises per position. Without this the
+    // rebuilt chunks would come back carrying the previous day's colours.
+    world.reloadColor();
+
+    // BuiltChunkStorage indexes its array by chunk coordinate modulo its own size, and that size is
+    // 2 * viewDistance + 1 on both horizontal axes and the section count vertically. A run of
+    // exactly that many consecutive coordinates therefore covers every slot once, wherever the
+    // storage happens to be centred, so the camera sitting off the player is not a problem. The
+    // view distance is read back from the options because WorldRenderer reloads itself whenever the
+    // two disagree, which keeps the storage the size assumed here.
+    int radius = client.options.getClampedViewDistance();
+    ChunkPos center = client.player.getChunkPos();
+
+    client.worldRenderer.scheduleBlockRenders(
+            center.x - radius, world.getBottomSectionCoord(), center.z - radius,
+            center.x + radius, world.getTopSectionCoord() - 1, center.z + radius
+    );
   }
 }
