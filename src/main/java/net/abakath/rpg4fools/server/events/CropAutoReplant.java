@@ -90,8 +90,12 @@ public class CropAutoReplant {
     return ActionResult.SUCCESS;
   }
 
-  private static void harvest(ServerWorld world, PlayerEntity player, Hand hand, BlockPos pos,
-                              BlockState state, CropBlock crop) {
+  /**
+   * Takes the crop and sows it again. Package visible because {@link HoeAreaHarvest} sweeps a square
+   * of crops through this same method, so that a wider harvest cannot drift from a single one.
+   */
+  static void harvest(ServerWorld world, PlayerEntity player, Hand hand, BlockPos pos,
+                      BlockState state, CropBlock crop) {
     ItemStack tool = player.getStackInHand(hand);
     List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, tool);
 
