@@ -56,6 +56,9 @@ public final class CropWalls {
    * corner, and a plant that read its direction off those joins would have to pick one at a junction
    * anyway - so it picks once, when it is sown, and keeps the answer. A vine therefore never rounds a
    * corner even where the wall does, which is also the only way its box stays a box.
+   *
+   * <p>Nothing about the sprite depends on it. A cell is drawn as a crop cross, which looks the same
+   * from every side, so this decides only where the plant may spread - and the blockstate never asks.
    */
   public static final EnumProperty<Direction.Axis> AXIS = Properties.HORIZONTAL_AXIS;
 

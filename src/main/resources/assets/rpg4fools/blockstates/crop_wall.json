@@ -46,15 +46,6 @@
       "apply": {
         "model": "rpg4fools:block/crop_wall_dead"
       }
-    },
-    {
-      "when": {
-        "dead": "true"
-      },
-      "apply": {
-        "model": "rpg4fools:block/crop_wall_dead",
-        "y": 90
-      }
     }
   ]
 }

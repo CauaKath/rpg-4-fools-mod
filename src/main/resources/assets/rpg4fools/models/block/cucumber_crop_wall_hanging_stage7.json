@@ -1,9 +1,9 @@
 {
-  "__comment": "Dead growth left on a panel by a season. The same cross a living cell is drawn as, in straw.",
+  "__comment": "One cell of a plant spread over a wall, drawn as vanilla draws a crop: two planes crossed at 45 degrees. Spans the whole block, so the plant is seen from either side of the wall and from along it.",
   "ambientocclusion": false,
   "textures": {
-    "cross": "rpg4fools:block/crop_wall_dead",
-    "particle": "rpg4fools:block/crop_wall_dead"
+    "cross": "rpg4fools:block/cucumber_crop_wall_hanging_stage7",
+    "particle": "rpg4fools:block/cucumber_crop_wall_hanging_stage7"
   },
   "elements": [
     {
