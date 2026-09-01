@@ -10,6 +10,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
 
+import java.util.function.BiConsumer;
+
 /**
  * Which composters have been labelled, and with what.
  *
@@ -86,6 +88,32 @@ public class PendingCompost extends PersistentState {
 
     marks.remove(pos.asLong());
     markDirty();
+  }
+
+  /**
+   * Visits every labelled composter this world is currently holding.
+   *
+   * <p>Walks a copy of the positions, because reading one can drop it: a label whose block has gone
+   * is forgotten on the way out, and that would be a modification during iteration.
+   *
+   * <p>Positions in chunks that are not loaded are skipped rather than read. Asking for a block state
+   * there answers air, which would forget a perfectly good label the moment a player walked away
+   * from their composter.
+   */
+  public void forEach(ServerWorld world, BiConsumer<BlockPos, Compost> action) {
+    for (long packed : marks.keySet().toLongArray()) {
+      BlockPos pos = BlockPos.fromLong(packed);
+
+      if (!world.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+        continue;
+      }
+
+      Compost kind = marked(world, pos);
+
+      if (kind != Compost.NONE) {
+        action.accept(pos, kind);
+      }
+    }
   }
 
   /**

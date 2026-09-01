@@ -5,6 +5,7 @@ import net.abakath.rpg4fools.server.LoadedChunks;
 import net.abakath.rpg4fools.server.events.BarkStripping;
 import net.abakath.rpg4fools.server.events.CompostExpiry;
 import net.abakath.rpg4fools.server.events.CompostHandling;
+import net.abakath.rpg4fools.server.events.CompostSignals;
 import net.abakath.rpg4fools.server.events.CompostHarvest;
 import net.abakath.rpg4fools.server.events.CropAutoReplant;
 import net.abakath.rpg4fools.server.events.CropOwnership;
@@ -23,16 +24,21 @@ public class ModEvents {
     ServerTickEvents.START_SERVER_TICK.register(new DayChangingHandler());
     ServerTickEvents.START_SERVER_TICK.register(new SnowMeltHandler());
     ServerTickEvents.END_SERVER_TICK.register(new ManureDropping());
+    ServerTickEvents.END_SERVER_TICK.register(new CompostSignals());
 
     LoadedChunks.register();
     CropTagValidator.register();
     SeasonPlantingGate.register();
     CropStickHandling.register();
     CropWallHandling.register();
+
+    // Before the auto replant, which harvests any ripe crop that is right clicked. The compost
+    // handler only claims a click when the player is holding compost or a hoe, and without this
+    // order a field could never be composted once it ripened.
+    CompostHandling.register();
     CropAutoReplant.register();
     CropOwnership.register();
     CropSettling.register();
-    CompostHandling.register();
     CompostExpiry.register();
     CompostHarvest.register();
     BarkStripping.register();

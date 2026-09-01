@@ -4,11 +4,15 @@ import net.abakath.rpg4fools.init.ModCompostItems;
 import net.abakath.rpg4fools.server.CompostedChunks;
 import net.abakath.rpg4fools.server.PendingCompost;
 import net.abakath.rpg4fools.world.Compost;
+import net.abakath.rpg4fools.world.CropSticks;
+import net.abakath.rpg4fools.world.CropWalls;
+import net.abakath.rpg4fools.world.WalledCropBlock;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ComposterBlock;
+import net.minecraft.block.CropBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.HoeItem;
 import net.minecraft.item.ItemStack;
@@ -38,6 +42,11 @@ import net.minecraft.world.event.GameEvent;
  * <p>Collecting is checked before labelling. A player holding a catalyst who clicks a composter that
  * is already full and already labelled meant to empty it; re-labelling it there would eat a catalyst
  * and change nothing.
+ *
+ * <p>Registered before {@link CropAutoReplant}, which harvests any ripe crop that is right clicked.
+ * Without that order a field could never be composted once it ripened, because the click would be
+ * taken as a harvest. This handler only claims a click when the player is holding compost or a hoe,
+ * so nothing else changes hands.
  */
 public final class CompostHandling {
   /** Vanilla's full composter, the level at which it hands over what it made. */
@@ -70,11 +79,42 @@ public final class CompostHandling {
       return useComposter(serverWorld, player, pos, state, stack);
     }
 
-    if (state.isOf(Blocks.FARMLAND)) {
-      return useFarmland(serverWorld, player, pos, state, stack);
+    BlockPos soil = soilUnder(world, pos, state);
+
+    if (soil != null) {
+      return useSoil(serverWorld, player, soil, state, stack);
     }
 
     return ActionResult.PASS;
+  }
+
+  /**
+   * The bed that whatever was clicked is growing in, or null if it is not growing in one.
+   *
+   * <p>Clicking the plant has to work as well as clicking the soil. A player looking at a field sees
+   * crops, not farmland, and telling them to aim at the one square inch of dirt still showing between
+   * two stems is asking them to fight the game.
+   *
+   * <p>The two supported forms need asking rather than assuming. A cell of a wall plant sits over
+   * whatever happens to be behind it, and a section of a sticked plant sits over another stick, so
+   * for both the bed is under the root rather than under the block that was clicked.
+   */
+  private static BlockPos soilUnder(World world, BlockPos pos, BlockState state) {
+    if (state.isOf(Blocks.FARMLAND)) {
+      return pos;
+    }
+
+    BlockPos below;
+
+    if (state.getBlock() instanceof WalledCropBlock) {
+      below = CropWalls.root(state, pos).down();
+    } else if (CropSticks.isColumn(state)) {
+      below = CropSticks.base(world, pos).down();
+    } else {
+      below = pos.down();
+    }
+
+    return world.getBlockState(below).isOf(Blocks.FARMLAND) ? below : null;
   }
 
   private static ActionResult useComposter(ServerWorld world, PlayerEntity player, BlockPos pos,
@@ -132,10 +172,17 @@ public final class CompostHandling {
     return ActionResult.SUCCESS;
   }
 
-  private static ActionResult useFarmland(ServerWorld world, PlayerEntity player, BlockPos pos,
-                                          BlockState state, ItemStack stack) {
+  private static ActionResult useSoil(ServerWorld world, PlayerEntity player, BlockPos soil,
+                                      BlockState clicked, ItemStack stack) {
     if (stack.getItem() instanceof HoeItem) {
-      return clear(world, player, pos, state);
+      // A ripe crop is a harvest first. Hoeing one to scrape the bed underneath would take the
+      // harvest away from every tool in the game except the hoe, which is the wrong trade for a
+      // feature about soil.
+      if (clicked.getBlock() instanceof CropBlock crop && crop.isMature(clicked)) {
+        return ActionResult.PASS;
+      }
+
+      return clear(world, player, soil, world.getBlockState(soil));
     }
 
     Compost kind = ModCompostItems.compost(stack);
@@ -144,7 +191,7 @@ public final class CompostHandling {
       return ActionResult.PASS;
     }
 
-    return apply(world, player, pos, stack, kind);
+    return apply(world, player, soil, stack, kind);
   }
 
   /**
@@ -195,7 +242,8 @@ public final class CompostHandling {
    * Scrapes compost back out of one block of soil, giving nothing back.
    *
    * <p>The only way to swap one compost for another, since applying over an existing one is refused.
-   * A hoe on farmland does nothing in vanilla, so this costs no interaction anybody was using.
+   * A hoe on farmland does nothing in vanilla, so this costs no interaction anybody was using - and
+   * a ripe crop is turned away upstream, so it costs no harvest either.
    */
   private static ActionResult clear(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state) {
     if (!Compost.composted(state)) {
