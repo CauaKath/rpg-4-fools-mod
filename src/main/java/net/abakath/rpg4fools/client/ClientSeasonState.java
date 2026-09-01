@@ -122,18 +122,31 @@ public final class ClientSeasonState {
     // rebuilt chunks would come back carrying the previous day's colours.
     world.reloadColor();
 
-    // BuiltChunkStorage indexes its array by chunk coordinate modulo its own size, and that size is
-    // 2 * viewDistance + 1 on both horizontal axes and the section count vertically. A run of
-    // exactly that many consecutive coordinates therefore covers every slot once, wherever the
-    // storage happens to be centred, so the camera sitting off the player is not a problem. The
-    // view distance is read back from the options because WorldRenderer reloads itself whenever the
-    // two disagree, which keeps the storage the size assumed here.
+    // Every section the storage holds, marked one at a time.
+    //
+    // Not WorldRenderer#scheduleBlockRenders, which reads as the obvious fit and is not. It takes
+    // block coordinates and shifts them down to sections itself, so a whole view distance handed to
+    // it would loop over every block in the world height, hundreds of millions of iterations for
+    // the hundred thousand sections underneath them. scheduleBlockRender is the section level entry
+    // point the range version calls once it has done the shifting.
+    //
+    // The horizontal span is deliberately 2 * viewDistance + 1, the width of BuiltChunkStorage
+    // itself. It indexes by coordinate modulo that width, so a run of exactly that many consecutive
+    // coordinates lands on every slot once, wherever the storage happens to be centred, and the
+    // camera sitting off the player cannot leave a column out. The view distance is read back from
+    // the options because WorldRenderer reloads itself whenever the two disagree.
     int radius = client.options.getClampedViewDistance();
     ChunkPos center = client.player.getChunkPos();
 
-    client.worldRenderer.scheduleBlockRenders(
-            center.x - radius, world.getBottomSectionCoord(), center.z - radius,
-            center.x + radius, world.getTopSectionCoord() - 1, center.z + radius
-    );
+    int bottom = world.getBottomSectionCoord();
+    int top = world.getTopSectionCoord();
+
+    for (int x = center.x - radius; x <= center.x + radius; x++) {
+      for (int z = center.z - radius; z <= center.z + radius; z++) {
+        for (int y = bottom; y < top; y++) {
+          client.worldRenderer.scheduleBlockRender(x, y, z);
+        }
+      }
+    }
   }
 }
