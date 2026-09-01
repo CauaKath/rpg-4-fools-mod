@@ -33,7 +33,7 @@ public class ModEvents {
     CropWallHandling.register();
 
     // Before the auto replant, which harvests any ripe crop that is right clicked. The compost
-    // handler only claims a click when the player is holding compost or a hoe, and without this
+    // handler only claims a click when the player is holding compost or a shovel, and without this
     // order a field could never be composted once it ripened.
     CompostHandling.register();
     CropAutoReplant.register();

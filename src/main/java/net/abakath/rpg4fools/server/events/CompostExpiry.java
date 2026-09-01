@@ -191,7 +191,7 @@ public final class CompostExpiry {
         BlockState state = world.getBlockState(pos);
 
         // Read again on the way out. Anything can have happened to the block since it was queued,
-        // including the player hoeing the compost off it or the farmland being trampled to dirt.
+        // including the player scraping the compost off it or the farmland being trampled to dirt.
         if (!Compost.composted(state)) {
           continue;
         }

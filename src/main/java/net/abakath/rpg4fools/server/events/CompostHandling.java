@@ -14,7 +14,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.ComposterBlock;
 import net.minecraft.block.CropBlock;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.HoeItem;
+import net.minecraft.item.ShovelItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
@@ -33,7 +33,7 @@ import net.minecraft.world.event.GameEvent;
  *
  * <p>Four interactions, and they are one handler because they are one loop: a catalyst labels a
  * composter, a full labelled composter hands over compost instead of bone meal, compost goes into
- * farmland, and a hoe takes it back out. Splitting them across four callbacks would mean four
+ * farmland, and a shovel scrapes it back out. Splitting them across four callbacks would mean four
  * chances for two of them to disagree about which one owns a click on a composter.
  *
  * <p>No mixin. Every one of these is a use on a block, and UseBlockCallback runs before the block's
@@ -45,7 +45,8 @@ import net.minecraft.world.event.GameEvent;
  *
  * <p>Registered before {@link CropAutoReplant}, which harvests any ripe crop that is right clicked.
  * Without that order a field could never be composted once it ripened, because the click would be
- * taken as a harvest. This handler only claims a click when the player is holding compost or a hoe,
+ * taken as a harvest. This handler only claims a click when the player is holding compost or a
+ * shovel,
  * so nothing else changes hands.
  */
 public final class CompostHandling {
@@ -174,10 +175,10 @@ public final class CompostHandling {
 
   private static ActionResult useSoil(ServerWorld world, PlayerEntity player, BlockPos soil,
                                       BlockState clicked, ItemStack stack) {
-    if (stack.getItem() instanceof HoeItem) {
-      // A ripe crop is a harvest first. Hoeing one to scrape the bed underneath would take the
-      // harvest away from every tool in the game except the hoe, which is the wrong trade for a
-      // feature about soil.
+    if (stack.getItem() instanceof ShovelItem) {
+      // A ripe crop is a harvest first. Scraping the bed underneath one would take the harvest away
+      // from every tool in the game except the shovel, which is the wrong trade for a feature about
+      // soil.
       if (clicked.getBlock() instanceof CropBlock crop && crop.isMature(clicked)) {
         return ActionResult.PASS;
       }
@@ -242,8 +243,13 @@ public final class CompostHandling {
    * Scrapes compost back out of one block of soil, giving nothing back.
    *
    * <p>The only way to swap one compost for another, since applying over an existing one is refused.
-   * A hoe on farmland does nothing in vanilla, so this costs no interaction anybody was using - and
-   * a ripe crop is turned away upstream, so it costs no harvest either.
+   * A shovel on farmland does nothing in vanilla - the block is not in the map that turns dirt and
+   * grass into a path - so this costs no interaction anybody was using, and a ripe crop is turned
+   * away upstream so it costs no harvest either.
+   *
+   * <p>The shovel rather than the hoe, which is the tool the soil would suggest. Right clicking
+   * farmland with a hoe is being kept free for something else, and scraping is what a shovel does
+   * anyway.
    */
   private static ActionResult clear(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state) {
     if (!Compost.composted(state)) {
@@ -253,7 +259,7 @@ public final class CompostHandling {
     BlockState bare = state.with(Compost.PROPERTY, Compost.NONE);
     world.setBlockState(pos, bare, Block.NOTIFY_LISTENERS);
     world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(player, bare));
-    world.playSound(null, pos, SoundEvents.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+    world.playSound(null, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
 
     return ActionResult.SUCCESS;
   }

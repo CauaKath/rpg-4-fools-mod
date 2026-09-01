@@ -20,7 +20,8 @@ import net.minecraft.world.BlockView;
  *
  * <p>Three kinds, one axis each, and never more than one at a time: rich feeds the harvest, warm
  * hurries the growing, creeping hurries the spreading. Applying over an existing compost is
- * refused rather than allowed to overwrite, so the only way to swap is to clear the soil with a hoe
+ * refused rather than allowed to overwrite, so the only way to swap is to scrape the soil with a
+ * shovel
  * and start again - which is what makes the choice of kind a decision rather than a keystroke.
  */
 public enum Compost implements StringIdentifiable {
