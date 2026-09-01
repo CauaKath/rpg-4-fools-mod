@@ -27,6 +27,7 @@ public class ModEvents {
     ServerTickEvents.END_SERVER_TICK.register(new ManureDropping());
     ServerTickEvents.END_SERVER_TICK.register(new CompostSignals());
 
+    DayChangingHandler.register();
     LoadedChunks.register();
     CropTagValidator.register();
     SeasonPlantingGate.register();
