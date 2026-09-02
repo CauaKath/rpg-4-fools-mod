@@ -1,6 +1,5 @@
 package net.abakath.rpg4fools.mixin.client;
 
-import net.abakath.rpg4fools.client.FogTransition;
 import net.abakath.rpg4fools.client.ResolvedAtmosphere;
 import net.abakath.rpg4fools.client.SeasonAtmosphere;
 import net.minecraft.core.BlockPos;
@@ -18,9 +17,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * Grades the fog and sky by the current season and the biome underfoot.
  *
- * <p>One hook for what used to be three. Fog colour, fog distance and sky colour are all
- * environment attributes now, resolved through this one probe, so grading them here reaches every
- * consumer at once instead of chasing the renderer that reads each one.
+ * <p>Sky colour and the fog distances are environment attributes now, resolved through this one
+ * probe, so grading them here reaches every consumer at once instead of chasing the renderer that
+ * reads each one. The fog colour is graded later, in {@link AtmosphericFogEnvironmentMixin}.
+ *
+ * <p>Nothing is eased here. The probe interpolates between ticks and blends biomes spatially by
+ * itself, which is the stepping FogTransition used to smooth over on the old API - and easing on
+ * top of that fought it, because getValue is asked many times a frame and by more than one probe.
  *
  * <p>Vanilla still computes every value, including its own time of day and weather handling. Only
  * the result is adjusted, so nothing about the existing behaviour is replaced.
@@ -60,58 +63,31 @@ public abstract class EnvironmentAttributeProbeMixin {
       return;
     }
 
-    if (attribute == EnvironmentAttributes.FOG_COLOR) {
-      cir.setReturnValue(atmosphere().applyToFogColor((Integer) vanilla));
-      return;
-    }
-
     if (attribute == EnvironmentAttributes.SKY_COLOR) {
       cir.setReturnValue(atmosphere().applyToSkyColor((Integer) vanilla));
       return;
     }
 
     if (attribute == EnvironmentAttributes.FOG_START_DISTANCE) {
-      cir.setReturnValue(easedStart((Float) vanilla, partialTick));
+      cir.setReturnValue(gradedStart((Float) vanilla, partialTick));
       return;
     }
 
     if (attribute == EnvironmentAttributes.FOG_END_DISTANCE) {
-      cir.setReturnValue(easedEnd((Float) vanilla));
+      cir.setReturnValue(atmosphere().fogEnd((Float) vanilla));
     }
   }
 
   /**
-   * Advances the easing and returns the smoothed fog start.
-   *
-   * <p>The biome blend moves in steps as samples cross a border, and with a swamp at 24 blocks
-   * against a forest at 146 a single step is a visible jump. Note this runs even at zero presence,
-   * so leaving a biome eases back to vanilla instead of snapping.
+   * Where the fog begins.
    *
    * <p>The end distance has to be fetched rather than remembered, because the start is derived as a
    * ratio of where the fog ends and the two arrive as separate questions now.
    */
-  private float easedStart(float vanillaStart, float partialTick) {
+  private float gradedStart(float vanillaStart, float partialTick) {
     float vanillaEnd = vanillaFogEnd(partialTick);
-    ResolvedAtmosphere atmosphere = atmosphere();
 
-    return FogTransition.update(
-            atmosphere.fogStart(vanillaStart, vanillaEnd),
-            atmosphere.fogEnd(vanillaEnd),
-            System.nanoTime()
-    );
-  }
-
-  /**
-   * The eased end that the start's easing pass already advanced.
-   *
-   * <p>Vanilla asks for the start before the end, so by the time this runs the pair has moved
-   * together this frame. On the very first frame, before any easing exists, the target is used
-   * directly.
-   */
-  private float easedEnd(float vanillaEnd) {
-    float eased = FogTransition.getEnd();
-
-    return Float.isNaN(eased) ? atmosphere().fogEnd(vanillaEnd) : eased;
+    return atmosphere().fogStart(vanillaStart, vanillaEnd);
   }
 
   private float vanillaFogEnd(float partialTick) {

@@ -32,8 +32,8 @@ public final class SeasonAtmosphere {
 
   /**
    * Shift used to key the biome cache. 2 gives a 4 block cell. It does not need to be finer than
-   * that: FogTransition eases between whatever this reports, so continuity comes from the easing
-   * rather than from resampling more often.
+   * that: the environment probe blends biomes spatially and interpolates between ticks, so
+   * continuity comes from there rather than from resampling more often.
    */
   private static final int CACHE_CELL_SHIFT = 2;
 
@@ -223,7 +223,6 @@ public final class SeasonAtmosphere {
     cachedAggregateCellKey = Long.MIN_VALUE;
     cachedAggregate = null;
     BiomeAtmosphere.clearCache();
-    FogTransition.reset();
   }
 
   private static BiomeAggregate aggregateFor(LevelReader world, BlockPos pos) {

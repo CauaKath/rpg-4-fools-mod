@@ -3,6 +3,7 @@
   "package": "net.abakath.rpg4fools.mixin.client",
   "compatibilityLevel": "JAVA_25",
   "client": [
+    "AtmosphericFogEnvironmentMixin",
     "EnvironmentAttributeProbeMixin"
   ],
   "injectors": {
