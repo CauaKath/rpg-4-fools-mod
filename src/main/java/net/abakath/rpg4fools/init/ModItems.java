@@ -39,7 +39,7 @@ public final class ModItems {
    * the ground, and a seed into a stick already standing - are handled elsewhere, in
    * {@link net.abakath.rpg4fools.server.events.CropStickHandling}.
    */
-  public static final Item CROP_STICK = register("crop_stick", props -> new BlockItem(ModBlocks.CROP_STICK, props));
+  public static final Item CROP_STICK = register("crop_stick", props -> new BlockItem(ModBlocks.CROP_STICK, props.useBlockDescriptionPrefix()));
 
   /**
    * The wall panel, as a thing to carry.
@@ -49,7 +49,7 @@ public final class ModItems {
    * in the ground, and a seed into a panel already standing - are handled in
    * {@link net.abakath.rpg4fools.server.events.CropWallHandling}.
    */
-  public static final Item CROP_WALL = register("crop_wall", props -> new BlockItem(ModBlocks.CROP_WALL, props));
+  public static final Item CROP_WALL = register("crop_wall", props -> new BlockItem(ModBlocks.CROP_WALL, props.useBlockDescriptionPrefix()));
 
   private static final Map<CropDefinition, Item> SEEDS = new LinkedHashMap<>();
   private static final Map<CropDefinition, Item> PRODUCE = new LinkedHashMap<>();
