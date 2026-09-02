@@ -4,9 +4,14 @@ import net.abakath.rpg4fools.enums.SubSeason;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import java.util.List;
 
 /**
  * Registers the season aware block and item tints.
@@ -21,9 +26,6 @@ import net.minecraft.world.level.block.Blocks;
  */
 @Environment(EnvType.CLIENT)
 public final class SeasonColorProviders {
-  /** Vanilla tint index for the tinted quads of grass and leaf models. */
-  private static final int TINTED_LAYER = 0;
-
   private static final int DEFAULT_GRASS_COLOR = 0x91BD59;
   private static final int DEFAULT_FOLIAGE_COLOR = 0x48B518;
   private static final int BIRCH_FOLIAGE_COLOR = 0x80A755;
@@ -86,22 +88,35 @@ public final class SeasonColorProviders {
   }
 
   /**
-   * Tints are collected into a list rather than answered per index now, so each of these adds the
-   * one colour its models ask for at {@link #TINTED_LAYER} instead of returning -1 for every other
-   * index.
+   * A block's tints are a list of sources now, one per tint index, and these models only tint at
+   * index 0 - hence the single element. Each source answers twice: colorInWorld for a block in the
+   * world, and color for one with no position to sample, which is the inventory icon and the
+   * fallback the old provider handled with a null check.
    */
   private static void registerBiomeTintedBlocks() {
-    BlockColorRegistry.register((state, world, pos, tints) -> tints.add(
-            world == null || pos == null
-                    ? applySeasonTint(DEFAULT_GRASS_COLOR)
-                    : applySeasonTint(BiomeColors.getAverageGrassColor(world, pos))
-    ), GRASS_BLOCKS);
+    BlockColorRegistry.register(List.of(new BlockTintSource() {
+      @Override
+      public int color(BlockState state) {
+        return applySeasonTint(DEFAULT_GRASS_COLOR);
+      }
 
-    BlockColorRegistry.register((state, world, pos, tints) -> tints.add(
-            world == null || pos == null
-                    ? applySeasonTint(DEFAULT_FOLIAGE_COLOR)
-                    : applySeasonTint(BiomeColors.getAverageFoliageColor(world, pos))
-    ), FOLIAGE_BLOCKS);
+      @Override
+      public int colorInWorld(BlockState state, BlockAndTintGetter world, BlockPos pos) {
+        return applySeasonTint(BiomeColors.getAverageGrassColor(world, pos));
+      }
+    }), GRASS_BLOCKS);
+
+    BlockColorRegistry.register(List.of(new BlockTintSource() {
+      @Override
+      public int color(BlockState state) {
+        return applySeasonTint(DEFAULT_FOLIAGE_COLOR);
+      }
+
+      @Override
+      public int colorInWorld(BlockState state, BlockAndTintGetter world, BlockPos pos) {
+        return applySeasonTint(BiomeColors.getAverageFoliageColor(world, pos));
+      }
+    }), FOLIAGE_BLOCKS);
   }
 
   /**
@@ -119,7 +134,7 @@ public final class SeasonColorProviders {
   }
 
   private static void registerFixedColorBlock(Block block, int baseColor) {
-    BlockColorRegistry.register((state, world, pos, tints) -> tints.add(applySeasonTint(baseColor)), block);
+    BlockColorRegistry.register(List.of((BlockTintSource) state -> applySeasonTint(baseColor)), block);
   }
 
   // Inventory icons no longer follow the season. Item tinting moved out of code entirely: a tint is
