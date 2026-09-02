@@ -153,11 +153,11 @@ public final class SeasonColorProviders {
     float[] hsb = HSB_SCRATCH.get();
     ColorMath.rgbToHsb(rgb, hsb);
 
-    return ColorMath.hsbToRgb(
+    return ColorMath.opaque(ColorMath.hsbToRgb(
             hsb[0] + current.hueShift(),
             hsb[1] * current.saturationFactor(),
             hsb[2] * current.brightnessFactor()
-    );
+    ));
   }
 
   /** The grade for the current date, recomputed only when the date has moved since the last call. */

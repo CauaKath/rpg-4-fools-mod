@@ -144,6 +144,16 @@ public final class ColorMath {
     );
   }
 
+  /**
+   * Puts a full alpha byte on a 24 bit colour.
+   *
+   * <p>Everything above works in 24 bit, and the renderer reads these as ARGB. A graded colour
+   * handed over as-is carries alpha zero, which draws nothing at all rather than drawing wrong.
+   */
+  public static int opaque(int rgb) {
+    return 0xFF000000 | rgb;
+  }
+
   public static float clamp01(float value) {
     return value < 0.0f ? 0.0f : Math.min(value, 1.0f);
   }

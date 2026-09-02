@@ -81,14 +81,14 @@ public record ResolvedAtmosphere(
   public int applyToFogColor(int vanillaRgb) {
     int tinted = ColorMath.lerpRgb(vanillaRgb, tintColor, colorBlend);
 
-    return SeasonAtmosphere.gradeSkyColor(tinted, seasonStrength);
+    return ColorMath.opaque(SeasonAtmosphere.gradeSkyColor(tinted, seasonStrength));
   }
 
   /** Applies a weakened biome tint and then the season grade to a packed sky colour. */
   public int applyToSkyColor(int vanillaRgb) {
     int tinted = ColorMath.lerpRgb(vanillaRgb, tintColor, colorBlend * SKY_BLEND_SCALE);
 
-    return SeasonAtmosphere.gradeSkyColor(tinted, seasonStrength);
+    return ColorMath.opaque(SeasonAtmosphere.gradeSkyColor(tinted, seasonStrength));
   }
 
   private static float lerp(float from, float to, float t) {
