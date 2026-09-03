@@ -8,6 +8,7 @@ import net.abakath.rpg4fools.server.events.CompostHandling;
 import net.abakath.rpg4fools.server.events.CompostSignals;
 import net.abakath.rpg4fools.server.events.CompostHarvest;
 import net.abakath.rpg4fools.server.events.CropAutoReplant;
+import net.abakath.rpg4fools.server.debug.SnowDebugCommand;
 import net.abakath.rpg4fools.server.events.CropOwnership;
 import net.abakath.rpg4fools.server.events.CropSettling;
 import net.abakath.rpg4fools.server.events.CropStickHandling;
@@ -45,6 +46,7 @@ public class ModEvents {
     HoeAreaHarvest.register();
     CropAutoReplant.register();
     CropOwnership.register();
+    SnowDebugCommand.register();
     CropSettling.register();
     CompostExpiry.register();
     CompostHarvest.register();
