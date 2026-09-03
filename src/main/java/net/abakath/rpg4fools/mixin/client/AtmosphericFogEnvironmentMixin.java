@@ -1,5 +1,6 @@
 package net.abakath.rpg4fools.mixin.client;
 
+import net.abakath.rpg4fools.client.FogEasing;
 import net.abakath.rpg4fools.client.ResolvedAtmosphere;
 import net.abakath.rpg4fools.client.SeasonAtmosphere;
 import net.minecraft.client.Camera;
@@ -67,7 +68,16 @@ public abstract class AtmosphericFogEnvironmentMixin {
     float vanillaStart = data.environmentalStart;
     float vanillaEnd = data.environmentalEnd;
 
-    data.environmentalStart = atmosphere.fogStart(vanillaStart, vanillaEnd);
-    data.environmentalEnd = atmosphere.fogEnd(vanillaEnd);
+    // Eased rather than applied straight. What the atmosphere reports moves in steps - the
+    // aggregate is cached per four block cell, sky occlusion is counted in ninths - and this is the
+    // one place that runs once a frame, which is what an easer needs to integrate correctly.
+    FogEasing.advance(
+            atmosphere.fogStart(vanillaStart, vanillaEnd),
+            atmosphere.fogEnd(vanillaEnd),
+            tickDelta.getRealtimeDeltaTicks()
+    );
+
+    data.environmentalStart = FogEasing.start();
+    data.environmentalEnd = FogEasing.end();
   }
 }

@@ -30,11 +30,19 @@ public final class SeasonColorProviders {
   private static final int DEFAULT_FOLIAGE_COLOR = 0x48B518;
   private static final int BIRCH_FOLIAGE_COLOR = 0x80A755;
   private static final int SPRUCE_FOLIAGE_COLOR = 0x619961;
-  private static final int MANGROVE_FOLIAGE_COLOR = 0x92C648;
   private static final int LILY_PAD_COLOR = 0x208030;
 
+  /** Vanilla's DryFoliageColor.FOLIAGE_DRY_DEFAULT, for leaf litter with no position to sample. */
+  private static final int DEFAULT_DRY_FOLIAGE_COLOR = 0x5C3C32;
 
-  /** Blocks vanilla tints from the biome grass colour. */
+
+  /**
+   * Blocks vanilla tints from the biome grass colour.
+   *
+   * <p>Mirrors what BlockColors.createDefault hands the grass, grassBlock, doubleTallGrass and
+   * sugarCane sources, all of which read that one colour. Bush, pink petals and wildflowers were
+   * added to that set after 1.20.6.
+   */
   private static final Block[] GRASS_BLOCKS = {
           Blocks.GRASS_BLOCK,
           Blocks.SHORT_GRASS,
@@ -42,10 +50,18 @@ public final class SeasonColorProviders {
           Blocks.FERN,
           Blocks.LARGE_FERN,
           Blocks.POTTED_FERN,
-          Blocks.SUGAR_CANE
+          Blocks.SUGAR_CANE,
+          Blocks.BUSH,
+          Blocks.PINK_PETALS,
+          Blocks.WILDFLOWERS
   };
 
-  /** Blocks vanilla tints from the biome foliage colour. */
+  /**
+   * Blocks vanilla tints from the biome foliage colour.
+   *
+   * <p>Still exactly the six vanilla hands its foliage source. Pale oak, cherry and azalea leaves
+   * are deliberately absent, because vanilla gives them no tint source at all.
+   */
   private static final Block[] FOLIAGE_BLOCKS = {
           Blocks.OAK_LEAVES,
           Blocks.JUNGLE_LEAVES,
@@ -84,6 +100,7 @@ public final class SeasonColorProviders {
 
   public static void register() {
     registerBiomeTintedBlocks();
+    registerDryFoliageBlocks();
     registerFixedColorBlocks();
   }
 
@@ -127,6 +144,25 @@ public final class SeasonColorProviders {
    * colour provider would never be consulted. Tinting them means shipping model overrides, which is
    * left for a follow up. The same applies to flowers.
    */
+  /**
+   * Leaf litter reads the dry foliage colour, a separate biome colour added after 1.20.6. Its own
+   * source rather than a foliage one, so a badlands keeps the brown vanilla intends and the season
+   * grade rides on top of that instead of on a green.
+   */
+  private static void registerDryFoliageBlocks() {
+    BlockColorRegistry.register(List.of(new BlockTintSource() {
+      @Override
+      public int color(BlockState state) {
+        return applySeasonTint(DEFAULT_DRY_FOLIAGE_COLOR);
+      }
+
+      @Override
+      public int colorInWorld(BlockState state, BlockAndTintGetter world, BlockPos pos) {
+        return applySeasonTint(BiomeColors.getAverageDryFoliageColor(world, pos));
+      }
+    }), Blocks.LEAF_LITTER);
+  }
+
   private static void registerFixedColorBlocks() {
     registerFixedColorBlock(Blocks.BIRCH_LEAVES, BIRCH_FOLIAGE_COLOR);
     registerFixedColorBlock(Blocks.SPRUCE_LEAVES, SPRUCE_FOLIAGE_COLOR);

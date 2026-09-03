@@ -260,6 +260,7 @@ public final class SeasonAtmosphere {
     cachedAggregateCellKey = Long.MIN_VALUE;
     cachedAggregate = null;
     BiomeAtmosphere.clearCache();
+    FogEasing.reset();
   }
 
   private static BiomeAggregate aggregateFor(LevelReader world, BlockPos pos) {
