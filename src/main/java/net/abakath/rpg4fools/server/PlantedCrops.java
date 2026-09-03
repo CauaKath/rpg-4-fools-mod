@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -44,7 +45,12 @@ public class PlantedCrops extends SavedData {
           Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "planted_crops"),
           PlantedCrops::new,
           CODEC,
-          null
+          // Not null. SavedDataStorage calls update on this without checking, so a null one throws
+          // the moment a saved file actually exists - which is every load after the first save.
+          // No vanilla type describes a mod's own data, so this is the one with the least to do:
+          // its schema is a bare long array, and the fixers only run at all when the stored data
+          // version is older than the current one.
+          DataFixTypes.SAVED_DATA_FORCED_CHUNKS
   );
 
   public static PlantedCrops get(ServerLevel world) {
