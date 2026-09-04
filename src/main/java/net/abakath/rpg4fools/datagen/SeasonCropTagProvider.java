@@ -26,6 +26,9 @@ import java.util.concurrent.CompletableFuture;
  * <p>One table drives both #rpg4fools:crops and the four grows_in_* tags, so a crop cannot end up
  * in one without the other. Adding a crop means one line here.
  *
+ * <p>The winter survivors come off the same table, so a crop cannot be flagged on the roster
+ * without being tagged here.
+ *
  * <p>Assignments follow the real growing calendar loosely: spring and autumn take the root
  * vegetables, summer takes the gourds, and winter takes nothing. An empty winter tag is
  * intentional, not an oversight.
@@ -49,6 +52,16 @@ public class SeasonCropTagProvider extends FabricTagsProvider.BlockTagsProvider 
     Map<Season, TagAppender<Block>> seasonBuilders = new EnumMap<>(Season.class);
     for (Season season : Season.values()) {
       seasonBuilders.put(season, builder(ModBlockTags.forSeason(season)));
+    }
+
+    // Built here for the same reason the season tags are: an empty file says nothing survives
+    // winter, a missing one says the tags did not load.
+    TagAppender<Block> survivesWinter = builder(ModBlockTags.SURVIVES_WINTER);
+
+    for (CropDefinition definition : ModCrops.ALL) {
+      if (definition.survivesWinter()) {
+        survivesWinter.add(ModBlocks.blockFor(definition).builtInRegistryHolder().key());
+      }
     }
 
     // TagAppender takes registry keys rather than blocks now, so each block is looked back up once

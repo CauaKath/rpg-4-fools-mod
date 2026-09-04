@@ -28,9 +28,27 @@ import java.util.Optional;
  * replaced itself would take that decision away. {@link net.abakath.rpg4fools.server.PlantedCrops}
  * is what tells the two apart.
  *
- * <p>Winter has nothing to sow, so everything browns over, tended or not.
+ * <p>Winter has nothing to sow, so everything browns over, tended or not - except the crops that
+ * survive it, which are left exactly as they stand. A field the world planted is among them, so a
+ * village kale bed comes through the winter rather than being torn up and sown again, which is the
+ * right answer for a crop whose whole point is standing in the cold.
  */
 public class CropTransition {
+  /**
+   * Whether a winter is leaving this crop standing.
+   *
+   * <p>Asked before {@link #apply}, not inside it. A frozen crop wants nothing done to it, and
+   * "nothing done" is exactly what apply returns when it declines a block - which would let the
+   * caller fall through to whatever it does next. For the random tick hook that next thing is the
+   * compost boost, so a garlic bed under warm compost would have ripened in January. A separate
+   * question lets the caller cancel the tick outright instead.
+   *
+   * <p>The season is checked first because it is a field read, and the tag lookup behind it is not.
+   */
+  public static boolean frozen(BlockState state, Season season) {
+    return season == Season.WINTER && CropSeasons.isCrop(state) && CropSeasons.survivesWinter(state);
+  }
+
   /** Whether {@link #apply} has anything to say about this block, which is what the sweep scans for. */
   public static boolean settles(BlockState state) {
     // Bare sticks are worth looking at even though nothing about them is a crop. A trellis in a
@@ -60,6 +78,13 @@ public class CropTransition {
     }
 
     if (!CropSeasons.isCrop(state)) {
+      return false;
+    }
+
+    // Standing through a winter is not the same as being in season: the plant does not grow, it is
+    // simply not killed. Every branch below is about what an ending season takes away, and this crop
+    // loses nothing, so it leaves before any of them.
+    if (frozen(state, season)) {
       return false;
     }
 

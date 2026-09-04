@@ -21,6 +21,10 @@ import java.util.Set;
  *     which is why nothing about it follows from anything else on the crop. A vine that sheets
  *     across a trellis, a plant that climbs a post and a stalk that holds itself up are three
  *     different pictures.
+ * @param survivesWinter whether this crop stands through winter instead of dying. Farmland only: a
+ *     bush already has its own way of sitting a winter out, swapping for a dormant block, and one
+ *     that claimed both would be asking two rules for two different answers. The compact
+ *     constructor refuses that pairing rather than letting it be discovered in game.
  */
 public record CropDefinition(
         String id,
@@ -30,8 +34,16 @@ public record CropDefinition(
         float saturation,
         boolean thorny,
         int regrowAge,
-        Support support
+        Support support,
+        boolean survivesWinter
 ) {
+  public CropDefinition {
+    if (survivesWinter && kind == Kind.BUSH) {
+      throw new IllegalArgumentException(
+              id + " is a bush and cannot also survive winter; bushes go dormant instead");
+    }
+  }
+
   /**
    * Whether picking this crop leaves the plant standing.
    *
