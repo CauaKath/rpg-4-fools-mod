@@ -1,5 +1,6 @@
 package net.abakath.rpg4fools.server;
 
+import net.abakath.rpg4fools.server.events.season.DayChangingHandler;
 import net.abakath.rpg4fools.RPG4Fools;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

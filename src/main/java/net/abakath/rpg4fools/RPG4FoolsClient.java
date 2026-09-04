@@ -1,10 +1,10 @@
 package net.abakath.rpg4fools;
 
 import net.abakath.rpg4fools.client.ClientModMessages;
-import net.abakath.rpg4fools.client.CropSeasonTooltip;
-import net.abakath.rpg4fools.client.SeasonAtmosphere;
-import net.abakath.rpg4fools.client.SeasonColorProviders;
-import net.abakath.rpg4fools.client.SeasonsHudOverlay;
+import net.abakath.rpg4fools.client.season.CropSeasonTooltip;
+import net.abakath.rpg4fools.client.atmosphere.SeasonAtmosphere;
+import net.abakath.rpg4fools.client.season.SeasonColorProviders;
+import net.abakath.rpg4fools.client.season.SeasonsHudOverlay;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;

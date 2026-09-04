@@ -1,7 +1,7 @@
 package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.RPG4Fools;
-import net.abakath.rpg4fools.world.SeasonalFarmCrops;
+import net.abakath.rpg4fools.world.season.SeasonalFarmCrops;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;

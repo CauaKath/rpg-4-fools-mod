@@ -1,7 +1,7 @@
 package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.enums.Season;
-import net.abakath.rpg4fools.world.CropDefinition;
+import net.abakath.rpg4fools.world.crop.CropDefinition;
 
 import java.util.EnumSet;
 import java.util.List;

@@ -1,0 +1,232 @@
+package net.abakath.rpg4fools.client.season;
+
+import net.abakath.rpg4fools.client.atmosphere.ColorMath;
+import net.abakath.rpg4fools.enums.SubSeason;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry;
+import net.minecraft.client.color.block.BlockTintSource;
+import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import java.util.List;
+
+/**
+ * Registers the season aware block and item tints.
+ *
+ * <p>Block tinting is purely a rendering concern, so this runs from the client entrypoint and is
+ * registered exactly once. Colour providers are looked up on every chunk rebuild, which is what
+ * makes the tint follow {@link ClientSeasonState} without any re-registration.
+ *
+ * <p>Blocks fall into two groups. Most grass and leaf blocks are biome tinted, so the season grade
+ * is applied on top of whatever {@link BiomeColors} returns. A few are not biome tinted in vanilla
+ * and instead carry a fixed colour, so the grade is applied to that constant instead.
+ */
+@Environment(EnvType.CLIENT)
+public final class SeasonColorProviders {
+  private static final int DEFAULT_GRASS_COLOR = 0x91BD59;
+  private static final int DEFAULT_FOLIAGE_COLOR = 0x48B518;
+  private static final int BIRCH_FOLIAGE_COLOR = 0x80A755;
+  private static final int SPRUCE_FOLIAGE_COLOR = 0x619961;
+  private static final int LILY_PAD_COLOR = 0x208030;
+
+  /** Vanilla's DryFoliageColor.FOLIAGE_DRY_DEFAULT, for leaf litter with no position to sample. */
+  private static final int DEFAULT_DRY_FOLIAGE_COLOR = 0x5C3C32;
+
+
+  /**
+   * Blocks vanilla tints from the biome grass colour.
+   *
+   * <p>Mirrors what BlockColors.createDefault hands the grass, grassBlock, doubleTallGrass and
+   * sugarCane sources, all of which read that one colour. Bush, pink petals and wildflowers were
+   * added to that set after 1.20.6.
+   */
+  private static final Block[] GRASS_BLOCKS = {
+          Blocks.GRASS_BLOCK,
+          Blocks.SHORT_GRASS,
+          Blocks.TALL_GRASS,
+          Blocks.FERN,
+          Blocks.LARGE_FERN,
+          Blocks.POTTED_FERN,
+          Blocks.SUGAR_CANE,
+          Blocks.BUSH,
+          Blocks.PINK_PETALS,
+          Blocks.WILDFLOWERS
+  };
+
+  /**
+   * Blocks vanilla tints from the biome foliage colour.
+   *
+   * <p>Still exactly the six vanilla hands its foliage source. Pale oak, cherry and azalea leaves
+   * are deliberately absent, because vanilla gives them no tint source at all.
+   */
+  private static final Block[] FOLIAGE_BLOCKS = {
+          Blocks.OAK_LEAVES,
+          Blocks.JUNGLE_LEAVES,
+          Blocks.ACACIA_LEAVES,
+          Blocks.DARK_OAK_LEAVES,
+          Blocks.MANGROVE_LEAVES,
+          Blocks.VINE
+  };
+
+  /**
+   * Chunk building runs on several worker threads, so the scratch buffer used by the colour
+   * conversion is per thread. This keeps the tint path free of allocations.
+   */
+  private static final ThreadLocal<float[]> HSB_SCRATCH = ThreadLocal.withInitial(() -> new float[3]);
+
+  /**
+   * The interpolated grade, held alongside the date it was worked out for.
+   *
+   * <p>The three factors depend only on the sub season and the progress through it, both of which
+   * move once per in game day, but they were being recomputed for every tinted quad. Holding them
+   * turns the per quad cost into a comparison.
+   */
+  private record Grade(SubSeason subSeason, float progress,
+                       float hueShift, float saturationFactor, float brightnessFactor) {
+  }
+
+  /**
+   * Written by whichever chunk build thread first notices the date has moved on. Racing threads
+   * compute the same value from the same inputs, so the worst case is duplicated arithmetic rather
+   * than a wrong colour.
+   */
+  private static volatile Grade grade = gradeFor(SubSeason.EARLY_SPRING, 0.0f);
+
+  private SeasonColorProviders() {
+  }
+
+  public static void register() {
+    registerBiomeTintedBlocks();
+    registerDryFoliageBlocks();
+    registerFixedColorBlocks();
+  }
+
+  /**
+   * A block's tints are a list of sources now, one per tint index, and these models only tint at
+   * index 0 - hence the single element. Each source answers twice: colorInWorld for a block in the
+   * world, and color for one with no position to sample, which is the inventory icon and the
+   * fallback the old provider handled with a null check.
+   */
+  private static void registerBiomeTintedBlocks() {
+    BlockColorRegistry.register(List.of(new BlockTintSource() {
+      @Override
+      public int color(BlockState state) {
+        return applySeasonTint(DEFAULT_GRASS_COLOR);
+      }
+
+      @Override
+      public int colorInWorld(BlockState state, BlockAndTintGetter world, BlockPos pos) {
+        return applySeasonTint(BiomeColors.getAverageGrassColor(world, pos));
+      }
+    }), GRASS_BLOCKS);
+
+    BlockColorRegistry.register(List.of(new BlockTintSource() {
+      @Override
+      public int color(BlockState state) {
+        return applySeasonTint(DEFAULT_FOLIAGE_COLOR);
+      }
+
+      @Override
+      public int colorInWorld(BlockState state, BlockAndTintGetter world, BlockPos pos) {
+        return applySeasonTint(BiomeColors.getAverageFoliageColor(world, pos));
+      }
+    }), FOLIAGE_BLOCKS);
+  }
+
+  /**
+   * Birch, spruce and lily pads are not biome tinted in vanilla. They use a constant, so the season
+   * grade is applied to that constant rather than to a biome lookup.
+   *
+   * <p>Cherry and azalea leaves are deliberately left out. Their models carry no tintindex, so a
+   * colour provider would never be consulted. Tinting them means shipping model overrides, which is
+   * left for a follow up. The same applies to flowers.
+   */
+  /**
+   * Leaf litter reads the dry foliage colour, a separate biome colour added after 1.20.6. Its own
+   * source rather than a foliage one, so a badlands keeps the brown vanilla intends and the season
+   * grade rides on top of that instead of on a green.
+   */
+  private static void registerDryFoliageBlocks() {
+    BlockColorRegistry.register(List.of(new BlockTintSource() {
+      @Override
+      public int color(BlockState state) {
+        return applySeasonTint(DEFAULT_DRY_FOLIAGE_COLOR);
+      }
+
+      @Override
+      public int colorInWorld(BlockState state, BlockAndTintGetter world, BlockPos pos) {
+        return applySeasonTint(BiomeColors.getAverageDryFoliageColor(world, pos));
+      }
+    }), Blocks.LEAF_LITTER);
+  }
+
+  private static void registerFixedColorBlocks() {
+    registerFixedColorBlock(Blocks.BIRCH_LEAVES, BIRCH_FOLIAGE_COLOR);
+    registerFixedColorBlock(Blocks.SPRUCE_LEAVES, SPRUCE_FOLIAGE_COLOR);
+    registerFixedColorBlock(Blocks.LILY_PAD, LILY_PAD_COLOR);
+  }
+
+  private static void registerFixedColorBlock(Block block, int baseColor) {
+    BlockColorRegistry.register(List.of((BlockTintSource) state -> applySeasonTint(baseColor)), block);
+  }
+
+  // Inventory icons no longer follow the season. Item tinting moved out of code entirely: a tint is
+  // an ItemTintSource named by an item model definition, so grading these would mean registering a
+  // custom source type and shipping model overrides for every vanilla item involved. That is a
+  // feature rather than a port step, so it is left for a follow up and the world is graded alone.
+
+  /**
+   * Grades a biome colour by the current season. The tint is interpolated between the current sub
+   * season and the next one across the month, so the year reads as a gradual shift rather than
+   * twelve hard steps.
+   */
+  private static int applySeasonTint(int rgb) {
+    Grade current = grade();
+
+    float[] hsb = HSB_SCRATCH.get();
+    ColorMath.rgbToHsb(rgb, hsb);
+
+    return ColorMath.opaque(ColorMath.hsbToRgb(
+            hsb[0] + current.hueShift(),
+            hsb[1] * current.saturationFactor(),
+            hsb[2] * current.brightnessFactor()
+    ));
+  }
+
+  /** The grade for the current date, recomputed only when the date has moved since the last call. */
+  private static Grade grade() {
+    SubSeason subSeason = ClientSeasonState.getSubSeason();
+    float progress = ClientSeasonState.getProgress();
+
+    Grade cached = grade;
+    if (cached.subSeason() == subSeason && cached.progress() == progress) {
+      return cached;
+    }
+
+    Grade fresh = gradeFor(subSeason, progress);
+    grade = fresh;
+
+    return fresh;
+  }
+
+  private static Grade gradeFor(SubSeason subSeason, float progress) {
+    SeasonTint current = SeasonTint.of(subSeason);
+    SeasonTint next = current.next();
+
+    return new Grade(
+            subSeason,
+            progress,
+            lerp(current.getHueShift(), next.getHueShift(), progress),
+            lerp(current.getSaturationFactor(), next.getSaturationFactor(), progress),
+            lerp(current.getBrightnessFactor(), next.getBrightnessFactor(), progress)
+    );
+  }
+
+  private static float lerp(float from, float to, float t) {
+    return from + (to - from) * t;
+  }
+}

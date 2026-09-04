@@ -1,16 +1,16 @@
 package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.RPG4Fools;
-import net.abakath.rpg4fools.world.CropDefinition;
-import net.abakath.rpg4fools.world.CropStickBlock;
-import net.abakath.rpg4fools.world.CropWallBlock;
-import net.abakath.rpg4fools.world.DeadCropBlock;
-import net.abakath.rpg4fools.world.DormantBerryBushBlock;
-import net.abakath.rpg4fools.world.ModBerryBushBlock;
-import net.abakath.rpg4fools.world.ModCropBlock;
-import net.abakath.rpg4fools.world.RegrowingCropBlock;
-import net.abakath.rpg4fools.world.StickedCropBlock;
-import net.abakath.rpg4fools.world.WalledCropBlock;
+import net.abakath.rpg4fools.world.crop.CropDefinition;
+import net.abakath.rpg4fools.world.trellis.CropStickBlock;
+import net.abakath.rpg4fools.world.trellis.CropWallBlock;
+import net.abakath.rpg4fools.world.crop.DeadCropBlock;
+import net.abakath.rpg4fools.world.bush.DormantBerryBushBlock;
+import net.abakath.rpg4fools.world.bush.ModBerryBushBlock;
+import net.abakath.rpg4fools.world.crop.ModCropBlock;
+import net.abakath.rpg4fools.world.crop.RegrowingCropBlock;
+import net.abakath.rpg4fools.world.crop.StickedCropBlock;
+import net.abakath.rpg4fools.world.crop.WalledCropBlock;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;

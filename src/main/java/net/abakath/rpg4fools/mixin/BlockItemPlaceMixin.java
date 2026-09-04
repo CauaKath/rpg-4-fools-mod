@@ -1,6 +1,6 @@
 package net.abakath.rpg4fools.mixin;
 
-import net.abakath.rpg4fools.server.events.CropOwnership;
+import net.abakath.rpg4fools.server.events.crop.CropOwnership;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;

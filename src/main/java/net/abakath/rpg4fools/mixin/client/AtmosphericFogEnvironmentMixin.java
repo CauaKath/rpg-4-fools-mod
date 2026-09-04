@@ -1,8 +1,8 @@
 package net.abakath.rpg4fools.mixin.client;
 
-import net.abakath.rpg4fools.client.FogEasing;
-import net.abakath.rpg4fools.client.ResolvedAtmosphere;
-import net.abakath.rpg4fools.client.SeasonAtmosphere;
+import net.abakath.rpg4fools.client.atmosphere.FogEasing;
+import net.abakath.rpg4fools.client.atmosphere.ResolvedAtmosphere;
+import net.abakath.rpg4fools.client.atmosphere.SeasonAtmosphere;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;

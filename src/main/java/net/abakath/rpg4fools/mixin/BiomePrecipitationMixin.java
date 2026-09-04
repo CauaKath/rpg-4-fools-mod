@@ -1,6 +1,6 @@
 package net.abakath.rpg4fools.mixin;
 
-import net.abakath.rpg4fools.world.SeasonSnow;
+import net.abakath.rpg4fools.world.season.SeasonSnow;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.biome.Biome;
 import org.spongepowered.asm.mixin.Mixin;

@@ -1,6 +1,6 @@
 package net.abakath.rpg4fools.mixin;
 
-import net.abakath.rpg4fools.world.Compost;
+import net.abakath.rpg4fools.world.compost.Compost;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FarmlandBlock;
 import net.minecraft.world.level.block.state.BlockState;

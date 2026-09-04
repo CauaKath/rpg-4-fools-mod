@@ -1,7 +1,7 @@
 package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.RPG4Fools;
-import net.abakath.rpg4fools.world.CropDefinition;
+import net.abakath.rpg4fools.world.crop.CropDefinition;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;

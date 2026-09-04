@@ -1,6 +1,6 @@
 package net.abakath.rpg4fools.mixin.client;
 
-import net.abakath.rpg4fools.client.SeasonAtmosphere;
+import net.abakath.rpg4fools.client.atmosphere.SeasonAtmosphere;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeProbe;

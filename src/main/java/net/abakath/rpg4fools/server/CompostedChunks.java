@@ -1,8 +1,9 @@
 package net.abakath.rpg4fools.server;
 
+import net.abakath.rpg4fools.world.compost.Compost;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.abakath.rpg4fools.enums.Season;
-import net.abakath.rpg4fools.world.CurrentSeason;
+import net.abakath.rpg4fools.world.season.CurrentSeason;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.abakath.rpg4fools.RPG4Fools;
