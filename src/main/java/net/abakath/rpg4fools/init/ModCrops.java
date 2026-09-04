@@ -51,6 +51,9 @@ public final class ModCrops {
   public static final CropDefinition KALE = new CropDefinition(
           "kale", CropDefinition.Kind.FARMLAND, seasons(Season.AUTUMN, Season.SPRING), 2, 0.4f, false, 4, Support.NONE, true);
 
+  public static final CropDefinition SPINACH = new CropDefinition(
+          "spinach", CropDefinition.Kind.FARMLAND, seasons(Season.SPRING, Season.AUTUMN), 1, 0.3f, false, 5, Support.NONE, false);
+
   public static final CropDefinition STRAWBERRY = new CropDefinition(
           "strawberry", CropDefinition.Kind.BUSH, seasons(Season.SPRING, Season.SUMMER), 2, 0.2f, false, 0, Support.NONE, false);
 
@@ -62,7 +65,7 @@ public final class ModCrops {
 
   /** Ordered, because the generated tag files follow this order and are committed. */
   public static final List<CropDefinition> ALL =
-          List.of(TOMATO, CUCUMBER, LETTUCE, CABBAGE, KALE, STRAWBERRY, BLACKBERRY, BLUEBERRY);
+          List.of(TOMATO, CUCUMBER, LETTUCE, CABBAGE, KALE, SPINACH, STRAWBERRY, BLACKBERRY, BLUEBERRY);
 
   private ModCrops() {
   }
