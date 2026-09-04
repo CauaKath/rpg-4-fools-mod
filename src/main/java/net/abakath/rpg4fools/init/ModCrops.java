@@ -27,34 +27,42 @@ import java.util.Set;
  * model per age - so what it really names is which art the crop has. Tomato climbs sticks; cucumber
  * spreads over a wall. Nothing about either follows from the other, or from anything else here.
  *
+ * <p>The last flag is winter. Nothing grows then, but kale stands through it: sown in autumn, frozen
+ * at whatever age it reached, growing again in spring. It is the only crop on the roster that a
+ * winter does not kill, and the flag exists rather than a special case because turnip and garlic
+ * want the same thing in the batches after this one.
+ *
  * <p>Only blackberry is thorny. A bush inherits the vanilla sweet berry bush's habit of hurting
  * whatever walks through it, which suits a bramble and does not suit a strawberry patch.
  */
 public final class ModCrops {
   public static final CropDefinition TOMATO = new CropDefinition(
-          "tomato", CropDefinition.Kind.FARMLAND, seasons(Season.SUMMER), 3, 0.3f, false, 4, Support.STICKED);
+          "tomato", CropDefinition.Kind.FARMLAND, seasons(Season.SUMMER), 3, 0.3f, false, 4, Support.STICKED, false);
 
   public static final CropDefinition CUCUMBER = new CropDefinition(
-          "cucumber", CropDefinition.Kind.FARMLAND, seasons(Season.SUMMER), 2, 0.2f, false, 4, Support.WALLED);
+          "cucumber", CropDefinition.Kind.FARMLAND, seasons(Season.SUMMER), 2, 0.2f, false, 4, Support.WALLED, false);
 
   public static final CropDefinition LETTUCE = new CropDefinition(
-          "lettuce", CropDefinition.Kind.FARMLAND, seasons(Season.SPRING, Season.AUTUMN), 2, 0.3f, false, 0, Support.NONE);
+          "lettuce", CropDefinition.Kind.FARMLAND, seasons(Season.SPRING, Season.AUTUMN), 2, 0.3f, false, 0, Support.NONE, false);
 
   public static final CropDefinition CABBAGE = new CropDefinition(
-          "cabbage", CropDefinition.Kind.FARMLAND, seasons(Season.SPRING, Season.AUTUMN), 4, 0.5f, false, 0, Support.NONE);
+          "cabbage", CropDefinition.Kind.FARMLAND, seasons(Season.SPRING, Season.AUTUMN), 4, 0.5f, false, 0, Support.NONE, false);
+
+  public static final CropDefinition KALE = new CropDefinition(
+          "kale", CropDefinition.Kind.FARMLAND, seasons(Season.AUTUMN, Season.SPRING), 2, 0.4f, false, 4, Support.NONE, true);
 
   public static final CropDefinition STRAWBERRY = new CropDefinition(
-          "strawberry", CropDefinition.Kind.BUSH, seasons(Season.SPRING, Season.SUMMER), 2, 0.2f, false, 0, Support.NONE);
+          "strawberry", CropDefinition.Kind.BUSH, seasons(Season.SPRING, Season.SUMMER), 2, 0.2f, false, 0, Support.NONE, false);
 
   public static final CropDefinition BLACKBERRY = new CropDefinition(
-          "blackberry", CropDefinition.Kind.BUSH, seasons(Season.SUMMER, Season.AUTUMN), 2, 0.1f, true, 0, Support.NONE);
+          "blackberry", CropDefinition.Kind.BUSH, seasons(Season.SUMMER, Season.AUTUMN), 2, 0.1f, true, 0, Support.NONE, false);
 
   public static final CropDefinition BLUEBERRY = new CropDefinition(
-          "blueberry", CropDefinition.Kind.BUSH, seasons(Season.SUMMER), 2, 0.2f, false, 0, Support.NONE);
+          "blueberry", CropDefinition.Kind.BUSH, seasons(Season.SUMMER), 2, 0.2f, false, 0, Support.NONE, false);
 
   /** Ordered, because the generated tag files follow this order and are committed. */
   public static final List<CropDefinition> ALL =
-          List.of(TOMATO, CUCUMBER, LETTUCE, CABBAGE, STRAWBERRY, BLACKBERRY, BLUEBERRY);
+          List.of(TOMATO, CUCUMBER, LETTUCE, CABBAGE, KALE, STRAWBERRY, BLACKBERRY, BLUEBERRY);
 
   private ModCrops() {
   }
