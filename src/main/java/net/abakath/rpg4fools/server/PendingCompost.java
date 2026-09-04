@@ -2,7 +2,7 @@ package net.abakath.rpg4fools.server;
 
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
-import net.abakath.rpg4fools.world.Compost;
+import net.abakath.rpg4fools.world.compost.Compost;
 import net.minecraft.core.BlockPos;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

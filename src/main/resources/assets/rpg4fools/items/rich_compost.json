@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "rpg4fools:item/rich_compost"
+    "model": "rpg4fools:item/compost/rich_compost"
   }
 }

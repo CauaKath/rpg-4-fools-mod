@@ -2,22 +2,22 @@ package net.abakath.rpg4fools.init;
 
 
 import net.abakath.rpg4fools.server.LoadedChunks;
-import net.abakath.rpg4fools.server.events.BarkStripping;
-import net.abakath.rpg4fools.server.events.CompostExpiry;
-import net.abakath.rpg4fools.server.events.CompostHandling;
-import net.abakath.rpg4fools.server.events.CompostSignals;
-import net.abakath.rpg4fools.server.events.CompostHarvest;
-import net.abakath.rpg4fools.server.events.CropAutoReplant;
-import net.abakath.rpg4fools.server.events.CropOwnership;
-import net.abakath.rpg4fools.server.events.CropSettling;
-import net.abakath.rpg4fools.server.events.CropStickHandling;
-import net.abakath.rpg4fools.server.events.CropTagValidator;
-import net.abakath.rpg4fools.server.events.CropWallHandling;
-import net.abakath.rpg4fools.server.events.DayChangingHandler;
-import net.abakath.rpg4fools.server.events.HoeAreaHarvest;
-import net.abakath.rpg4fools.server.events.ManureDropping;
-import net.abakath.rpg4fools.server.events.SeasonPlantingGate;
-import net.abakath.rpg4fools.server.events.SnowMeltHandler;
+import net.abakath.rpg4fools.server.events.compost.BarkStripping;
+import net.abakath.rpg4fools.server.events.compost.CompostExpiry;
+import net.abakath.rpg4fools.server.events.compost.CompostHandling;
+import net.abakath.rpg4fools.server.events.compost.CompostSignals;
+import net.abakath.rpg4fools.server.events.compost.CompostHarvest;
+import net.abakath.rpg4fools.server.events.crop.CropAutoReplant;
+import net.abakath.rpg4fools.server.events.crop.CropOwnership;
+import net.abakath.rpg4fools.server.events.crop.CropSettling;
+import net.abakath.rpg4fools.server.events.trellis.CropStickHandling;
+import net.abakath.rpg4fools.server.events.crop.CropTagValidator;
+import net.abakath.rpg4fools.server.events.trellis.CropWallHandling;
+import net.abakath.rpg4fools.server.events.season.DayChangingHandler;
+import net.abakath.rpg4fools.server.events.crop.HoeAreaHarvest;
+import net.abakath.rpg4fools.server.events.compost.ManureDropping;
+import net.abakath.rpg4fools.server.events.season.SeasonPlantingGate;
+import net.abakath.rpg4fools.server.events.season.SnowMeltHandler;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 public class ModEvents {

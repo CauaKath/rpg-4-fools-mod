@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "rpg4fools:item/mangrove_bark"
+    "model": "rpg4fools:item/compost/bark/mangrove_bark"
   }
 }

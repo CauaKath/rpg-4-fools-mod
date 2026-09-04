@@ -1,5 +1,6 @@
 package net.abakath.rpg4fools.init;
 
+import net.abakath.rpg4fools.server.events.crop.CropTagValidator;
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.enums.Season;
 import net.minecraft.core.registries.Registries;

@@ -1,43 +1,122 @@
 {
   "multipart": [
     {
-      "apply": {
-        "model": "rpg4fools:block/crop_wall_post"
-      }
+      "when": {
+        "OR": [
+          {
+            "north": "true"
+          },
+          {
+            "east": "true"
+          },
+          {
+            "south": "true"
+          },
+          {
+            "west": "true"
+          }
+        ]
+      },
+      "apply": [
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_post_a"
+        },
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_post_b"
+        },
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_post_c"
+        }
+      ]
+    },
+    {
+      "when": {
+        "north": "false",
+        "east": "false",
+        "south": "false",
+        "west": "false"
+      },
+      "apply": [
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_post_lone_a"
+        },
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_post_lone_b"
+        },
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_post_lone_c"
+        }
+      ]
     },
     {
       "when": {
         "north": "true"
       },
-      "apply": {
-        "model": "rpg4fools:block/crop_wall_side"
-      }
+      "apply": [
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_side_a"
+        },
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_side_b"
+        },
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_side_c"
+        }
+      ]
     },
     {
       "when": {
         "east": "true"
       },
-      "apply": {
-        "model": "rpg4fools:block/crop_wall_side",
-        "y": 90
-      }
+      "apply": [
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_side_a",
+          "y": 90
+        },
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_side_b",
+          "y": 90
+        },
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_side_c",
+          "y": 90
+        }
+      ]
     },
     {
       "when": {
         "south": "true"
       },
-      "apply": {
-        "model": "rpg4fools:block/crop_wall_side_alt"
-      }
+      "apply": [
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_side_alt_a"
+        },
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_side_alt_b"
+        },
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_side_alt_c"
+        }
+      ]
     },
     {
       "when": {
         "west": "true"
       },
-      "apply": {
-        "model": "rpg4fools:block/crop_wall_side_alt",
-        "y": 90
-      }
+      "apply": [
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_side_alt_a",
+          "y": 90
+        },
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_side_alt_b",
+          "y": 90
+        },
+        {
+          "model": "rpg4fools:block/trellis/crop_wall_side_alt_c",
+          "y": 90
+        }
+      ]
     },
     {
       "when": {
@@ -46,7 +125,7 @@
         "row": "0"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_wall_dead_center_row0"
+        "model": "rpg4fools:block/trellis/crop_wall_dead_center_row0"
       }
     },
     {
@@ -56,7 +135,7 @@
         "row": "0"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_wall_dead_side_row0"
+        "model": "rpg4fools:block/trellis/crop_wall_dead_side_row0"
       }
     },
     {
@@ -66,7 +145,7 @@
         "row": "0"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_wall_dead_side_row0",
+        "model": "rpg4fools:block/trellis/crop_wall_dead_side_row0",
         "y": 180
       }
     },
@@ -77,7 +156,7 @@
         "row": "1"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_wall_dead_center_row1"
+        "model": "rpg4fools:block/trellis/crop_wall_dead_center_row1"
       }
     },
     {
@@ -87,7 +166,7 @@
         "row": "1"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_wall_dead_side_row1"
+        "model": "rpg4fools:block/trellis/crop_wall_dead_side_row1"
       }
     },
     {
@@ -97,7 +176,7 @@
         "row": "1"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_wall_dead_side_row1",
+        "model": "rpg4fools:block/trellis/crop_wall_dead_side_row1",
         "y": 180
       }
     },
@@ -108,7 +187,7 @@
         "row": "2"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_wall_dead_center_row2"
+        "model": "rpg4fools:block/trellis/crop_wall_dead_center_row2"
       }
     },
     {
@@ -118,7 +197,7 @@
         "row": "2"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_wall_dead_side_row2"
+        "model": "rpg4fools:block/trellis/crop_wall_dead_side_row2"
       }
     },
     {
@@ -128,7 +207,7 @@
         "row": "2"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_wall_dead_side_row2",
+        "model": "rpg4fools:block/trellis/crop_wall_dead_side_row2",
         "y": 180
       }
     }

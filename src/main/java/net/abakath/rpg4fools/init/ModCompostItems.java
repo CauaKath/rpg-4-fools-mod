@@ -1,7 +1,8 @@
 package net.abakath.rpg4fools.init;
 
+import net.abakath.rpg4fools.world.crop.CropDefinition;
 import net.abakath.rpg4fools.RPG4Fools;
-import net.abakath.rpg4fools.world.Compost;
+import net.abakath.rpg4fools.world.compost.Compost;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -25,7 +26,7 @@ import java.util.Map;
  * knowing about the other.
  *
  * <p>Kept out of {@link ModItems}, which is the crop roster's own file and derives every item in it
- * from a {@link net.abakath.rpg4fools.world.CropDefinition}. Nothing here comes from a crop.
+ * from a {@link net.abakath.rpg4fools.world.crop.CropDefinition}. Nothing here comes from a crop.
  *
  * <p>The three catalysts are gathered three different ways on purpose - ash is burnt, bark is
  * stripped, manure is waited for - so the pipeline is not three trips to the same furnace.

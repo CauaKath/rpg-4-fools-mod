@@ -1,7 +1,10 @@
 package net.abakath.rpg4fools.init;
 
+import net.abakath.rpg4fools.server.events.trellis.CropStickHandling;
+import net.abakath.rpg4fools.server.events.trellis.CropWallHandling;
+import net.abakath.rpg4fools.world.crop.CropItems;
 import net.abakath.rpg4fools.RPG4Fools;
-import net.abakath.rpg4fools.world.CropDefinition;
+import net.abakath.rpg4fools.world.crop.CropDefinition;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -26,7 +29,7 @@ import java.util.function.Function;
  * player places, and what grows on them comes later.
  *
  * <p>Seeds and berries are AliasedBlockItem so they plant on use while reading as an item rather
- * than a block. That also means {@link net.abakath.rpg4fools.world.CropItems} resolves them through
+ * than a block. That also means {@link net.abakath.rpg4fools.world.crop.CropItems} resolves them through
  * its BlockItem branch with no entry of its own.
  */
 public final class ModItems {
@@ -37,7 +40,7 @@ public final class ModItems {
    * is ordinary block placement, and the block's own placement rules are what keep a column three
    * high and rooted. Only the two placements vanilla cannot express - a stick onto a crop already in
    * the ground, and a seed into a stick already standing - are handled elsewhere, in
-   * {@link net.abakath.rpg4fools.server.events.CropStickHandling}.
+   * {@link net.abakath.rpg4fools.server.events.trellis.CropStickHandling}.
    */
   public static final Item CROP_STICK = register("crop_stick", props -> new BlockItem(ModBlocks.CROP_STICK, props.useBlockDescriptionPrefix()));
 
@@ -47,7 +50,7 @@ public final class ModItems {
    * <p>A plain BlockItem like the stick, and with less for its block to check: a panel goes wherever
    * the player points it. The two placements vanilla cannot express - a panel onto a cucumber already
    * in the ground, and a seed into a panel already standing - are handled in
-   * {@link net.abakath.rpg4fools.server.events.CropWallHandling}.
+   * {@link net.abakath.rpg4fools.server.events.trellis.CropWallHandling}.
    */
   public static final Item CROP_WALL = register("crop_wall", props -> new BlockItem(ModBlocks.CROP_WALL, props.useBlockDescriptionPrefix()));
 

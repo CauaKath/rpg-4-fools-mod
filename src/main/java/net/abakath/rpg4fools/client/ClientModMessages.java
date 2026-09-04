@@ -1,5 +1,6 @@
 package net.abakath.rpg4fools.client;
 
+import net.abakath.rpg4fools.client.season.ClientSeasonState;
 import net.abakath.rpg4fools.network.packets.s2c.SeasonUpdatePacket;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "rpg4fools:block/dead_crop"
+      "model": "rpg4fools:block/crop/dead_crop"
     }
   }
 }

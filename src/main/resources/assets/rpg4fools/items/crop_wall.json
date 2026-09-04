@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "rpg4fools:item/crop_wall"
+    "model": "rpg4fools:item/trellis/crop_wall"
   }
 }

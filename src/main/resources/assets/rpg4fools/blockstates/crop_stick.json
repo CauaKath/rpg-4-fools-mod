@@ -5,7 +5,7 @@
         "capped": "false"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_stick_post"
+        "model": "rpg4fools:block/trellis/crop_stick_post"
       }
     },
     {
@@ -13,7 +13,7 @@
         "capped": "true"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_stick_post_capped"
+        "model": "rpg4fools:block/trellis/crop_stick_post_capped"
       }
     },
     {
@@ -22,7 +22,7 @@
         "part": "single"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_stick_dead_top"
+        "model": "rpg4fools:block/trellis/crop_stick_dead_top"
       }
     },
     {
@@ -31,7 +31,7 @@
         "part": "bottom"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_stick_dead"
+        "model": "rpg4fools:block/trellis/crop_stick_dead"
       }
     },
     {
@@ -40,7 +40,7 @@
         "part": "middle"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_stick_dead_middle"
+        "model": "rpg4fools:block/trellis/crop_stick_dead_middle"
       }
     },
     {
@@ -49,7 +49,7 @@
         "part": "top"
       },
       "apply": {
-        "model": "rpg4fools:block/crop_stick_dead_top"
+        "model": "rpg4fools:block/trellis/crop_stick_dead_top"
       }
     }
   ]

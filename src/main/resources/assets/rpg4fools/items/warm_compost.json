@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "rpg4fools:item/warm_compost"
+    "model": "rpg4fools:item/compost/warm_compost"
   }
 }
