@@ -3,20 +3,20 @@ package net.abakath.rpg4fools.world;
 import com.mojang.serialization.MapCodec;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModItems;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.SweetBerryBushBlock;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldView;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SweetBerryBushBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * A berry bush of this mod's own.
@@ -29,48 +29,48 @@ import net.minecraft.world.event.GameEvent;
  * collision behaviour entirely.
  */
 public class ModBerryBushBlock extends SweetBerryBushBlock {
-  public static final MapCodec<SweetBerryBushBlock> CODEC = createCodec(ModBerryBushBlock::new);
+  public static final MapCodec<SweetBerryBushBlock> CODEC = simpleCodec(ModBerryBushBlock::new);
 
-  public ModBerryBushBlock(Settings settings) {
+  public ModBerryBushBlock(Properties settings) {
     super(settings);
   }
 
   @Override
-  public MapCodec<SweetBerryBushBlock> getCodec() {
+  public MapCodec<SweetBerryBushBlock> codec() {
     return CODEC;
   }
 
   @Override
-  public ItemStack getPickStack(WorldView world, BlockPos pos, BlockState state) {
+  public ItemStack getCloneItemStack(LevelReader world, BlockPos pos, BlockState state) {
     return new ItemStack(ModItems.berryFor(this));
   }
 
   @Override
-  public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
+  public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity) {
     if (ModBlocks.isThorny(this)) {
-      super.onEntityCollision(state, world, pos, entity);
+      super.entityInside(state, world, pos, entity);
     }
   }
 
   @Override
-  public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-    int age = state.get(AGE);
+  public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+    int age = state.getValue(AGE);
 
     // Nothing worth picking yet. The parent handles bone meal and the empty click.
     if (age <= 1) {
-      return super.onUse(state, world, pos, player, hit);
+      return super.useWithoutItem(state, world, pos, player, hit);
     }
 
     int picked = 1 + world.random.nextInt(2) + (age == MAX_AGE ? 1 : 0);
-    dropStack(world, pos, new ItemStack(ModItems.berryFor(this), picked));
-    world.playSound(null, pos, SoundEvents.BLOCK_SWEET_BERRY_BUSH_PICK_BERRIES, SoundCategory.BLOCKS,
+    popResource(world, pos, new ItemStack(ModItems.berryFor(this), picked));
+    world.playSound(null, pos, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS,
             1.0F, 0.8F + world.random.nextFloat() * 0.4F);
 
     // Back to leafy rather than bare, the way vanilla leaves a picked bush.
-    BlockState picking = state.with(AGE, 1);
-    world.setBlockState(pos, picking, Block.NOTIFY_LISTENERS);
-    world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(player, picking));
+    BlockState picking = state.setValue(AGE, 1);
+    world.setBlock(pos, picking, Block.UPDATE_CLIENTS);
+    world.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, picking));
 
-    return ActionResult.success(world.isClient);
+    return InteractionResult.sidedSuccess(world.isClientSide);
   }
 }

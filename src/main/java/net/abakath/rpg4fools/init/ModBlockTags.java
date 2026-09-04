@@ -2,10 +2,10 @@ package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.enums.Season;
-import net.minecraft.block.Block;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
 
 /**
  * Block tags the mod defines.
@@ -41,6 +41,6 @@ public class ModBlockTags {
   }
 
   private static TagKey<Block> of(String name) {
-    return TagKey.of(RegistryKeys.BLOCK, new Identifier(RPG4Fools.MOD_ID, name));
+    return TagKey.create(Registries.BLOCK, new ResourceLocation(RPG4Fools.MOD_ID, name));
   }
 }

@@ -3,8 +3,7 @@ package net.abakath.rpg4fools.world;
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.enums.SubSeason;
 import net.abakath.rpg4fools.init.ModBlockTags;
-import net.minecraft.block.BlockState;
-
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.EnumSet;
 
 /**
@@ -25,7 +24,7 @@ import java.util.EnumSet;
 public class CropSeasons {
   /** Whether the mod considers this block a crop at all. */
   public static boolean isCrop(BlockState state) {
-    return state.isIn(ModBlockTags.CROPS);
+    return state.is(ModBlockTags.CROPS);
   }
 
   /**
@@ -37,7 +36,7 @@ public class CropSeasons {
     EnumSet<Season> seasons = EnumSet.noneOf(Season.class);
 
     for (Season season : Season.values()) {
-      if (state.isIn(ModBlockTags.forSeason(season))) {
+      if (state.is(ModBlockTags.forSeason(season))) {
         seasons.add(season);
       }
     }
@@ -46,7 +45,7 @@ public class CropSeasons {
   }
 
   public static boolean isInSeason(BlockState state, Season season) {
-    return state.isIn(ModBlockTags.forSeason(season)) || hasNoSeason(state);
+    return state.is(ModBlockTags.forSeason(season)) || hasNoSeason(state);
   }
 
   /** Sub-seasons carry no tags of their own; they resolve to their parent season. */
@@ -56,7 +55,7 @@ public class CropSeasons {
 
   private static boolean hasNoSeason(BlockState state) {
     for (Season season : Season.values()) {
-      if (state.isIn(ModBlockTags.forSeason(season))) {
+      if (state.is(ModBlockTags.forSeason(season))) {
         return false;
       }
     }

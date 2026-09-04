@@ -3,28 +3,28 @@ package net.abakath.rpg4fools.world;
 import com.mojang.serialization.MapCodec;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModItems;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.StateManager;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * One section of a crop climbing a trellis.
@@ -43,7 +43,7 @@ import net.minecraft.world.event.GameEvent;
  * column, so nothing above it can drift out of step.
  */
 public class StickedCropBlock extends RegrowingCropBlock {
-  public static final MapCodec<StickedCropBlock> CODEC = createCodec(StickedCropBlock::new);
+  public static final MapCodec<StickedCropBlock> CODEC = simpleCodec(StickedCropBlock::new);
 
   /**
    * One random tick in four climbs a section.
@@ -55,38 +55,38 @@ public class StickedCropBlock extends RegrowingCropBlock {
   private static final int CLIMB_CHANCE = 4;
 
   /** Matches the stick's box, since the plant is drawn around one. */
-  private static final VoxelShape SHAPE = Block.createCuboidShape(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
+  private static final VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
 
-  public StickedCropBlock(Settings settings) {
+  public StickedCropBlock(Properties settings) {
     super(settings);
-    setDefaultState(getDefaultState().with(CropSticks.PART, ColumnPart.SINGLE).with(CropSticks.CAPPED, false));
+    registerDefaultState(defaultBlockState().setValue(CropSticks.PART, ColumnPart.SINGLE).setValue(CropSticks.CAPPED, false));
   }
 
   @Override
-  public MapCodec<StickedCropBlock> getCodec() {
+  public MapCodec<StickedCropBlock> codec() {
     return CODEC;
   }
 
   @Override
-  protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-    super.appendProperties(builder);
+  protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    super.createBlockStateDefinition(builder);
     builder.add(CropSticks.PART, CropSticks.CAPPED);
   }
 
   @Override
-  public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+  public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
     return SHAPE;
   }
 
   /** Farmland for the bottom of a column, more column for everything above it. */
   @Override
-  protected boolean canPlantOnTop(BlockState floor, BlockView world, BlockPos pos) {
-    return floor.isOf(Blocks.FARMLAND) || CropSticks.isColumn(floor);
+  protected boolean mayPlaceOn(BlockState floor, BlockGetter world, BlockPos pos) {
+    return floor.is(Blocks.FARMLAND) || CropSticks.isColumn(floor);
   }
 
   @Override
-  public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-    return super.canPlaceAt(state, world, pos) && CropSticks.canStand(world, pos);
+  public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
+    return super.canSurvive(state, world, pos) && CropSticks.canStand(world, pos);
   }
 
   /**
@@ -97,15 +97,15 @@ public class StickedCropBlock extends RegrowingCropBlock {
    * fires neighbour updates on whatever is left, and each survivor asks the question again.
    */
   @Override
-  public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState,
-                                              WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-    BlockState updated = super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+  public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
+                                              LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+    BlockState updated = super.updateShape(state, direction, neighborState, world, pos, neighborPos);
 
     if (updated.isAir()) {
       return updated;
     }
 
-    return updated.with(CropSticks.PART, partAt(world, pos)).with(CropSticks.CAPPED, CropSticks.capped(world, pos));
+    return updated.setValue(CropSticks.PART, partAt(world, pos)).setValue(CropSticks.CAPPED, CropSticks.capped(world, pos));
   }
 
   /**
@@ -123,15 +123,15 @@ public class StickedCropBlock extends RegrowingCropBlock {
    * at the head of the tick and cancels the rest of it, so there is no season check to make here.
    */
   @Override
-  public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+  public void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
     // Asked of the world rather than read off the part, which is only ever a sprite. A section
     // loaded from a save written before the part existed would claim to be a whole plant, and three
     // of those in a column would grow at three different rates.
-    if (CropSticks.isSticked(world.getBlockState(pos.down()))) {
+    if (CropSticks.isSticked(world.getBlockState(pos.below()))) {
       return;
     }
 
-    if (world.getBaseLightLevel(pos, 0) < 9) {
+    if (world.getRawBrightness(pos, 0) < 9) {
       return;
     }
 
@@ -155,7 +155,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
     }
 
     // Height before fruit. While there is a stick above the plant, every roll goes into climbing it.
-    if (CropSticks.isEmpty(world.getBlockState(top.up()))) {
+    if (CropSticks.isEmpty(world.getBlockState(top.above()))) {
       if (random.nextInt(climbChance(world, pos)) == 0) {
         climb(world, top);
       }
@@ -183,8 +183,8 @@ public class StickedCropBlock extends RegrowingCropBlock {
    * <p>Read at the bottom of the column, which is the only section that ticks and the only one
    * standing on soil.
    */
-  private int climbChance(ServerWorld world, BlockPos pos) {
-    return Compost.at(world, pos.down()) == Compost.CREEPING ? CLIMB_CHANCE / 2 : CLIMB_CHANCE;
+  private int climbChance(ServerLevel world, BlockPos pos) {
+    return Compost.at(world, pos.below()) == Compost.CREEPING ? CLIMB_CHANCE / 2 : CLIMB_CHANCE;
   }
 
   /**
@@ -193,12 +193,12 @@ public class StickedCropBlock extends RegrowingCropBlock {
    * <p>Used for the two stages that are local to a section rather than shared: a plant that has not
    * reached the adult age yet, and a shoot filling in above one that has.
    */
-  private void grow(ServerWorld world, BlockPos pos, BlockState state, Random random) {
+  private void grow(ServerLevel world, BlockPos pos, BlockState state, RandomSource random) {
     if (!rolls(world, pos, random)) {
       return;
     }
 
-    world.setBlockState(pos, state.with(getAgeProperty(), getAge(state) + 1), Block.NOTIFY_LISTENERS);
+    world.setBlock(pos, state.setValue(getAgeProperty(), getAge(state) + 1), Block.UPDATE_CLIENTS);
   }
 
   /**
@@ -208,8 +208,8 @@ public class StickedCropBlock extends RegrowingCropBlock {
    * that is another stick. Measuring from the farmland the column is rooted in means the plant grows
    * at the rate its bed allows however tall it has become.
    */
-  private boolean rolls(ServerWorld world, BlockPos pos, Random random) {
-    float moisture = getAvailableMoisture(this, world, CropSticks.base(world, pos));
+  private boolean rolls(ServerLevel world, BlockPos pos, RandomSource random) {
+    float moisture = getGrowthSpeed(this, world, CropSticks.base(world, pos));
 
     return random.nextInt((int) (25.0F / moisture) + 1) == 0;
   }
@@ -226,7 +226,7 @@ public class StickedCropBlock extends RegrowingCropBlock {
    * climb, and a handful of meal should not carry it straight past the decision.
    */
   @Override
-  public void applyGrowth(World world, BlockPos pos, BlockState state) {
+  public void growCrops(Level world, BlockPos pos, BlockState state) {
     BlockPos base = CropSticks.plantBase(world, pos);
     BlockState root = world.getBlockState(base);
     int age = getAge(root);
@@ -244,18 +244,18 @@ public class StickedCropBlock extends RegrowingCropBlock {
       return;
     }
 
-    if (CropSticks.isEmpty(world.getBlockState(top.up()))) {
+    if (CropSticks.isEmpty(world.getBlockState(top.above()))) {
       climb(world, top);
       return;
     }
 
-    setPlantAge(world, base, Math.min(age + getGrowthAmount(world), getMaxAge()));
+    setPlantAge(world, base, Math.min(age + getBonemealAgeIncrease(world), getMaxAge()));
   }
 
-  private void feed(World world, BlockPos pos, BlockState state, int ceiling) {
-    int fed = Math.min(getAge(state) + getGrowthAmount(world), ceiling);
+  private void feed(Level world, BlockPos pos, BlockState state, int ceiling) {
+    int fed = Math.min(getAge(state) + getBonemealAgeIncrease(world), ceiling);
 
-    world.setBlockState(pos, state.with(getAgeProperty(), fed), Block.NOTIFY_LISTENERS);
+    world.setBlock(pos, state.setValue(getAgeProperty(), fed), Block.UPDATE_CLIENTS);
   }
 
   /**
@@ -269,14 +269,14 @@ public class StickedCropBlock extends RegrowingCropBlock {
    * it - and at that age it will climb again if the player has since added a stick.
    */
   @Override
-  public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+  public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
     // Nothing ripe to take. The parent handles bone meal and the empty click.
-    if (!isMature(state)) {
-      return super.onUse(state, world, pos, player, hit);
+    if (!isMaxAge(state)) {
+      return super.useWithoutItem(state, world, pos, player, hit);
     }
 
-    if (!(world instanceof ServerWorld serverWorld)) {
-      return ActionResult.SUCCESS;
+    if (!(world instanceof ServerLevel serverWorld)) {
+      return InteractionResult.SUCCESS;
     }
 
     BlockPos base = CropSticks.plantBase(serverWorld, pos);
@@ -287,15 +287,15 @@ public class StickedCropBlock extends RegrowingCropBlock {
       picked += 1 + serverWorld.random.nextInt(3);
     }
 
-    CropHarvest.drop(serverWorld, base, base.down(), new ItemStack(produce(), picked));
+    CropHarvest.drop(serverWorld, base, base.below(), new ItemStack(produce(), picked));
     setPlantAge(serverWorld, base, adultAge());
 
-    serverWorld.emitGameEvent(GameEvent.BLOCK_CHANGE, base,
-            GameEvent.Emitter.of(player, serverWorld.getBlockState(base)));
-    serverWorld.playSound(null, base, SoundEvents.BLOCK_CROP_BREAK, SoundCategory.BLOCKS,
+    serverWorld.gameEvent(GameEvent.BLOCK_CHANGE, base,
+            GameEvent.Context.of(player, serverWorld.getBlockState(base)));
+    serverWorld.playSound(null, base, SoundEvents.CROP_BREAK, SoundSource.BLOCKS,
             1.0F, 0.8F + serverWorld.random.nextFloat() * 0.4F);
 
-    return ActionResult.SUCCESS;
+    return InteractionResult.SUCCESS;
   }
 
   /**
@@ -305,35 +305,35 @@ public class StickedCropBlock extends RegrowingCropBlock {
    * grown was the thing that made a tall plant look assembled rather than grown, and starting from
    * nothing is also what pays for the height: the shoot has to fill in before anything ripens.
    */
-  private void climb(World world, BlockPos pos) {
-    BlockPos grown = pos.up();
+  private void climb(Level world, BlockPos pos) {
+    BlockPos grown = pos.above();
 
     // The part is set here as well as derived, so the new section is never drawn as a whole plant
     // for the tick before its neighbour update lands.
-    world.setBlockState(grown, getDefaultState()
-            .with(CropSticks.PART, ColumnPart.TOP)
-            .with(CropSticks.CAPPED, CropSticks.capped(world, grown)), Block.NOTIFY_ALL);
+    world.setBlock(grown, defaultBlockState()
+            .setValue(CropSticks.PART, ColumnPart.TOP)
+            .setValue(CropSticks.CAPPED, CropSticks.capped(world, grown)), Block.UPDATE_ALL);
   }
 
   /** Writes one age to every section, so the plant is never caught half ripe. */
-  private void setPlantAge(World world, BlockPos pos, int age) {
+  private void setPlantAge(Level world, BlockPos pos, int age) {
     BlockPos base = CropSticks.plantBase(world, pos);
 
     for (int section = 0; section < CropSticks.MAX_HEIGHT; section++) {
-      BlockPos at = base.up(section);
+      BlockPos at = base.above(section);
       BlockState state = world.getBlockState(at);
 
       if (!CropSticks.isSticked(state)) {
         return;
       }
 
-      world.setBlockState(at, state.with(getAgeProperty(), age), Block.NOTIFY_LISTENERS);
+      world.setBlock(at, state.setValue(getAgeProperty(), age), Block.UPDATE_CLIENTS);
     }
   }
 
-  private static ColumnPart partAt(BlockView world, BlockPos pos) {
-    boolean below = CropSticks.isSticked(world.getBlockState(pos.down()));
-    boolean above = CropSticks.isSticked(world.getBlockState(pos.up()));
+  private static ColumnPart partAt(BlockGetter world, BlockPos pos) {
+    boolean below = CropSticks.isSticked(world.getBlockState(pos.below()));
+    boolean above = CropSticks.isSticked(world.getBlockState(pos.above()));
 
     if (below && above) {
       return ColumnPart.MIDDLE;

@@ -1,7 +1,7 @@
 package net.abakath.rpg4fools.utils;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public interface IEntityDataSaver {
-  NbtCompound getPersistentData();
+  CompoundTag getPersistentData();
 }

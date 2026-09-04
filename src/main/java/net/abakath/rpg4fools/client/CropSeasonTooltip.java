@@ -6,14 +6,13 @@ import net.abakath.rpg4fools.world.CropSeasons;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +35,7 @@ public final class CropSeasonTooltip {
     ItemTooltipCallback.EVENT.register((stack, tooltipContext, tooltipType, lines) -> append(stack, lines));
   }
 
-  private static void append(ItemStack stack, List<Text> lines) {
+  private static void append(ItemStack stack, List<Component> lines) {
     Optional<BlockState> crop = CropItems.cropFor(stack);
 
     if (crop.isEmpty()) {
@@ -44,28 +43,28 @@ public final class CropSeasonTooltip {
     }
 
     if (!Screen.hasShiftDown()) {
-      lines.add(Text.translatable("tooltip.rpg4fools.hold_shift").formatted(Formatting.DARK_GRAY, Formatting.ITALIC));
+      lines.add(Component.translatable("tooltip.rpg4fools.hold_shift").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
       return;
     }
 
-    lines.add(Text.translatable("tooltip.rpg4fools.seasons", seasonList(crop.get())).formatted(Formatting.GRAY));
+    lines.add(Component.translatable("tooltip.rpg4fools.seasons", seasonList(crop.get())).withStyle(ChatFormatting.GRAY));
   }
 
-  private static MutableText seasonList(BlockState crop) {
+  private static MutableComponent seasonList(BlockState crop) {
     EnumSet<Season> seasons = CropSeasons.getSeasons(crop);
     Season current = currentSeason();
 
-    MutableText list = Text.empty();
+    MutableComponent list = Component.empty();
     boolean first = true;
 
     for (Season season : seasons) {
       if (!first) {
-        list.append(Text.literal(", ").formatted(Formatting.GRAY));
+        list.append(Component.literal(", ").withStyle(ChatFormatting.GRAY));
       }
 
-      MutableText name = Text.literal(season.getName()).formatted(season.getColor());
+      MutableComponent name = Component.literal(season.getName()).withStyle(season.getColor());
       if (season == current) {
-        name.formatted(Formatting.BOLD);
+        name.withStyle(ChatFormatting.BOLD);
       }
 
       list.append(name);
@@ -83,7 +82,7 @@ public final class CropSeasonTooltip {
    * so the world is checked rather than trusting the cached value on its own.
    */
   private static Season currentSeason() {
-    if (MinecraftClient.getInstance().world == null) {
+    if (Minecraft.getInstance().level == null) {
       return null;
     }
 

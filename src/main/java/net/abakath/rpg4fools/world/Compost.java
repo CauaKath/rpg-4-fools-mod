@@ -1,10 +1,10 @@
 package net.abakath.rpg4fools.world;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.util.StringIdentifiable;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.BlockView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 
 /**
  * What has been worked into a patch of farmland.
@@ -24,7 +24,7 @@ import net.minecraft.world.BlockView;
  * shovel
  * and start again - which is what makes the choice of kind a decision rather than a keystroke.
  */
-public enum Compost implements StringIdentifiable {
+public enum Compost implements StringRepresentable {
   NONE("none"),
   RICH("rich"),
   WARM("warm"),
@@ -36,7 +36,7 @@ public enum Compost implements StringIdentifiable {
    * <p>Farmland goes from 8 states to 32. Cheap, and the alternative - a side table keyed by
    * position - could not be drawn, which is the one thing composted soil has to be.
    */
-  public static final EnumProperty<Compost> PROPERTY = EnumProperty.of("compost", Compost.class);
+  public static final EnumProperty<Compost> PROPERTY = EnumProperty.create("compost", Compost.class);
 
   private final String name;
 
@@ -45,7 +45,7 @@ public enum Compost implements StringIdentifiable {
   }
 
   @Override
-  public String asString() {
+  public String getSerializedName() {
     return name;
   }
 
@@ -57,10 +57,10 @@ public enum Compost implements StringIdentifiable {
    * plant is not always soil.
    */
   public static Compost on(BlockState state) {
-    return state.contains(PROPERTY) ? state.get(PROPERTY) : NONE;
+    return state.hasProperty(PROPERTY) ? state.getValue(PROPERTY) : NONE;
   }
 
-  public static Compost at(BlockView world, BlockPos soil) {
+  public static Compost at(BlockGetter world, BlockPos soil) {
     return on(world.getBlockState(soil));
   }
 

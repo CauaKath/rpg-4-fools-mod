@@ -1,19 +1,19 @@
 package net.abakath.rpg4fools.world;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A trellis with nothing growing on it.
@@ -29,7 +29,7 @@ import net.minecraft.world.WorldView;
  * Which crop is on a stick is the block's identity rather than a property.
  */
 public class CropStickBlock extends Block {
-  public static final MapCodec<CropStickBlock> CODEC = createCodec(CropStickBlock::new);
+  public static final MapCodec<CropStickBlock> CODEC = simpleCodec(CropStickBlock::new);
 
   /**
    * The post.
@@ -38,24 +38,24 @@ public class CropStickBlock extends Block {
    * is exactly where the player aims to stack the next one. The capped shape follows its shorter
    * post: there is nothing to stack on it, so nothing is lost by being harder to click on top of.
    */
-  private static final VoxelShape SHAPE = Block.createCuboidShape(6.0, 0.0, 6.0, 10.0, 16.0, 10.0);
-  private static final VoxelShape CAPPED_SHAPE = Block.createCuboidShape(6.0, 0.0, 6.0, 10.0, 9.0, 10.0);
+  private static final VoxelShape SHAPE = Block.box(6.0, 0.0, 6.0, 10.0, 16.0, 10.0);
+  private static final VoxelShape CAPPED_SHAPE = Block.box(6.0, 0.0, 6.0, 10.0, 9.0, 10.0);
 
-  public CropStickBlock(Settings settings) {
+  public CropStickBlock(Properties settings) {
     super(settings);
-    setDefaultState(getDefaultState()
-            .with(CropSticks.CAPPED, false)
-            .with(CropSticks.PART, ColumnPart.SINGLE)
-            .with(CropSticks.DEAD, false));
+    registerDefaultState(defaultBlockState()
+            .setValue(CropSticks.CAPPED, false)
+            .setValue(CropSticks.PART, ColumnPart.SINGLE)
+            .setValue(CropSticks.DEAD, false));
   }
 
   @Override
-  protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+  protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
     builder.add(CropSticks.CAPPED, CropSticks.PART, CropSticks.DEAD);
   }
 
   @Override
-  public MapCodec<CropStickBlock> getCodec() {
+  public MapCodec<CropStickBlock> codec() {
     return CODEC;
   }
 
@@ -67,12 +67,12 @@ public class CropStickBlock extends Block {
    * it is to reason about. Anyone holding anything else gets the post they can see.
    */
   @Override
-  public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-    if (context.isHolding(asItem())) {
-      return VoxelShapes.fullCube();
+  public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+    if (context.isHoldingItem(asItem())) {
+      return Shapes.block();
     }
 
-    return state.get(CropSticks.CAPPED) ? CAPPED_SHAPE : SHAPE;
+    return state.getValue(CropSticks.CAPPED) ? CAPPED_SHAPE : SHAPE;
   }
 
   /**
@@ -83,12 +83,12 @@ public class CropStickBlock extends Block {
    * disturbed it.
    */
   @Override
-  public BlockState getPlacementState(ItemPlacementContext context) {
-    return CropSticks.stick(context.getWorld(), context.getBlockPos(), false);
+  public BlockState getStateForPlacement(BlockPlaceContext context) {
+    return CropSticks.stick(context.getLevel(), context.getClickedPos(), false);
   }
 
   @Override
-  public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
+  public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
     return CropSticks.canStand(world, pos);
   }
 
@@ -101,14 +101,14 @@ public class CropStickBlock extends Block {
    * above it comes down in turn, each dropping its own stick and whatever was growing on it.
    */
   @Override
-  public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState,
-                                              WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-    if (!state.canPlaceAt(world, pos)) {
-      return Blocks.AIR.getDefaultState();
+  public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
+                                              LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+    if (!state.canSurvive(world, pos)) {
+      return Blocks.AIR.defaultBlockState();
     }
 
-    return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos)
-            .with(CropSticks.CAPPED, CropSticks.capped(world, pos))
-            .with(CropSticks.PART, CropSticks.partAt(world, pos));
+    return super.updateShape(state, direction, neighborState, world, pos, neighborPos)
+            .setValue(CropSticks.CAPPED, CropSticks.capped(world, pos))
+            .setValue(CropSticks.PART, CropSticks.partAt(world, pos));
   }
 }

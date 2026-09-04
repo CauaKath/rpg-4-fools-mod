@@ -3,17 +3,16 @@ package net.abakath.rpg4fools.world;
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.init.ModBlockTags;
 import net.abakath.rpg4fools.init.ModBlocks;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CropBlock;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -92,29 +91,29 @@ public final class Resowing {
       return Optional.empty();
     }
 
-    Random patch = Random.create(MathHelper.hashCode(
+    RandomSource patch = RandomSource.create(Mth.getSeed(
             Math.floorDiv(pos.getX(), PATCH), season.ordinal(), Math.floorDiv(pos.getZ(), PATCH)));
 
     Block crop = pool.get(patch.nextInt(pool.size()));
     CropDefinition definition = ModBlocks.definitionFor(crop);
 
     if (definition == null || !definition.sticked()) {
-      return Optional.of(new Sowing(crop.getDefaultState(), 0));
+      return Optional.of(new Sowing(crop.defaultBlockState(), 0));
     }
 
     // Seeded from the block rather than the patch, so trellises are scattered through a lane instead
     // of claiming all of one. Still position alone, so the sweep and the chunk scan cannot disagree
     // about a field one of them has already been over.
-    Random plant = Random.create(MathHelper.hashCode(pos.getX(), pos.getY() + season.ordinal(), pos.getZ()));
+    RandomSource plant = RandomSource.create(Mth.getSeed(pos.getX(), pos.getY() + season.ordinal(), pos.getZ()));
 
     if (plant.nextInt(TRELLIS_CHANCE) != 0) {
-      return Optional.of(new Sowing(crop.getDefaultState(), 0));
+      return Optional.of(new Sowing(crop.defaultBlockState(), 0));
     }
 
-    return Optional.of(new Sowing(ModBlocks.stickedFor(definition).getDefaultState(), sticks(plant)));
+    return Optional.of(new Sowing(ModBlocks.stickedFor(definition).defaultBlockState(), sticks(plant)));
   }
 
-  private static int sticks(Random random) {
+  private static int sticks(RandomSource random) {
     int roll = random.nextInt(10);
 
     if (roll < TWO_STICKS_ABOVE) {
@@ -142,15 +141,15 @@ public final class Resowing {
    */
   private static List<Block> inSeason(Season season) {
     List<Block> crops = new ArrayList<>();
-    Optional<RegistryEntryList.Named<Block>> tagged = Registries.BLOCK.getEntryList(ModBlockTags.CROPS);
+    Optional<HolderSet.Named<Block>> tagged = BuiltInRegistries.BLOCK.getTag(ModBlockTags.CROPS);
 
     if (tagged.isEmpty()) {
       return crops;
     }
 
-    for (RegistryEntry<Block> entry : tagged.get()) {
+    for (Holder<Block> entry : tagged.get()) {
       Block block = entry.value();
-      BlockState state = block.getDefaultState();
+      BlockState state = block.defaultBlockState();
 
       if (block instanceof CropBlock && !(block instanceof StickedCropBlock)
               && !(block instanceof WalledCropBlock)

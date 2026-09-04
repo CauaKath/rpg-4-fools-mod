@@ -7,24 +7,23 @@ import net.abakath.rpg4fools.world.RegrowingCropBlock;
 import net.abakath.rpg4fools.world.StickedCropBlock;
 import net.abakath.rpg4fools.world.WalledCropBlock;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.CropBlock;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.HoeItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ToolMaterial;
-import net.minecraft.item.ToolMaterials;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.HoeItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.Tiers;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -62,27 +61,27 @@ public final class HoeAreaHarvest {
    * it to predict. Passing on the client lets vanilla send the use packet, and the server copy of
    * this handler answers it.
    */
-  private static ActionResult onUseBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
-    if (!(world instanceof ServerWorld serverWorld)) {
-      return ActionResult.PASS;
+  private static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hit) {
+    if (!(world instanceof ServerLevel serverWorld)) {
+      return InteractionResult.PASS;
     }
 
     // Sneaking means the player wants the vanilla interaction, the same bargain the auto replant
     // keeps. A wider harvest is a bigger accident to have, not a smaller one.
-    if (player.isSneaking()) {
-      return ActionResult.PASS;
+    if (player.isShiftKeyDown()) {
+      return InteractionResult.PASS;
     }
 
-    ItemStack tool = player.getStackInHand(hand);
+    ItemStack tool = player.getItemInHand(hand);
 
     if (!(tool.getItem() instanceof HoeItem hoe)) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     int radius = reachOf(hoe);
 
     if (radius == 0) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     BlockPos clicked = hit.getBlockPos();
@@ -90,14 +89,14 @@ public final class HoeAreaHarvest {
     // Nothing ripe under the cursor is not a harvest that happened to hit air; it is a click that
     // meant something else, and the crops around it are not the player's target.
     if (!harvestable(serverWorld.getBlockState(clicked))) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     if (sweep(serverWorld, player, hand, clicked, radius)) {
-      tool.damage(1, player, LivingEntity.getSlotForHand(hand));
+      tool.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
     }
 
-    return ActionResult.SUCCESS;
+    return InteractionResult.SUCCESS;
   }
 
   /**
@@ -113,25 +112,25 @@ public final class HoeAreaHarvest {
    * bottom, and the tiers above are still what decide the vanilla ones.
    */
   private static int reachOf(HoeItem hoe) {
-    ToolMaterial material = hoe.getMaterial();
+    Tier material = hoe.getTier();
 
-    if (material == ToolMaterials.WOOD || material == ToolMaterials.STONE) {
+    if (material == Tiers.WOOD || material == Tiers.STONE) {
       return 0;
     }
 
-    if (material == ToolMaterials.IRON || material == ToolMaterials.GOLD) {
+    if (material == Tiers.IRON || material == Tiers.GOLD) {
       return 1;
     }
 
-    if (material == ToolMaterials.DIAMOND) {
+    if (material == Tiers.DIAMOND) {
       return 2;
     }
 
-    if (material == ToolMaterials.NETHERITE) {
+    if (material == Tiers.NETHERITE) {
       return 3;
     }
 
-    return byDurability(material.getDurability());
+    return byDurability(material.getUses());
   }
 
   private static int byDurability(int durability) {
@@ -158,18 +157,18 @@ public final class HoeAreaHarvest {
    * plant. Remembering the roots already taken is what keeps one plant worth one harvest however
    * much of it the square happens to cover.
    */
-  private static boolean sweep(ServerWorld world, PlayerEntity player, Hand hand, BlockPos centre, int radius) {
+  private static boolean sweep(ServerLevel world, Player player, InteractionHand hand, BlockPos centre, int radius) {
     Set<BlockPos> taken = new HashSet<>();
     boolean harvested = false;
 
-    for (BlockPos pos : BlockPos.iterate(centre.add(-radius, 0, -radius), centre.add(radius, 0, radius))) {
-      harvested |= harvest(world, player, hand, pos.toImmutable(), taken);
+    for (BlockPos pos : BlockPos.betweenClosed(centre.offset(-radius, 0, -radius), centre.offset(radius, 0, radius))) {
+      harvested |= harvest(world, player, hand, pos.immutable(), taken);
     }
 
     return harvested;
   }
 
-  private static boolean harvest(ServerWorld world, PlayerEntity player, Hand hand, BlockPos pos,
+  private static boolean harvest(ServerLevel world, Player player, InteractionHand hand, BlockPos pos,
                                  Set<BlockPos> taken) {
     BlockState state = world.getBlockState(pos);
 
@@ -185,7 +184,7 @@ public final class HoeAreaHarvest {
         return false;
       }
 
-      return regrowing.onUse(state, world, pos, player, at(pos)) == ActionResult.SUCCESS;
+      return regrowing.useWithoutItem(state, world, pos, player, at(pos)) == InteractionResult.SUCCESS;
     }
 
     CropAutoReplant.harvest(world, player, hand, pos, state, (CropBlock) state.getBlock());
@@ -196,7 +195,7 @@ public final class HoeAreaHarvest {
   /** Ripe, and a crop this mod harvests by hand. The same two questions the auto replant asks. */
   private static boolean harvestable(BlockState state) {
     return state.getBlock() instanceof CropBlock crop
-            && crop.isMature(state)
+            && crop.isMaxAge(state)
             && CropSeasons.isCrop(state);
   }
 
@@ -205,7 +204,7 @@ public final class HoeAreaHarvest {
    *
    * <p>Everything else is one block, one plant, and stands for itself.
    */
-  private static BlockPos plantOf(BlockView world, BlockState state, BlockPos pos) {
+  private static BlockPos plantOf(BlockGetter world, BlockState state, BlockPos pos) {
     if (state.getBlock() instanceof WalledCropBlock) {
       return CropWalls.root(state, pos);
     }
@@ -225,6 +224,6 @@ public final class HoeAreaHarvest {
    * the wrong block, which is the worse of the two lies.
    */
   private static BlockHitResult at(BlockPos pos) {
-    return new BlockHitResult(Vec3d.ofCenter(pos), Direction.UP, pos, false);
+    return new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
   }
 }

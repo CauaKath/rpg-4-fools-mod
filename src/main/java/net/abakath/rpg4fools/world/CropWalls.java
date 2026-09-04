@@ -1,15 +1,14 @@
 package net.abakath.rpg4fools.world;
 
 import net.abakath.rpg4fools.init.ModBlocks;
-import net.minecraft.block.BlockState;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.BlockView;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -47,7 +46,7 @@ public final class CropWalls {
    * it a season simply deleted the plant, and a wall that had been covered one day was spotless the
    * next.
    */
-  public static final BooleanProperty DEAD = BooleanProperty.of("dead");
+  public static final BooleanProperty DEAD = BooleanProperty.create("dead");
 
   /**
    * Which way the plant spreads.
@@ -60,7 +59,7 @@ public final class CropWalls {
    * <p>Nothing about the sprite depends on it. A cell is drawn as a crop cross, which looks the same
    * from every side, so this decides only where the plant may spread - and the blockstate never asks.
    */
-  public static final EnumProperty<Direction.Axis> AXIS = Properties.HORIZONTAL_AXIS;
+  public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.HORIZONTAL_AXIS;
 
   /**
    * Which column of the box a cell sits in. See {@link WallArm}.
@@ -70,10 +69,10 @@ public final class CropWalls {
    * {@link #DEAD}, in the same way {@link CropSticks#PART} is only worth reading on a stick that has
    * something on it.
    */
-  public static final EnumProperty<WallArm> ARM = EnumProperty.of("arm", WallArm.class);
+  public static final EnumProperty<WallArm> ARM = EnumProperty.create("arm", WallArm.class);
 
   /** How many blocks above the root a cell sits. Zero for the root's own row. Carried by both, as {@link #ARM} is. */
-  public static final IntProperty ROW = IntProperty.of("row", 0, ROWS - 1);
+  public static final IntegerProperty ROW = IntegerProperty.create("row", 0, ROWS - 1);
 
   /** The pane joins, one per horizontal direction, exactly as vanilla panes carry them. */
   private static final Map<Direction, BooleanProperty> SIDES = sides();
@@ -83,7 +82,7 @@ public final class CropWalls {
 
   /** A panel with nothing growing on it. */
   public static boolean isWall(BlockState state) {
-    return state.isOf(ModBlocks.CROP_WALL);
+    return state.is(ModBlocks.CROP_WALL);
   }
 
   /** One cell of a plant spread over a wall. */
@@ -112,8 +111,8 @@ public final class CropWalls {
    * panel a plant leaves behind, which arrives the same way: written straight into a cell, with
    * nothing having told it who its neighbours are.
    */
-  public static BlockState wall(BlockView world, BlockPos pos, boolean dead) {
-    return joins(world, pos, ModBlocks.CROP_WALL.getDefaultState().with(DEAD, dead));
+  public static BlockState wall(BlockGetter world, BlockPos pos, boolean dead) {
+    return joins(world, pos, ModBlocks.CROP_WALL.defaultBlockState().setValue(DEAD, dead));
   }
 
   /**
@@ -123,19 +122,19 @@ public final class CropWalls {
    * its cells sit, so dead growth that forgot its arm and row would be the same sprite nine times
    * over and would read as nothing that ever grew.
    */
-  public static BlockState dead(BlockView world, BlockPos pos, BlockState cell) {
-    return joins(world, pos, ModBlocks.CROP_WALL.getDefaultState()
-            .with(DEAD, true)
-            .with(ARM, cell.get(ARM))
-            .with(ROW, cell.get(ROW)));
+  public static BlockState dead(BlockGetter world, BlockPos pos, BlockState cell) {
+    return joins(world, pos, ModBlocks.CROP_WALL.defaultBlockState()
+            .setValue(DEAD, true)
+            .setValue(ARM, cell.getValue(ARM))
+            .setValue(ROW, cell.getValue(ROW)));
   }
 
   /** The same panel state with its four joins brought into line with what is actually around it. */
-  public static BlockState joins(BlockView world, BlockPos pos, BlockState wall) {
+  public static BlockState joins(BlockGetter world, BlockPos pos, BlockState wall) {
     BlockState joined = wall;
 
     for (Direction direction : SIDES.keySet()) {
-      joined = joined.with(SIDES.get(direction), joins(world, pos, direction));
+      joined = joined.setValue(SIDES.get(direction), joins(world, pos, direction));
     }
 
     return joined;
@@ -151,11 +150,11 @@ public final class CropWalls {
    * <p>Asked by both blocks. A panel and a panel with a vine on it are the same piece of wall and have
    * to reach the same answer, or the timber would change shape as a plant grew over it.
    */
-  public static boolean joins(BlockView world, BlockPos pos, Direction direction) {
-    BlockPos neighbour = pos.offset(direction);
+  public static boolean joins(BlockGetter world, BlockPos pos, Direction direction) {
+    BlockPos neighbour = pos.relative(direction);
     BlockState state = world.getBlockState(neighbour);
 
-    return isPanel(state) || state.isSideSolidFullSquare(world, neighbour, direction.getOpposite());
+    return isPanel(state) || state.isFaceSturdy(world, neighbour, direction.getOpposite());
   }
 
   /**
@@ -169,16 +168,16 @@ public final class CropWalls {
    * <p>A junction, a corner and a lone panel are all genuinely ambiguous, and take the fallback: the
    * wall the player was facing when they sowed it.
    */
-  public static Direction.Axis axisAt(BlockView world, BlockPos pos, Direction.Axis fallback) {
+  public static Direction.Axis axisAt(BlockGetter world, BlockPos pos, Direction.Axis fallback) {
     BlockState state = world.getBlockState(pos);
 
     if (isCrop(state)) {
-      return state.get(AXIS);
+      return state.getValue(AXIS);
     }
 
     if (isWall(state)) {
-      return decide(state.get(SIDES.get(Direction.EAST)) || state.get(SIDES.get(Direction.WEST)),
-              state.get(SIDES.get(Direction.NORTH)) || state.get(SIDES.get(Direction.SOUTH)), fallback);
+      return decide(state.getValue(SIDES.get(Direction.EAST)) || state.getValue(SIDES.get(Direction.WEST)),
+              state.getValue(SIDES.get(Direction.NORTH)) || state.getValue(SIDES.get(Direction.SOUTH)), fallback);
     }
 
     return decide(isPanel(world.getBlockState(pos.east())) || isPanel(world.getBlockState(pos.west())),
@@ -196,7 +195,7 @@ public final class CropWalls {
 
   /** Whether this cell is the one the seed went into, which is the cell the plant is measured from. */
   public static boolean isRoot(BlockState state) {
-    return isCrop(state) && state.get(ARM) == WallArm.CENTER && state.get(ROW) == 0;
+    return isCrop(state) && state.getValue(ARM) == WallArm.CENTER && state.getValue(ROW) == 0;
   }
 
   /**
@@ -207,12 +206,12 @@ public final class CropWalls {
    * mistaken for one.
    */
   public static BlockPos root(BlockState state, BlockPos pos) {
-    return pos.offset(positive(state.get(AXIS)), -state.get(ARM).offset()).down(state.get(ROW));
+    return pos.relative(positive(state.getValue(AXIS)), -state.getValue(ARM).offset()).below(state.getValue(ROW));
   }
 
   /** Where a given cell of the box sits in the world. */
   public static BlockPos cell(BlockPos root, Direction.Axis axis, WallArm arm, int row) {
-    return root.offset(positive(axis), arm.offset()).up(row);
+    return root.relative(positive(axis), arm.offset()).above(row);
   }
 
   /**
@@ -222,8 +221,8 @@ public final class CropWalls {
    * spot it is standing in. Anything else in the box is somebody else's - a second plant that grew
    * this far, most likely - and is not the plant's to ripen, pick or kill.
    */
-  public static List<BlockPos> cells(BlockView world, BlockPos root, BlockState rootState) {
-    Direction.Axis axis = rootState.get(AXIS);
+  public static List<BlockPos> cells(BlockGetter world, BlockPos root, BlockState rootState) {
+    Direction.Axis axis = rootState.getValue(AXIS);
     List<BlockPos> cells = new ArrayList<>();
 
     for (int row = 0; row < ROWS; row++) {
@@ -247,8 +246,8 @@ public final class CropWalls {
    * are left out for that reason: a plant that could cross a corner would reach a cell it has no
    * visible connection to.
    */
-  public static List<BlockPos> spreadable(BlockView world, BlockPos root, BlockState rootState) {
-    Direction.Axis axis = rootState.get(AXIS);
+  public static List<BlockPos> spreadable(BlockGetter world, BlockPos root, BlockState rootState) {
+    Direction.Axis axis = rootState.getValue(AXIS);
     List<BlockPos> open = new ArrayList<>();
 
     for (int row = 0; row < ROWS; row++) {
@@ -270,7 +269,7 @@ public final class CropWalls {
   }
 
   /** Whether any cell of the plant is directly beside this spot in the box. */
-  private static boolean reaches(BlockView world, BlockPos root, BlockState rootState,
+  private static boolean reaches(BlockGetter world, BlockPos root, BlockState rootState,
                                  Direction.Axis axis, int offset, int row) {
     return occupied(world, root, rootState, axis, offset - 1, row)
             || occupied(world, root, rootState, axis, offset + 1, row)
@@ -278,7 +277,7 @@ public final class CropWalls {
             || occupied(world, root, rootState, axis, offset, row + 1);
   }
 
-  private static boolean occupied(BlockView world, BlockPos root, BlockState rootState,
+  private static boolean occupied(BlockGetter world, BlockPos root, BlockState rootState,
                                   Direction.Axis axis, int offset, int row) {
     if (offset < -REACH || offset > REACH || row < 0 || row >= ROWS) {
       return false;
@@ -290,27 +289,27 @@ public final class CropWalls {
   }
 
   /** Whether this position holds the cell of this plant that belongs at this address. */
-  private static boolean holds(BlockView world, BlockPos pos, BlockState rootState, WallArm arm, int row) {
+  private static boolean holds(BlockGetter world, BlockPos pos, BlockState rootState, WallArm arm, int row) {
     BlockState state = world.getBlockState(pos);
 
-    return state.isOf(rootState.getBlock())
-            && state.get(AXIS) == rootState.get(AXIS)
-            && state.get(ARM) == arm
-            && state.get(ROW) == row;
+    return state.is(rootState.getBlock())
+            && state.getValue(AXIS) == rootState.getValue(AXIS)
+            && state.getValue(ARM) == arm
+            && state.getValue(ROW) == row;
   }
 
   /** The direction an arm offset counts along, which is the axis' positive one. */
   public static Direction positive(Direction.Axis axis) {
-    return Direction.from(axis, Direction.AxisDirection.POSITIVE);
+    return Direction.fromAxisAndDirection(axis, Direction.AxisDirection.POSITIVE);
   }
 
   private static Map<Direction, BooleanProperty> sides() {
     Map<Direction, BooleanProperty> sides = new EnumMap<>(Direction.class);
 
-    sides.put(Direction.NORTH, Properties.NORTH);
-    sides.put(Direction.EAST, Properties.EAST);
-    sides.put(Direction.SOUTH, Properties.SOUTH);
-    sides.put(Direction.WEST, Properties.WEST);
+    sides.put(Direction.NORTH, BlockStateProperties.NORTH);
+    sides.put(Direction.EAST, BlockStateProperties.EAST);
+    sides.put(Direction.SOUTH, BlockStateProperties.SOUTH);
+    sides.put(Direction.WEST, BlockStateProperties.WEST);
 
     return sides;
   }

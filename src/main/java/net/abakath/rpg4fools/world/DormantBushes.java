@@ -2,9 +2,8 @@ package net.abakath.rpg4fools.world;
 
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModCrops;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import java.util.HashMap;
 import java.util.Map;
 

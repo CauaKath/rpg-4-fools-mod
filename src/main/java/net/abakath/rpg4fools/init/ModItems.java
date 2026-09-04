@@ -2,16 +2,15 @@ package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.world.CropDefinition;
-import net.minecraft.block.Block;
-import net.minecraft.component.type.FoodComponent;
-import net.minecraft.item.AliasedBlockItem;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemNameBlockItem;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -38,7 +37,7 @@ public final class ModItems {
    * the ground, and a seed into a stick already standing - are handled elsewhere, in
    * {@link net.abakath.rpg4fools.server.events.CropStickHandling}.
    */
-  public static final Item CROP_STICK = register("crop_stick", new BlockItem(ModBlocks.CROP_STICK, new Item.Settings()));
+  public static final Item CROP_STICK = register("crop_stick", new BlockItem(ModBlocks.CROP_STICK, new Item.Properties()));
 
   /**
    * The wall panel, as a thing to carry.
@@ -48,7 +47,7 @@ public final class ModItems {
    * in the ground, and a seed into a panel already standing - are handled in
    * {@link net.abakath.rpg4fools.server.events.CropWallHandling}.
    */
-  public static final Item CROP_WALL = register("crop_wall", new BlockItem(ModBlocks.CROP_WALL, new Item.Settings()));
+  public static final Item CROP_WALL = register("crop_wall", new BlockItem(ModBlocks.CROP_WALL, new Item.Properties()));
 
   private static final Map<CropDefinition, Item> SEEDS = new LinkedHashMap<>();
   private static final Map<CropDefinition, Item> PRODUCE = new LinkedHashMap<>();
@@ -58,13 +57,13 @@ public final class ModItems {
       Block block = ModBlocks.blockFor(definition);
 
       if (definition.kind() == CropDefinition.Kind.FARMLAND) {
-        SEEDS.put(definition, register(definition.seedName(), new AliasedBlockItem(block, new Item.Settings())));
-        PRODUCE.put(definition, register(definition.produceName(), new Item(new Item.Settings().food(food(definition)))));
+        SEEDS.put(definition, register(definition.seedName(), new ItemNameBlockItem(block, new Item.Properties())));
+        PRODUCE.put(definition, register(definition.produceName(), new Item(new Item.Properties().food(food(definition)))));
         continue;
       }
 
       Item berry = register(definition.produceName(),
-              new AliasedBlockItem(block, new Item.Settings().food(food(definition))));
+              new ItemNameBlockItem(block, new Item.Properties().food(food(definition))));
 
       SEEDS.put(definition, berry);
       PRODUCE.put(definition, berry);
@@ -107,14 +106,14 @@ public final class ModItems {
   public static void registerItems() {
   }
 
-  private static FoodComponent food(CropDefinition definition) {
-    return new FoodComponent.Builder()
+  private static FoodProperties food(CropDefinition definition) {
+    return new FoodProperties.Builder()
             .nutrition(definition.nutrition())
             .saturationModifier(definition.saturation())
             .build();
   }
 
   private static Item register(String name, Item item) {
-    return Registry.register(Registries.ITEM, new Identifier(RPG4Fools.MOD_ID, name), item);
+    return Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(RPG4Fools.MOD_ID, name), item);
   }
 }

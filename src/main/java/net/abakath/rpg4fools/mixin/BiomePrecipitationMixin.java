@@ -1,8 +1,8 @@
 package net.abakath.rpg4fools.mixin;
 
 import net.abakath.rpg4fools.world.SeasonSnow;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.biome.Biome;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(Biome.class)
 public abstract class BiomePrecipitationMixin {
-  @Inject(method = "getPrecipitation", at = @At("RETURN"), cancellable = true)
+  @Inject(method = "getPrecipitationAt", at = @At("RETURN"), cancellable = true)
   private void rpg4fools$applyWinterSnowLine(BlockPos pos, CallbackInfoReturnable<Biome.Precipitation> cir) {
     Biome.Precipitation vanilla = cir.getReturnValue();
 
@@ -34,7 +34,7 @@ public abstract class BiomePrecipitationMixin {
       return;
     }
 
-    float temperature = ((Biome) (Object) this).getTemperature();
+    float temperature = ((Biome) (Object) this).getBaseTemperature();
 
     if (vanilla == Biome.Precipitation.RAIN) {
       if (SeasonSnow.isSnowSeason() && temperature <= SeasonSnow.snowLineTemperature()) {

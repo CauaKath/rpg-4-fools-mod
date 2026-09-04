@@ -2,10 +2,10 @@ package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.world.SeasonalFarmCrops;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.structure.processor.StructureProcessorType;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 
 /**
  * Structure processors the mod adds.
@@ -20,7 +20,7 @@ public final class ModProcessors {
   }
 
   public static void registerProcessors() {
-    Registry.register(Registries.STRUCTURE_PROCESSOR,
-            new Identifier(RPG4Fools.MOD_ID, "seasonal_farm_crops"), SEASONAL_FARM_CROPS);
+    Registry.register(BuiltInRegistries.STRUCTURE_PROCESSOR,
+            new ResourceLocation(RPG4Fools.MOD_ID, "seasonal_farm_crops"), SEASONAL_FARM_CROPS);
   }
 }

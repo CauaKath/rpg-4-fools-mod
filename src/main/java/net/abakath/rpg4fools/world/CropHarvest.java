@@ -1,11 +1,10 @@
 package net.abakath.rpg4fools.world;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 
 /**
  * Where a right clicked harvest goes, and what rich soil adds to it.
@@ -24,14 +23,14 @@ import java.util.List;
  * than in whichever one was written first.
  */
 public class CropHarvest {
-  public static void drop(World world, BlockPos pos, BlockPos soil, List<ItemStack> stacks) {
+  public static void drop(Level world, BlockPos pos, BlockPos soil, List<ItemStack> stacks) {
     for (ItemStack stack : stacks) {
       drop(world, pos, soil, stack);
     }
   }
 
-  public static void drop(World world, BlockPos pos, BlockPos soil, ItemStack stack) {
-    Block.dropStack(world, pos, enrich(world, soil, stack));
+  public static void drop(Level world, BlockPos pos, BlockPos soil, ItemStack stack) {
+    Block.popResource(world, pos, enrich(world, soil, stack));
   }
 
   /**
@@ -41,7 +40,7 @@ public class CropHarvest {
    * Matching them is what stops the two ways of harvesting from paying differently and turning one
    * of them into the wrong answer.
    */
-  private static ItemStack enrich(World world, BlockPos soil, ItemStack stack) {
+  private static ItemStack enrich(Level world, BlockPos soil, ItemStack stack) {
     if (Compost.at(world, soil) != Compost.RICH) {
       return stack;
     }

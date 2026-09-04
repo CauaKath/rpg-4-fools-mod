@@ -4,12 +4,12 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.world.CropSeasons;
 import net.abakath.rpg4fools.world.CropSticks;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.PersistentState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.saveddata.SavedData;
 
 /**
  * Which crops a player put in the ground.
@@ -27,22 +27,22 @@ import net.minecraft.world.PersistentState;
  * longer holds a crop at all. Explosions and pistons do not announce themselves, and a set that
  * only ever grew would be a leak with a saved copy.
  */
-public class PlantedCrops extends PersistentState {
+public class PlantedCrops extends SavedData {
   private static final String KEY = "planted";
 
   private final LongOpenHashSet positions = new LongOpenHashSet();
 
-  private static final Type<PlantedCrops> type = new Type<>(
+  private static final Factory<PlantedCrops> type = new Factory<>(
           PlantedCrops::new,
           PlantedCrops::createFromNbt,
           null
   );
 
-  public static PlantedCrops get(ServerWorld world) {
-    return world.getPersistentStateManager().getOrCreate(type, "rpg4fools_planted_crops");
+  public static PlantedCrops get(ServerLevel world) {
+    return world.getDataStorage().computeIfAbsent(type, "rpg4fools_planted_crops");
   }
 
-  public static PlantedCrops createFromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+  public static PlantedCrops createFromNbt(CompoundTag nbt, HolderLookup.Provider registryLookup) {
     PlantedCrops planted = new PlantedCrops();
 
     for (long position : nbt.getLongArray(KEY)) {
@@ -53,20 +53,20 @@ public class PlantedCrops extends PersistentState {
   }
 
   @Override
-  public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+  public CompoundTag save(CompoundTag nbt, HolderLookup.Provider registryLookup) {
     nbt.putLongArray(KEY, positions.toLongArray());
     return nbt;
   }
 
   public void remember(BlockPos pos) {
     if (positions.add(pos.asLong())) {
-      markDirty();
+      setDirty();
     }
   }
 
   public void forget(BlockPos pos) {
     if (positions.remove(pos.asLong())) {
-      markDirty();
+      setDirty();
     }
   }
 
@@ -77,7 +77,7 @@ public class PlantedCrops extends PersistentState {
    * gets. A crop that was blown up leaves an entry behind; the first time anything asks about that
    * spot, it goes.
    */
-  public boolean planted(ServerWorld world, BlockPos pos) {
+  public boolean planted(ServerLevel world, BlockPos pos) {
     if (!positions.contains(pos.asLong())) {
       return false;
     }
@@ -87,7 +87,7 @@ public class PlantedCrops extends PersistentState {
     // A trellis counts, empty or not. It outlives the plant it was built for, and forgetting the
     // spot while it stood bare would hand a player's trellis to the rule that resows village fields
     // the next time a season turned.
-    if (CropSeasons.isCrop(state) || state.isOf(ModBlocks.DEAD_CROP) || CropSticks.isColumn(state)) {
+    if (CropSeasons.isCrop(state) || state.is(ModBlocks.DEAD_CROP) || CropSticks.isColumn(state)) {
       return true;
     }
 

@@ -1,10 +1,10 @@
 package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.RPG4Fools;
-import net.minecraft.entity.EntityType;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 
 /**
  * Entity tags the mod defines.
@@ -17,6 +17,6 @@ public class ModEntityTags {
   public static final TagKey<EntityType<?>> MANURE_PRODUCERS = of("manure_producers");
 
   private static TagKey<EntityType<?>> of(String name) {
-    return TagKey.of(RegistryKeys.ENTITY_TYPE, new Identifier(RPG4Fools.MOD_ID, name));
+    return TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation(RPG4Fools.MOD_ID, name));
   }
 }

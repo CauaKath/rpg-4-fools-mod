@@ -7,23 +7,22 @@ import net.abakath.rpg4fools.world.CropDefinition;
 import net.abakath.rpg4fools.world.CropItems;
 import net.abakath.rpg4fools.world.CropSticks;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CropBlock;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.BlockHitResult;
 import java.util.Optional;
 
 /**
@@ -65,16 +64,16 @@ public class CropStickHandling {
    * to nothing either way: it would place the held block one space up, and both blocks refuse to
    * stand there.
    */
-  private static ActionResult onUseBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
-    if (!(world instanceof ServerWorld serverWorld)) {
-      return ActionResult.PASS;
+  private static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hit) {
+    if (!(world instanceof ServerLevel serverWorld)) {
+      return InteractionResult.PASS;
     }
 
-    ItemStack stack = player.getStackInHand(hand);
+    ItemStack stack = player.getItemInHand(hand);
     BlockPos pos = hit.getBlockPos();
     BlockState state = world.getBlockState(pos);
 
-    return stack.isOf(ModItems.CROP_STICK)
+    return stack.is(ModItems.CROP_STICK)
             ? stick(serverWorld, player, stack, pos, state)
             : sow(serverWorld, player, stack, pos, state);
   }
@@ -86,7 +85,7 @@ public class CropStickHandling {
    * sticking a field something done before sowing or not at all, and the whole appeal is deciding a
    * plant is worth the sticks once it is already in front of you.
    */
-  private static ActionResult stick(ServerWorld world, PlayerEntity player, ItemStack stack,
+  private static InteractionResult stick(ServerLevel world, Player player, ItemStack stack,
                                     BlockPos pos, BlockState state) {
     // Anywhere on a column means the top of it. Which face was hit says nothing useful about intent
     // when the block is a post two pixels wide, and there is only one place another stick can go.
@@ -97,26 +96,26 @@ public class CropStickHandling {
     CropDefinition definition = ModBlocks.definitionFor(state.getBlock());
 
     if (definition == null || !definition.sticked()) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     // Only the crop standing in the ground. The same roster entry answers for the sticked block
     // too, and a stick used on one of those means the player is stacking, not converting.
-    if (!state.isOf(ModBlocks.blockFor(definition))) {
-      return ActionResult.PASS;
+    if (!state.is(ModBlocks.blockFor(definition))) {
+      return InteractionResult.PASS;
     }
 
     Block sticked = ModBlocks.stickedFor(definition);
-    BlockState placed = sticked.getDefaultState()
-            .with(CropBlock.AGE, state.get(CropBlock.AGE))
-            .with(CropSticks.CAPPED, CropSticks.capped(world, pos));
+    BlockState placed = sticked.defaultBlockState()
+            .setValue(CropBlock.AGE, state.getValue(CropBlock.AGE))
+            .setValue(CropSticks.CAPPED, CropSticks.capped(world, pos));
 
-    if (!placed.canPlaceAt(world, pos)) {
-      return ActionResult.PASS;
+    if (!placed.canSurvive(world, pos)) {
+      return InteractionResult.PASS;
     }
 
-    replace(world, player, stack, pos, placed, SoundEvents.BLOCK_WOOD_PLACE);
-    return ActionResult.SUCCESS;
+    replace(world, player, stack, pos, placed, SoundEvents.WOOD_PLACE);
+    return InteractionResult.SUCCESS;
   }
 
   /**
@@ -125,21 +124,21 @@ public class CropStickHandling {
    * <p>Passes rather than refusing when the column is full. The block's own placement rules turn the
    * placement away from there, which is the same answer arrived at by the usual route.
    */
-  private static ActionResult stack(ServerWorld world, PlayerEntity player, ItemStack stack, BlockPos pos) {
-    BlockPos above = CropSticks.columnTop(world, pos).up();
+  private static InteractionResult stack(ServerLevel world, Player player, ItemStack stack, BlockPos pos) {
+    BlockPos above = CropSticks.columnTop(world, pos).above();
 
     if (!world.getBlockState(above).isAir()) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     BlockState placed = CropSticks.stick(world, above, false);
 
-    if (!placed.canPlaceAt(world, above)) {
-      return ActionResult.PASS;
+    if (!placed.canSurvive(world, above)) {
+      return InteractionResult.PASS;
     }
 
-    replace(world, player, stack, above, placed, SoundEvents.BLOCK_WOOD_PLACE);
-    return ActionResult.SUCCESS;
+    replace(world, player, stack, above, placed, SoundEvents.WOOD_PLACE);
+    return InteractionResult.SUCCESS;
   }
 
   /**
@@ -150,55 +149,55 @@ public class CropStickHandling {
    * plant into the middle of it - two sets of roots, two ages, one column. The stick a player wants
    * filled is reached by letting the plant grow into it.
    */
-  private static ActionResult sow(ServerWorld world, PlayerEntity player, ItemStack stack,
+  private static InteractionResult sow(ServerLevel world, Player player, ItemStack stack,
                                   BlockPos pos, BlockState state) {
     // Aiming a seed at a stick mostly means hitting the farmland behind it, so the ground a stick
     // stands in counts as the stick. Farmland with nothing on it is left to vanilla, which plants
     // the crop the ordinary way.
-    BlockPos target = state.isOf(Blocks.FARMLAND) ? pos.up() : pos;
+    BlockPos target = state.is(Blocks.FARMLAND) ? pos.above() : pos;
 
     if (!CropSticks.isEmpty(world.getBlockState(target))) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
-    if (CropSticks.isSticked(world.getBlockState(target.down()))
-            || CropSticks.isSticked(world.getBlockState(target.up()))) {
-      return ActionResult.PASS;
+    if (CropSticks.isSticked(world.getBlockState(target.below()))
+            || CropSticks.isSticked(world.getBlockState(target.above()))) {
+      return InteractionResult.PASS;
     }
 
     Optional<BlockState> planted = CropItems.plantedBy(stack);
 
     if (planted.isEmpty()) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
     CropDefinition definition = ModBlocks.definitionFor(planted.get().getBlock());
 
     if (definition == null || !definition.sticked()) {
-      return ActionResult.PASS;
+      return InteractionResult.PASS;
     }
 
-    replace(world, player, stack, target, ModBlocks.stickedFor(definition).getDefaultState()
-                    .with(CropSticks.CAPPED, world.getBlockState(target).get(CropSticks.CAPPED)),
-            SoundEvents.ITEM_CROP_PLANT);
-    return ActionResult.SUCCESS;
+    replace(world, player, stack, target, ModBlocks.stickedFor(definition).defaultBlockState()
+                    .setValue(CropSticks.CAPPED, world.getBlockState(target).getValue(CropSticks.CAPPED)),
+            SoundEvents.CROP_PLANTED);
+    return InteractionResult.SUCCESS;
   }
 
-  private static void replace(ServerWorld world, PlayerEntity player, ItemStack stack, BlockPos pos,
+  private static void replace(ServerLevel world, Player player, ItemStack stack, BlockPos pos,
                               BlockState placed, SoundEvent sound) {
-    world.setBlockState(pos, placed, Block.NOTIFY_ALL);
+    world.setBlock(pos, placed, Block.UPDATE_ALL);
 
     // The plot is the player's now, however it started. Sticks are work put into it, and a field that
     // resowed itself over them would be taking that away. Recorded at the foot of the column, which
     // is the position the season rules ask about.
     PlantedCrops.get(world).remember(CropSticks.base(world, pos));
 
-    world.emitGameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Emitter.of(player, placed));
-    world.playSound(null, pos, sound, SoundCategory.BLOCKS,
+    world.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, placed));
+    world.playSound(null, pos, sound, SoundSource.BLOCKS,
             1.0F, 0.8F + world.random.nextFloat() * 0.4F);
 
-    if (!player.getAbilities().creativeMode) {
-      stack.decrement(1);
+    if (!player.getAbilities().instabuild) {
+      stack.shrink(1);
     }
   }
 }

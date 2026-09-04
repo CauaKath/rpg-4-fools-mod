@@ -3,10 +3,9 @@ package net.abakath.rpg4fools.server.events;
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.server.LoadedChunks;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.server.level.ServerLevel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +27,7 @@ public final class SeasonChangeSweep {
   }
 
   public static void run(MinecraftServer server, Season season) {
-    for (ServerWorld world : server.getWorlds()) {
+    for (ServerLevel world : server.getAllLevels()) {
       sweep(world, season);
     }
 
@@ -37,7 +36,7 @@ public final class SeasonChangeSweep {
     CompostExpiry.sweep(server);
   }
 
-  private static void sweep(ServerWorld world, Season season) {
+  private static void sweep(ServerLevel world, Season season) {
     long started = System.nanoTime();
     List<BlockPos> crops = new ArrayList<>();
 
@@ -49,7 +48,7 @@ public final class SeasonChangeSweep {
     }
 
     RPG4Fools.LOGGER.info("{} queued {} crop(s) for the change to {}, found in {} ms, {} waiting",
-            world.getRegistryKey().getValue(), crops.size(), season.getName(),
+            world.dimension().location(), crops.size(), season.getName(),
             (System.nanoTime() - started) / 1_000_000, CropSettling.waitingIn(world));
   }
 }

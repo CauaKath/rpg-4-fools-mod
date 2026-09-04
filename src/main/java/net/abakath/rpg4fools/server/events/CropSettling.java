@@ -6,16 +6,15 @@ import net.abakath.rpg4fools.world.CropTransition;
 import net.abakath.rpg4fools.world.CurrentSeason;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.block.BlockState;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkSection;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -47,7 +46,7 @@ public final class CropSettling {
   /** How many crops are settled per tick. Enough to finish a season turn in well under a second. */
   private static final int PER_TICK = 400;
 
-  private static final Map<RegistryKey<World>, Deque<BlockPos>> WAITING = new ConcurrentHashMap<>();
+  private static final Map<ResourceKey<Level>, Deque<BlockPos>> WAITING = new ConcurrentHashMap<>();
 
   private CropSettling() {
   }
@@ -57,7 +56,7 @@ public final class CropSettling {
     ServerTickEvents.END_SERVER_TICK.register(CropSettling::settle);
   }
 
-  public static void enqueue(ServerWorld world, List<BlockPos> positions) {
+  public static void enqueue(ServerLevel world, List<BlockPos> positions) {
     if (positions.isEmpty()) {
       return;
     }
@@ -73,20 +72,20 @@ public final class CropSettling {
    * none of them hold crops, so nearly every section is dismissed on a palette check - which is
    * what makes this cheap enough to run on every chunk that loads.
    */
-  public static List<BlockPos> collect(Chunk chunk) {
+  public static List<BlockPos> collect(ChunkAccess chunk) {
     List<BlockPos> found = new ArrayList<>();
-    ChunkSection[] sections = chunk.getSectionArray();
+    LevelChunkSection[] sections = chunk.getSections();
 
     for (int index = 0; index < sections.length; index++) {
-      ChunkSection section = sections[index];
+      LevelChunkSection section = sections[index];
 
-      if (section.isEmpty() || !section.hasAny(CropTransition::settles)) {
+      if (section.hasOnlyAir() || !section.maybeHas(CropTransition::settles)) {
         continue;
       }
 
-      int startX = chunk.getPos().getStartX();
-      int startY = ChunkSectionPos.getBlockCoord(chunk.sectionIndexToCoord(index));
-      int startZ = chunk.getPos().getStartZ();
+      int startX = chunk.getPos().getMinBlockX();
+      int startY = SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(index));
+      int startZ = chunk.getPos().getMinBlockZ();
 
       for (int y = 0; y < SECTION_SIZE; y++) {
         for (int z = 0; z < SECTION_SIZE; z++) {
@@ -103,12 +102,12 @@ public final class CropSettling {
   }
 
   /** How many are still waiting, which is what the sweep reports once it has finished. */
-  public static int waitingIn(ServerWorld world) {
+  public static int waitingIn(ServerLevel world) {
     return waiting(world).size();
   }
 
   private static void settle(MinecraftServer server) {
-    for (ServerWorld world : server.getWorlds()) {
+    for (ServerLevel world : server.getAllLevels()) {
       Deque<BlockPos> queue = waiting(world);
 
       if (queue.isEmpty()) {
@@ -127,7 +126,7 @@ public final class CropSettling {
         // Skipped rather than forced. A chunk that has gone away since being queued will be scanned
         // again when it comes back, and loading it here to save that would be the whole point of
         // the budget thrown away.
-        if (!world.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+        if (!world.hasChunk(pos.getX() >> 4, pos.getZ() >> 4)) {
           continue;
         }
 
@@ -140,7 +139,7 @@ public final class CropSettling {
     }
   }
 
-  private static Deque<BlockPos> waiting(ServerWorld world) {
-    return WAITING.computeIfAbsent(world.getRegistryKey(), key -> new ArrayDeque<>());
+  private static Deque<BlockPos> waiting(ServerLevel world) {
+    return WAITING.computeIfAbsent(world.dimension(), key -> new ArrayDeque<>());
   }
 }

@@ -3,9 +3,9 @@ package net.abakath.rpg4fools.server.events;
 import net.abakath.rpg4fools.server.PendingCompost;
 import net.abakath.rpg4fools.world.Compost;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
 import org.joml.Vector3f;
 
 import java.util.EnumMap;
@@ -41,11 +41,11 @@ public class CompostSignals implements ServerTickEvents.EndTick {
 
   @Override
   public void onEndTick(MinecraftServer server) {
-    if (server.getTicks() % INTERVAL != 0) {
+    if (server.getTickCount() % INTERVAL != 0) {
       return;
     }
 
-    for (ServerWorld world : server.getWorlds()) {
+    for (ServerLevel world : server.getAllLevels()) {
       PendingCompost.get(world).forEach(world, (pos, kind) -> {
         Vector3f colour = COLOURS.get(kind);
 
@@ -53,7 +53,7 @@ public class CompostSignals implements ServerTickEvents.EndTick {
           return;
         }
 
-        world.spawnParticles(new DustParticleEffect(colour, 1.0F),
+        world.sendParticles(new DustParticleOptions(colour, 1.0F),
                 pos.getX() + 0.5, pos.getY() + 1.05, pos.getZ() + 0.5,
                 2, 0.2, 0.05, 0.2, 0.0);
       });

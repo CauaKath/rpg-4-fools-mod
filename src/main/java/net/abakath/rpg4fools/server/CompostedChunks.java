@@ -3,11 +3,11 @@ package net.abakath.rpg4fools.server;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.world.CurrentSeason;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.PersistentState;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.saveddata.SavedData;
 
 /**
  * Which chunks were composted during the season now running.
@@ -26,29 +26,29 @@ import net.minecraft.world.PersistentState;
  * server that was shut down over a season change comes back with everything correctly expired
  * rather than needing the change to have been witnessed.
  */
-public class CompostedChunks extends PersistentState {
+public class CompostedChunks extends SavedData {
   private static final String SEASON = "season";
   private static final String CHUNKS = "chunks";
 
   private final LongOpenHashSet chunks = new LongOpenHashSet();
   private Season season = null;
 
-  private static final Type<CompostedChunks> type = new Type<>(
+  private static final Factory<CompostedChunks> type = new Factory<>(
           CompostedChunks::new,
           CompostedChunks::createFromNbt,
           null
   );
 
-  public static CompostedChunks get(ServerWorld world) {
-    CompostedChunks state = world.getPersistentStateManager()
-            .getOrCreate(type, "rpg4fools_composted_chunks");
+  public static CompostedChunks get(ServerLevel world) {
+    CompostedChunks state = world.getDataStorage()
+            .computeIfAbsent(type, "rpg4fools_composted_chunks");
 
     state.rollOver();
 
     return state;
   }
 
-  public static CompostedChunks createFromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+  public static CompostedChunks createFromNbt(CompoundTag nbt, HolderLookup.Provider registryLookup) {
     CompostedChunks state = new CompostedChunks();
 
     if (nbt.contains(SEASON)) {
@@ -63,7 +63,7 @@ public class CompostedChunks extends PersistentState {
   }
 
   @Override
-  public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+  public CompoundTag save(CompoundTag nbt, HolderLookup.Provider registryLookup) {
     if (season != null) {
       nbt.putString(SEASON, season.name());
     }
@@ -75,7 +75,7 @@ public class CompostedChunks extends PersistentState {
 
   public void remember(ChunkPos chunk) {
     if (chunks.add(chunk.toLong())) {
-      markDirty();
+      setDirty();
     }
   }
 
@@ -100,6 +100,6 @@ public class CompostedChunks extends PersistentState {
 
     season = running;
     chunks.clear();
-    markDirty();
+    setDirty();
   }
 }

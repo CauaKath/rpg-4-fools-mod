@@ -49,11 +49,11 @@ public class DayChangingHandler implements ServerTickEvents.StartTick {
      */
     public static void register() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            if (server.getOverworld() == null) {
+            if (server.overworld() == null) {
                 return;
             }
 
-            long time = server.getOverworld().getTimeOfDay();
+            long time = server.overworld().getDayTime();
 
             if (time <= 0) {
                 return;
@@ -65,14 +65,14 @@ public class DayChangingHandler implements ServerTickEvents.StartTick {
 
     @Override
     public void onStartTick(MinecraftServer server) {
-        if (server.getOverworld() != null) {
+        if (server.overworld() != null) {
             if (server != lastServer) {
                 lastServer = server;
                 lastTotalDays = Integer.MIN_VALUE;
                 lastSeason = null;
             }
 
-            long time = server.getOverworld().getTimeOfDay();
+            long time = server.overworld().getDayTime();
 
             if (time <= 0) {
                 return;
@@ -101,7 +101,7 @@ public class DayChangingHandler implements ServerTickEvents.StartTick {
             }
             lastSeason = season;
 
-            server.getPlayerManager().getPlayerList().forEach(player ->
+            server.getPlayerList().getPlayers().forEach(player ->
                     ServerPlayNetworking.send(player, new SeasonUpdatePacket(dayData)));
         }
     }

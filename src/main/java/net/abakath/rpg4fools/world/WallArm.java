@@ -1,6 +1,6 @@
 package net.abakath.rpg4fools.world;
 
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.StringRepresentable;
 
 /**
  * Which of the three columns of a wall plant a cell sits in.
@@ -20,7 +20,7 @@ import net.minecraft.util.StringIdentifiable;
  * plant and south on a Z axis one. Which way a player would call right depends on which side of the
  * wall they are standing on, so the names are only ever a label for the sign.
  */
-public enum WallArm implements StringIdentifiable {
+public enum WallArm implements StringRepresentable {
   LEFT("left", -1),
   CENTER("center", 0),
   RIGHT("right", 1);
@@ -48,7 +48,7 @@ public enum WallArm implements StringIdentifiable {
   }
 
   @Override
-  public String asString() {
+  public String getSerializedName() {
     return name;
   }
 }

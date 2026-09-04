@@ -3,14 +3,13 @@ package net.abakath.rpg4fools.world;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModCrops;
 import net.abakath.rpg4fools.init.ModItems;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -42,7 +41,7 @@ public class CropItems {
       return Optional.empty();
     }
 
-    BlockState planted = blockItem.getBlock().getDefaultState();
+    BlockState planted = blockItem.getBlock().defaultBlockState();
 
     return CropSeasons.isCrop(planted) ? Optional.of(planted) : Optional.empty();
   }
@@ -54,7 +53,7 @@ public class CropItems {
     // Checked before the map so a modded seed resolves without needing an entry. The crops tag is
     // what decides; a BlockItem for some unrelated block falls through.
     if (item instanceof BlockItem blockItem) {
-      BlockState planted = blockItem.getBlock().getDefaultState();
+      BlockState planted = blockItem.getBlock().defaultBlockState();
 
       if (CropSeasons.isCrop(planted)) {
         return Optional.of(planted);
@@ -66,7 +65,7 @@ public class CropItems {
       return Optional.empty();
     }
 
-    BlockState crop = grownBy.getDefaultState();
+    BlockState crop = grownBy.defaultBlockState();
 
     // The map is written against vanilla, but a datapack can drop a crop out of the tag. Honour
     // that instead of reporting seasons for something no longer treated as a crop.

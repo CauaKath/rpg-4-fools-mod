@@ -5,21 +5,20 @@ import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModCrops;
 import net.abakath.rpg4fools.init.ModProcessors;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CropBlock;
-import net.minecraft.structure.StructurePlacementData;
-import net.minecraft.structure.StructureTemplate;
-import net.minecraft.structure.processor.StructureProcessor;
-import net.minecraft.structure.processor.StructureProcessorType;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.WorldView;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,11 +56,11 @@ public class SeasonalFarmCrops extends StructureProcessor {
   }
 
   @Override
-  public StructureTemplate.StructureBlockInfo process(WorldView world, BlockPos origin, BlockPos pivot,
+  public StructureTemplate.StructureBlockInfo processBlock(LevelReader world, BlockPos origin, BlockPos pivot,
                                                       StructureTemplate.StructureBlockInfo original,
                                                       StructureTemplate.StructureBlockInfo current,
-                                                      StructurePlacementData data) {
-    if (!current.state().isOf(Blocks.WHEAT)) {
+                                                      StructurePlaceSettings data) {
+    if (!current.state().is(Blocks.WHEAT)) {
       return current;
     }
 
@@ -74,14 +73,14 @@ public class SeasonalFarmCrops extends StructureProcessor {
     // same answer without any of them knowing about the others, and two farms side by side do not
     // come out identical.
     int lane = laneOf(current.pos(), origin, data.getRotation());
-    Random random = Random.create(MathHelper.hashCode(origin.getX() + lane, origin.getY(), origin.getZ()));
+    RandomSource random = RandomSource.create(Mth.getSeed(origin.getX() + lane, origin.getY(), origin.getZ()));
 
     if (random.nextFloat() >= LANE_CHANCE) {
       return current;
     }
 
     Block crop = crops.get(random.nextInt(crops.size()));
-    BlockState sown = crop.getDefaultState().with(CropBlock.AGE, current.state().get(CropBlock.AGE));
+    BlockState sown = crop.defaultBlockState().setValue(CropBlock.AGE, current.state().getValue(CropBlock.AGE));
 
     return new StructureTemplate.StructureBlockInfo(current.pos(), sown, current.nbt());
   }
@@ -94,17 +93,17 @@ public class SeasonalFarmCrops extends StructureProcessor {
    * where a lane is always a column of x. Jigsaw structures are never mirrored, so only the
    * rotation has to be undone.
    */
-  private static int laneOf(BlockPos placed, BlockPos origin, BlockRotation rotation) {
-    BlockPos local = StructureTemplate.transformAround(
-            placed.subtract(origin), BlockMirror.NONE, opposite(rotation), BlockPos.ORIGIN);
+  private static int laneOf(BlockPos placed, BlockPos origin, Rotation rotation) {
+    BlockPos local = StructureTemplate.transform(
+            placed.subtract(origin), Mirror.NONE, opposite(rotation), BlockPos.ZERO);
 
     return Math.floorDiv(local.getX(), LANE_WIDTH);
   }
 
-  private static BlockRotation opposite(BlockRotation rotation) {
+  private static Rotation opposite(Rotation rotation) {
     return switch (rotation) {
-      case CLOCKWISE_90 -> BlockRotation.COUNTERCLOCKWISE_90;
-      case COUNTERCLOCKWISE_90 -> BlockRotation.CLOCKWISE_90;
+      case CLOCKWISE_90 -> Rotation.COUNTERCLOCKWISE_90;
+      case COUNTERCLOCKWISE_90 -> Rotation.CLOCKWISE_90;
       default -> rotation;
     };
   }
@@ -127,7 +126,7 @@ public class SeasonalFarmCrops extends StructureProcessor {
 
       Block crop = ModBlocks.blockFor(definition);
 
-      if (CropSeasons.isInSeason(crop.getDefaultState(), season)) {
+      if (CropSeasons.isInSeason(crop.defaultBlockState(), season)) {
         crops.add(crop);
       }
     }

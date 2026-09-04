@@ -3,13 +3,12 @@ package net.abakath.rpg4fools.server;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import net.abakath.rpg4fools.world.Compost;
-import net.minecraft.block.Blocks;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.PersistentState;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.saveddata.SavedData;
 import java.util.function.BiConsumer;
 
 /**
@@ -27,23 +26,23 @@ import java.util.function.BiConsumer;
  * longer a composter. A composter that was broken while full would otherwise leave a label behind
  * for whatever gets built there next.
  */
-public class PendingCompost extends PersistentState {
+public class PendingCompost extends SavedData {
   private static final String POSITIONS = "positions";
   private static final String KINDS = "kinds";
 
   private final Long2ByteMap marks = new Long2ByteOpenHashMap();
 
-  private static final Type<PendingCompost> type = new Type<>(
+  private static final Factory<PendingCompost> type = new Factory<>(
           PendingCompost::new,
           PendingCompost::createFromNbt,
           null
   );
 
-  public static PendingCompost get(ServerWorld world) {
-    return world.getPersistentStateManager().getOrCreate(type, "rpg4fools_pending_compost");
+  public static PendingCompost get(ServerLevel world) {
+    return world.getDataStorage().computeIfAbsent(type, "rpg4fools_pending_compost");
   }
 
-  public static PendingCompost createFromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+  public static PendingCompost createFromNbt(CompoundTag nbt, HolderLookup.Provider registryLookup) {
     PendingCompost pending = new PendingCompost();
 
     long[] positions = nbt.getLongArray(POSITIONS);
@@ -59,7 +58,7 @@ public class PendingCompost extends PersistentState {
   }
 
   @Override
-  public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+  public CompoundTag save(CompoundTag nbt, HolderLookup.Provider registryLookup) {
     long[] positions = new long[marks.size()];
     byte[] kinds = new byte[marks.size()];
     int index = 0;
@@ -78,7 +77,7 @@ public class PendingCompost extends PersistentState {
 
   public void mark(BlockPos pos, Compost kind) {
     marks.put(pos.asLong(), (byte) kind.ordinal());
-    markDirty();
+    setDirty();
   }
 
   public void clear(BlockPos pos) {
@@ -87,7 +86,7 @@ public class PendingCompost extends PersistentState {
     }
 
     marks.remove(pos.asLong());
-    markDirty();
+    setDirty();
   }
 
   /**
@@ -100,11 +99,11 @@ public class PendingCompost extends PersistentState {
    * there answers air, which would forget a perfectly good label the moment a player walked away
    * from their composter.
    */
-  public void forEach(ServerWorld world, BiConsumer<BlockPos, Compost> action) {
+  public void forEach(ServerLevel world, BiConsumer<BlockPos, Compost> action) {
     for (long packed : marks.keySet().toLongArray()) {
-      BlockPos pos = BlockPos.fromLong(packed);
+      BlockPos pos = BlockPos.of(packed);
 
-      if (!world.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+      if (!world.hasChunk(pos.getX() >> 4, pos.getZ() >> 4)) {
         continue;
       }
 
@@ -122,12 +121,12 @@ public class PendingCompost extends PersistentState {
    * <p>Forgets the label when the block is no longer a composter, which is the only cleanup these
    * entries get.
    */
-  public Compost marked(ServerWorld world, BlockPos pos) {
+  public Compost marked(ServerLevel world, BlockPos pos) {
     if (!marks.containsKey(pos.asLong())) {
       return Compost.NONE;
     }
 
-    if (!world.getBlockState(pos).isOf(Blocks.COMPOSTER)) {
+    if (!world.getBlockState(pos).is(Blocks.COMPOSTER)) {
       clear(pos);
       return Compost.NONE;
     }

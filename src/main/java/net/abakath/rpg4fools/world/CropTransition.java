@@ -2,14 +2,13 @@ package net.abakath.rpg4fools.world;
 
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.init.ModBlocks;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.SweetBerryBushBlock;
-import net.minecraft.server.world.ServerWorld;
 import net.abakath.rpg4fools.server.PlantedCrops;
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SweetBerryBushBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.Optional;
 
 /**
@@ -33,7 +32,7 @@ public class CropTransition {
     // Bare sticks are worth looking at even though nothing about them is a crop. A trellis in a
     // village field is a plot waiting to be sown, and one left out of this scan would stand empty
     // for good.
-    return CropSeasons.isCrop(state) || state.isOf(ModBlocks.DEAD_CROP) || CropSticks.isEmpty(state);
+    return CropSeasons.isCrop(state) || state.is(ModBlocks.DEAD_CROP) || CropSticks.isEmpty(state);
   }
 
   /**
@@ -42,10 +41,10 @@ public class CropTransition {
    * <p>The crops tag check comes first because the random tick hook calls this for every block in
    * the game.
    */
-  public static boolean apply(ServerWorld world, BlockPos pos, BlockState state, Season season) {
+  public static boolean apply(ServerLevel world, BlockPos pos, BlockState state, Season season) {
     // Dead crops carry no crops tag, so they fall out of every rule below. They are still worth
     // looking at: a field nobody planted comes back the season after it died.
-    if (state.isOf(ModBlocks.DEAD_CROP)) {
+    if (state.is(ModBlocks.DEAD_CROP)) {
       return resow(world, pos, season);
     }
 
@@ -69,7 +68,7 @@ public class CropTransition {
         return false;
       }
 
-      world.setBlockState(pos, dormant.getDefaultState());
+      world.setBlockAndUpdate(pos, dormant.defaultBlockState());
       return true;
     }
 
@@ -81,7 +80,7 @@ public class CropTransition {
 
       // Age 1 is leafy with no fruit, so the bush picks up where a fresh one would rather than
       // handing back the berries it lost going dormant.
-      world.setBlockState(pos, live.getDefaultState().with(SweetBerryBushBlock.AGE, 1));
+      world.setBlockAndUpdate(pos, live.defaultBlockState().setValue(SweetBerryBushBlock.AGE, 1));
       return true;
     }
 
@@ -112,7 +111,7 @@ public class CropTransition {
 
       // The plant stays on the stick, dead. Deleting it left a trellis that had been full one day
       // spotless the next, which read as the crop having been harvested rather than lost.
-      world.setBlockState(pos, CropSticks.stick(world, pos, true));
+      world.setBlockAndUpdate(pos, CropSticks.stick(world, pos, true));
       return true;
     }
 
@@ -124,7 +123,7 @@ public class CropTransition {
       return true;
     }
 
-    world.setBlockState(pos, ModBlocks.DEAD_CROP.getDefaultState());
+    world.setBlockAndUpdate(pos, ModBlocks.DEAD_CROP.defaultBlockState());
     return true;
   }
 
@@ -142,14 +141,14 @@ public class CropTransition {
    * which is the right answer for a plant that was alive when they took it: the reversion is about
    * losing the plant, and this is about the plant having died.
    */
-  private static boolean wither(ServerWorld world, BlockPos pos, BlockState state) {
+  private static boolean wither(ServerLevel world, BlockPos pos, BlockState state) {
     BlockPos root = CropWalls.root(state, pos);
     BlockState rootState = world.getBlockState(root);
 
     // The root has already gone, so there is no plant to walk and this cell is on its own. Reached
     // by the random tick hook, which finds cells the cascade has not caught up with yet.
     if (!CropWalls.isRoot(rootState) || rootState.getBlock() != state.getBlock()) {
-      world.setBlockState(pos, CropWalls.dead(world, pos, state));
+      world.setBlockAndUpdate(pos, CropWalls.dead(world, pos, state));
       return true;
     }
 
@@ -158,10 +157,10 @@ public class CropTransition {
         continue;
       }
 
-      world.setBlockState(cell, CropWalls.dead(world, cell, world.getBlockState(cell)));
+      world.setBlockAndUpdate(cell, CropWalls.dead(world, cell, world.getBlockState(cell)));
     }
 
-    world.setBlockState(root, CropWalls.dead(world, root, rootState));
+    world.setBlockAndUpdate(root, CropWalls.dead(world, root, rootState));
 
     return true;
   }
@@ -179,7 +178,7 @@ public class CropTransition {
    * its own. Standing the plant up already grown would be the same free harvest by another route,
    * and would also make a world grown trellis behave unlike one a player built.
    */
-  private static boolean resow(ServerWorld world, BlockPos pos, Season season) {
+  private static boolean resow(ServerLevel world, BlockPos pos, Season season) {
     if (PlantedCrops.get(world).planted(world, pos)) {
       return false;
     }
@@ -191,7 +190,7 @@ public class CropTransition {
     }
 
     Resowing.Sowing sowing = sown.get();
-    world.setBlockState(pos, sowing.crop());
+    world.setBlockAndUpdate(pos, sowing.crop());
     shape(world, pos, sowing.sticks());
 
     return true;
@@ -203,8 +202,8 @@ public class CropTransition {
    * <p>Every block of a column is scanned, and all of them would otherwise try to sow the plot -
    * which for anything but the foot means a crop halfway up a trellis.
    */
-  private static boolean foot(ServerWorld world, BlockPos pos) {
-    return !CropSticks.isColumn(world.getBlockState(pos.down()));
+  private static boolean foot(ServerLevel world, BlockPos pos) {
+    return !CropSticks.isColumn(world.getBlockState(pos.below()));
   }
 
   /**
@@ -218,9 +217,9 @@ public class CropTransition {
    * was not part of the field, and a trellis of the wrong height is a better outcome than a field
    * that eats what has been built over it.
    */
-  private static void shape(ServerWorld world, BlockPos pos, int sticks) {
+  private static void shape(ServerLevel world, BlockPos pos, int sticks) {
     for (int above = 1; above < CropSticks.MAX_HEIGHT; above++) {
-      BlockPos at = pos.up(above);
+      BlockPos at = pos.above(above);
       BlockState standing = world.getBlockState(at);
 
       if (above < sticks) {
@@ -230,8 +229,8 @@ public class CropTransition {
         if (CropSticks.isEmpty(standing)) {
           // Clearing last season's remains along with it. The plot is being sown again, so the whole
           // trellis is put back in order rather than only the part being added to.
-          if (standing.get(CropSticks.DEAD)) {
-            world.setBlockState(at, standing.with(CropSticks.DEAD, false));
+          if (standing.getValue(CropSticks.DEAD)) {
+            world.setBlockAndUpdate(at, standing.setValue(CropSticks.DEAD, false));
           }
 
           continue;
@@ -241,12 +240,12 @@ public class CropTransition {
           return;
         }
 
-        world.setBlockState(at, CropSticks.stick(world, at, false));
+        world.setBlockAndUpdate(at, CropSticks.stick(world, at, false));
         continue;
       }
 
       if (CropSticks.isEmpty(standing)) {
-        world.setBlockState(at, Blocks.AIR.getDefaultState());
+        world.setBlockAndUpdate(at, Blocks.AIR.defaultBlockState());
       }
     }
   }

@@ -3,11 +3,11 @@ package net.abakath.rpg4fools.client;
 import net.abakath.rpg4fools.enums.SubSeason;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldView;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.biome.Biome;
 
 /**
  * Works out how strongly the current season applies at a position, and grades sky colour and fog
@@ -103,7 +103,7 @@ public final class SeasonAtmosphere {
    * <p>This is the single place the fog inputs compose: a family's presence, what the season adds
    * to it, what the weather takes off the distances, and whether a cave overrides all of it.
    */
-  public static ResolvedAtmosphere resolve(WorldView world, BlockPos pos) {
+  public static ResolvedAtmosphere resolve(LevelReader world, BlockPos pos) {
     BiomeAggregate aggregate = aggregateFor(world, pos);
 
     float surfacePresence = surfaceFogPresence(aggregate);
@@ -111,7 +111,7 @@ public final class SeasonAtmosphere {
     // Weather tightens the fog by pulling the target distances in, not by raising presence. Several
     // families already sit at presence 1, so a multiplier there would clamp, and a snowy biome mid
     // snowfall would look identical to the same biome under a clear sky.
-    float weather = world instanceof World ? WeatherFog.multiplierAt((World) world, pos) : 1.0f;
+    float weather = world instanceof Level ? WeatherFog.multiplierAt((Level) world, pos) : 1.0f;
     float surfaceStart = aggregate.fogStart() / weather;
     float surfaceEnd = aggregate.fogEnd() / weather;
 
@@ -193,8 +193,8 @@ public final class SeasonAtmosphere {
    * <p>Deliberately outside the biome cache: this depends on exact Y and on sky access, both of
    * which change far faster than the cache cell.
    */
-  private static float caveFactor(WorldView world, BlockPos pos) {
-    if (world == null || pos == null || world.isSkyVisible(pos)) {
+  private static float caveFactor(LevelReader world, BlockPos pos) {
+    if (world == null || pos == null || world.canSeeSky(pos)) {
       return 0.0f;
     }
 
@@ -226,7 +226,7 @@ public final class SeasonAtmosphere {
     FogTransition.reset();
   }
 
-  private static BiomeAggregate aggregateFor(WorldView world, BlockPos pos) {
+  private static BiomeAggregate aggregateFor(LevelReader world, BlockPos pos) {
     if (world == null || pos == null) {
       return new BiomeAggregate(0xFFFFFF, 0.0f, 1.0f, 0.0f, 20.0f, 90.0f);
     }
@@ -249,8 +249,8 @@ public final class SeasonAtmosphere {
    * Averages the biome profile over the sample grid. Colours average per channel and the numeric
    * values average directly, so crossing a biome border ramps rather than snapping.
    */
-  private static BiomeAggregate blendAggregate(WorldView world, BlockPos pos) {
-    BlockPos.Mutable samplePos = new BlockPos.Mutable();
+  private static BiomeAggregate blendAggregate(LevelReader world, BlockPos pos) {
+    BlockPos.MutableBlockPos samplePos = new BlockPos.MutableBlockPos();
 
     float totalRed = 0.0f;
     float totalGreen = 0.0f;
@@ -265,7 +265,7 @@ public final class SeasonAtmosphere {
       for (int offsetZ : SAMPLE_OFFSETS) {
         samplePos.set(pos.getX() + offsetX, pos.getY(), pos.getZ() + offsetZ);
 
-        RegistryEntry<Biome> entry = world.getBiome(samplePos);
+        Holder<Biome> entry = world.getBiome(samplePos);
         BiomeAtmosphere family = BiomeAtmosphere.of(entry);
 
         int tint = family.getTintColor();
@@ -274,7 +274,7 @@ public final class SeasonAtmosphere {
         totalBlue += tint & 0xFF;
 
         totalBlend += family.getColorBlend();
-        totalStrength += family.getSeasonSensitivity() * strengthForTemperature(entry.value().getTemperature());
+        totalStrength += family.getSeasonSensitivity() * strengthForTemperature(entry.value().getBaseTemperature());
         totalPresence += family.getFogPresence();
         totalFogStart += family.getFogStart();
         totalFogEnd += family.getFogEnd();

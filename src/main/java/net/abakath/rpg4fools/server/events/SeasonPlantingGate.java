@@ -5,16 +5,15 @@ import net.abakath.rpg4fools.world.CropItems;
 import net.abakath.rpg4fools.world.CropSeasons;
 import net.abakath.rpg4fools.world.CurrentSeason;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.world.World;
-
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import java.util.Optional;
 
 /**
@@ -28,8 +27,8 @@ public class SeasonPlantingGate {
     UseBlockCallback.EVENT.register(SeasonPlantingGate::onUseBlock);
   }
 
-  private static ActionResult onUseBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
-    ItemStack stack = player.getStackInHand(hand);
+  private static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hit) {
+    ItemStack stack = player.getItemInHand(hand);
     Season season = CurrentSeason.season();
 
     Optional<BlockState> planted = CropItems.plantedBy(stack);
@@ -37,13 +36,13 @@ public class SeasonPlantingGate {
       BlockState crop = planted.get();
 
       return CropSeasons.isInSeason(crop, season)
-              ? ActionResult.PASS
+              ? InteractionResult.PASS
               : refuse(player, world, crop, season, "message.rpg4fools.cannot_plant");
     }
 
     // Bone meal is the other way to make a crop grow, so leaving it alone would make out of season
     // wheat merely slower to force rather than impossible.
-    if (stack.isOf(Items.BONE_MEAL)) {
+    if (stack.is(Items.BONE_MEAL)) {
       BlockState target = world.getBlockState(hit.getBlockPos());
 
       if (CropSeasons.isCrop(target) && !CropSeasons.isInSeason(target, season)) {
@@ -51,7 +50,7 @@ public class SeasonPlantingGate {
       }
     }
 
-    return ActionResult.PASS;
+    return InteractionResult.PASS;
   }
 
   /**
@@ -65,16 +64,16 @@ public class SeasonPlantingGate {
    * <p>That also means it cannot print twice. Whichever side refuses first is the only side that
    * gets to run.
    */
-  private static ActionResult refuse(PlayerEntity player, World world, BlockState crop, Season season, String key) {
-    player.sendMessage(
-            Text.translatable(
+  private static InteractionResult refuse(Player player, Level world, BlockState crop, Season season, String key) {
+    player.displayClientMessage(
+            Component.translatable(
                     key,
                     crop.getBlock().getName(),
-                    Text.literal(season.getName()).formatted(season.getColor())
+                    Component.literal(season.getName()).withStyle(season.getColor())
             ),
             true
     );
 
-    return ActionResult.FAIL;
+    return InteractionResult.FAIL;
   }
 }

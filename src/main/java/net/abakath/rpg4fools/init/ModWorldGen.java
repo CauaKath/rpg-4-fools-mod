@@ -6,14 +6,13 @@ import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.biome.v1.ModificationPhase;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.biome.BiomeKeys;
-import net.minecraft.world.gen.GenerationStep;
-import net.minecraft.world.gen.feature.PlacedFeature;
-import net.minecraft.world.gen.feature.VegetationPlacedFeatures;
-
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.placement.VegetationPlacements;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import java.util.function.Predicate;
 
 /**
@@ -32,13 +31,13 @@ import java.util.function.Predicate;
  */
 public final class ModWorldGen {
   private static final Predicate<BiomeSelectionContext> MEADOWS =
-          BiomeSelectors.includeByKey(BiomeKeys.MEADOW, BiomeKeys.PLAINS, BiomeKeys.SUNFLOWER_PLAINS);
+          BiomeSelectors.includeByKey(Biomes.MEADOW, Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS);
 
   private static final Predicate<BiomeSelectionContext> FORESTS =
-          BiomeSelectors.includeByKey(BiomeKeys.FOREST, BiomeKeys.BIRCH_FOREST, BiomeKeys.DARK_FOREST);
+          BiomeSelectors.includeByKey(Biomes.FOREST, Biomes.BIRCH_FOREST, Biomes.DARK_FOREST);
 
   private static final Predicate<BiomeSelectionContext> TAIGAS =
-          BiomeSelectors.includeByKey(BiomeKeys.TAIGA, BiomeKeys.OLD_GROWTH_PINE_TAIGA, BiomeKeys.OLD_GROWTH_SPRUCE_TAIGA);
+          BiomeSelectors.includeByKey(Biomes.TAIGA, Biomes.OLD_GROWTH_PINE_TAIGA, Biomes.OLD_GROWTH_SPRUCE_TAIGA);
 
   public static void registerFeatures() {
     grow(patchOf(ModCrops.STRAWBERRY), MEADOWS);
@@ -64,19 +63,19 @@ public final class ModWorldGen {
    * does not grow there, and there is nothing to split.
    */
   private static void shareTheTaiga() {
-    BiomeModifications.create(new Identifier(RPG4Fools.MOD_ID, "taiga_berries"))
+    BiomeModifications.create(new ResourceLocation(RPG4Fools.MOD_ID, "taiga_berries"))
             .add(ModificationPhase.REMOVALS, TAIGAS, context ->
                     context.getGenerationSettings().removeFeature(
-                            GenerationStep.Feature.VEGETAL_DECORATION,
-                            VegetationPlacedFeatures.PATCH_BERRY_COMMON
+                            GenerationStep.Decoration.VEGETAL_DECORATION,
+                            VegetationPlacements.PATCH_BERRY_COMMON
                     ));
 
     grow(patchOf(ModCrops.BLUEBERRY), TAIGAS);
     grow(patch("patch_sweet_berry_bush"), TAIGAS);
   }
 
-  private static void grow(RegistryKey<PlacedFeature> patch, Predicate<BiomeSelectionContext> biomes) {
-    BiomeModifications.addFeature(biomes, GenerationStep.Feature.VEGETAL_DECORATION, patch);
+  private static void grow(ResourceKey<PlacedFeature> patch, Predicate<BiomeSelectionContext> biomes) {
+    BiomeModifications.addFeature(biomes, GenerationStep.Decoration.VEGETAL_DECORATION, patch);
   }
 
   /**
@@ -84,11 +83,11 @@ public final class ModWorldGen {
    * {@link CropDefinition} is: a patch pointing at a bush that spells itself differently would
    * still load, and would simply never generate.
    */
-  private static RegistryKey<PlacedFeature> patchOf(CropDefinition definition) {
+  private static ResourceKey<PlacedFeature> patchOf(CropDefinition definition) {
     return patch("patch_" + definition.blockName());
   }
 
-  private static RegistryKey<PlacedFeature> patch(String name) {
-    return RegistryKey.of(RegistryKeys.PLACED_FEATURE, new Identifier(RPG4Fools.MOD_ID, name));
+  private static ResourceKey<PlacedFeature> patch(String name) {
+    return ResourceKey.create(Registries.PLACED_FEATURE, new ResourceLocation(RPG4Fools.MOD_ID, name));
   }
 }

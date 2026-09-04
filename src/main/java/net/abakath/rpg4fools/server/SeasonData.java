@@ -2,16 +2,15 @@ package net.abakath.rpg4fools.server;
 
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.enums.SubSeason;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
-import net.minecraft.world.World;
-
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.DimensionDataStorage;
 import java.util.Objects;
 
-public class SeasonData extends PersistentState {
+public class SeasonData extends SavedData {
   private static final String KEY = "season";
   private static final SubSeason DEFAULT_SUB_SEASON = SubSeason.EARLY_SPRING;
 
@@ -21,13 +20,13 @@ public class SeasonData extends PersistentState {
    */
   private SubSeason subSeason = DEFAULT_SUB_SEASON;
 
-  private static final Type<SeasonData> type = new Type<>(
+  private static final Factory<SeasonData> type = new Factory<>(
           SeasonData::new,
           SeasonData::createFromNbt,
           null
   );
 
-  public static SeasonData createFromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+  public static SeasonData createFromNbt(CompoundTag nbt, HolderLookup.Provider registryLookup) {
     SeasonData seasonData = new SeasonData();
 
     int ordinal = nbt.getInt(KEY);
@@ -39,7 +38,7 @@ public class SeasonData extends PersistentState {
   }
 
   @Override
-  public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+  public CompoundTag save(CompoundTag nbt, HolderLookup.Provider registryLookup) {
     nbt.putInt(KEY, subSeason.ordinal());
     return nbt;
   }
@@ -58,12 +57,12 @@ public class SeasonData extends PersistentState {
     }
 
     this.subSeason = subSeason;
-    this.markDirty();
+    this.setDirty();
   }
 
   public static SeasonData getServerState(MinecraftServer server) {
-    PersistentStateManager persistentStateManager = Objects.requireNonNull(server.getWorld(World.OVERWORLD)).getPersistentStateManager();
+    DimensionDataStorage persistentStateManager = Objects.requireNonNull(server.getLevel(Level.OVERWORLD)).getDataStorage();
 
-    return persistentStateManager.getOrCreate(type, RPG4Fools.MOD_ID);
+    return persistentStateManager.computeIfAbsent(type, RPG4Fools.MOD_ID);
   }
 }

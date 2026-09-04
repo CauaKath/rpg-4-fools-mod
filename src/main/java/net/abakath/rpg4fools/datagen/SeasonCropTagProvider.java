@@ -7,10 +7,9 @@ import net.abakath.rpg4fools.init.ModCrops;
 import net.abakath.rpg4fools.world.CropDefinition;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.registry.RegistryWrapper;
-
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
@@ -34,12 +33,12 @@ import java.util.concurrent.CompletableFuture;
 public class SeasonCropTagProvider extends FabricTagProvider.BlockTagProvider {
   private static final Map<Block, Set<Season>> CROP_SEASONS = createCropSeasons();
 
-  public SeasonCropTagProvider(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+  public SeasonCropTagProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
     super(output, registriesFuture);
   }
 
   @Override
-  protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
+  protected void addTags(HolderLookup.Provider wrapperLookup) {
     FabricTagBuilder crops = getOrCreateTagBuilder(ModBlockTags.CROPS);
 
     // Built up front rather than on demand so a season nobody grows in still gets a tag file.

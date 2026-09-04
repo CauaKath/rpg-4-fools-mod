@@ -3,29 +3,28 @@ package net.abakath.rpg4fools.world;
 import com.mojang.serialization.MapCodec;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModItems;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.StateManager;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
-import net.minecraft.world.event.GameEvent;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import java.util.List;
 
 /**
@@ -63,7 +62,7 @@ import java.util.List;
  * moment something grew on it.
  */
 public class WalledCropBlock extends RegrowingCropBlock {
-  public static final MapCodec<WalledCropBlock> CODEC = createCodec(WalledCropBlock::new);
+  public static final MapCodec<WalledCropBlock> CODEC = simpleCodec(WalledCropBlock::new);
 
   /**
    * One roll in four takes a new cell.
@@ -74,32 +73,32 @@ public class WalledCropBlock extends RegrowingCropBlock {
   private static final int SPREAD_CHANCE = 4;
 
   /** The panel, drawn thick enough to click. One per axis, since the plant lies in a plane. */
-  private static final VoxelShape X_SHAPE = Block.createCuboidShape(0.0, 0.0, 6.0, 16.0, 16.0, 10.0);
-  private static final VoxelShape Z_SHAPE = Block.createCuboidShape(6.0, 0.0, 0.0, 10.0, 16.0, 16.0);
+  private static final VoxelShape X_SHAPE = Block.box(0.0, 0.0, 6.0, 16.0, 16.0, 10.0);
+  private static final VoxelShape Z_SHAPE = Block.box(6.0, 0.0, 0.0, 10.0, 16.0, 16.0);
 
-  public WalledCropBlock(Settings settings) {
+  public WalledCropBlock(Properties settings) {
     super(settings);
 
-    BlockState state = getDefaultState()
-            .with(CropWalls.AXIS, Direction.Axis.X)
-            .with(CropWalls.ARM, WallArm.CENTER)
-            .with(CropWalls.ROW, 0);
+    BlockState state = defaultBlockState()
+            .setValue(CropWalls.AXIS, Direction.Axis.X)
+            .setValue(CropWalls.ARM, WallArm.CENTER)
+            .setValue(CropWalls.ROW, 0);
 
     for (Direction direction : CropWalls.sideDirections()) {
-      state = state.with(CropWalls.side(direction), false);
+      state = state.setValue(CropWalls.side(direction), false);
     }
 
-    setDefaultState(state);
+    registerDefaultState(state);
   }
 
   @Override
-  public MapCodec<WalledCropBlock> getCodec() {
+  public MapCodec<WalledCropBlock> codec() {
     return CODEC;
   }
 
   @Override
-  protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-    super.appendProperties(builder);
+  protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    super.createBlockStateDefinition(builder);
     builder.add(CropWalls.AXIS, CropWalls.ARM, CropWalls.ROW);
 
     for (Direction direction : CropWalls.sideDirections()) {
@@ -108,8 +107,8 @@ public class WalledCropBlock extends RegrowingCropBlock {
   }
 
   @Override
-  public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-    return state.get(CropWalls.AXIS) == Direction.Axis.X ? X_SHAPE : Z_SHAPE;
+  public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+    return state.getValue(CropWalls.AXIS) == Direction.Axis.X ? X_SHAPE : Z_SHAPE;
   }
 
   /**
@@ -119,19 +118,19 @@ public class WalledCropBlock extends RegrowingCropBlock {
    * the bed was tilled, and would say nothing at all about the six cells that are off the ground.
    */
   @Override
-  protected boolean canPlantOnTop(BlockState floor, BlockView world, BlockPos pos) {
-    return floor.isOf(Blocks.FARMLAND);
+  protected boolean mayPlaceOn(BlockState floor, BlockGetter world, BlockPos pos) {
+    return floor.is(Blocks.FARMLAND);
   }
 
   @Override
-  public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
+  public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
     if (CropWalls.isRoot(state)) {
-      return super.canPlaceAt(state, world, pos);
+      return super.canSurvive(state, world, pos);
     }
 
     BlockState root = world.getBlockState(CropWalls.root(state, pos));
 
-    return root.isOf(this) && CropWalls.isRoot(root) && root.get(CropWalls.AXIS) == state.get(CropWalls.AXIS);
+    return root.is(this) && CropWalls.isRoot(root) && root.getValue(CropWalls.AXIS) == state.getValue(CropWalls.AXIS);
   }
 
   /**
@@ -144,9 +143,9 @@ public class WalledCropBlock extends RegrowingCropBlock {
    * neighbour is updated in turn.
    */
   @Override
-  public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState,
-                                             WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-    if (!state.canPlaceAt(world, pos)) {
+  public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
+                                             LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+    if (!state.canSurvive(world, pos)) {
       return CropWalls.wall(world, pos, false);
     }
 
@@ -155,7 +154,7 @@ public class WalledCropBlock extends RegrowingCropBlock {
     }
 
     // The same answer a bare panel gives, so the timber does not change shape when a vine covers it.
-    return state.with(CropWalls.side(direction), CropWalls.joins(world, pos, direction));
+    return state.setValue(CropWalls.side(direction), CropWalls.joins(world, pos, direction));
   }
 
   /**
@@ -170,19 +169,19 @@ public class WalledCropBlock extends RegrowingCropBlock {
    * the head of the tick and cancels the rest of it, so there is no season check to make here.
    */
   @Override
-  public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+  public void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
     BlockPos root = CropWalls.root(state, pos);
     BlockState rootState = world.getBlockState(root);
 
     // Stale address. The neighbour update that turns this cell back into a panel is already on its
     // way; nothing here should grow in the meantime.
-    if (!rootState.isOf(this) || !CropWalls.isRoot(rootState)) {
+    if (!rootState.is(this) || !CropWalls.isRoot(rootState)) {
       return;
     }
 
     // Measured at the root, like moisture. A cell in the shade of the wall it is growing on would
     // otherwise stall a plant whose bed is in full sun.
-    if (world.getBaseLightLevel(root, 0) < 9) {
+    if (world.getRawBrightness(root, 0) < 9) {
       return;
     }
 
@@ -224,8 +223,8 @@ public class WalledCropBlock extends RegrowingCropBlock {
    * <p>Measured at the root, like moisture and light. A plant is only ever as fed as its one bed,
    * however far across the wall it has reached.
    */
-  private int spreadChance(ServerWorld world, BlockPos root) {
-    return Compost.at(world, root.down()) == Compost.CREEPING ? SPREAD_CHANCE / 2 : SPREAD_CHANCE;
+  private int spreadChance(ServerLevel world, BlockPos root) {
+    return Compost.at(world, root.below()) == Compost.CREEPING ? SPREAD_CHANCE / 2 : SPREAD_CHANCE;
   }
 
   /**
@@ -240,11 +239,11 @@ public class WalledCropBlock extends RegrowingCropBlock {
    * spread, and a handful of meal should not carry it straight past the decision.
    */
   @Override
-  public void applyGrowth(World world, BlockPos pos, BlockState state) {
+  public void growCrops(Level world, BlockPos pos, BlockState state) {
     BlockPos root = CropWalls.root(state, pos);
     BlockState rootState = world.getBlockState(root);
 
-    if (!rootState.isOf(this) || !CropWalls.isRoot(rootState)) {
+    if (!rootState.is(this) || !CropWalls.isRoot(rootState)) {
       return;
     }
 
@@ -263,7 +262,7 @@ public class WalledCropBlock extends RegrowingCropBlock {
     }
 
     setPlantAge(world, root, rootState,
-            Math.min(getAge(rootState) + getGrowthAmount(world), getMaxAge()));
+            Math.min(getAge(rootState) + getBonemealAgeIncrease(world), getMaxAge()));
   }
 
   /**
@@ -277,20 +276,20 @@ public class WalledCropBlock extends RegrowingCropBlock {
    * at that age it will spread again if the player has since built more wall inside its reach.
    */
   @Override
-  public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-    if (!isMature(state)) {
-      return super.onUse(state, world, pos, player, hit);
+  public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+    if (!isMaxAge(state)) {
+      return super.useWithoutItem(state, world, pos, player, hit);
     }
 
-    if (!(world instanceof ServerWorld serverWorld)) {
-      return ActionResult.SUCCESS;
+    if (!(world instanceof ServerLevel serverWorld)) {
+      return InteractionResult.SUCCESS;
     }
 
     BlockPos root = CropWalls.root(state, pos);
     BlockState rootState = serverWorld.getBlockState(root);
 
-    if (!rootState.isOf(this) || !CropWalls.isRoot(rootState)) {
-      return super.onUse(state, world, pos, player, hit);
+    if (!rootState.is(this) || !CropWalls.isRoot(rootState)) {
+      return super.useWithoutItem(state, world, pos, player, hit);
     }
 
     int cells = CropWalls.cells(serverWorld, root, rootState).size();
@@ -300,15 +299,15 @@ public class WalledCropBlock extends RegrowingCropBlock {
       picked += 1 + serverWorld.random.nextInt(3);
     }
 
-    CropHarvest.drop(serverWorld, root, root.down(), new ItemStack(produce(), picked));
+    CropHarvest.drop(serverWorld, root, root.below(), new ItemStack(produce(), picked));
     setPlantAge(serverWorld, root, rootState, adultAge());
 
-    serverWorld.emitGameEvent(GameEvent.BLOCK_CHANGE, root,
-            GameEvent.Emitter.of(player, serverWorld.getBlockState(root)));
-    serverWorld.playSound(null, root, SoundEvents.BLOCK_CROP_BREAK, SoundCategory.BLOCKS,
+    serverWorld.gameEvent(GameEvent.BLOCK_CHANGE, root,
+            GameEvent.Context.of(player, serverWorld.getBlockState(root)));
+    serverWorld.playSound(null, root, SoundEvents.CROP_BREAK, SoundSource.BLOCKS,
             1.0F, 0.8F + serverWorld.random.nextFloat() * 0.4F);
 
-    return ActionResult.SUCCESS;
+    return InteractionResult.SUCCESS;
   }
 
   /**
@@ -318,7 +317,7 @@ public class WalledCropBlock extends RegrowingCropBlock {
    * by looking rather than by remembering means a plant loaded from a save, or one whose shoot was
    * broken off, picks up wherever it actually is.
    */
-  private BlockPos filling(WorldView world, BlockPos root, BlockState rootState) {
+  private BlockPos filling(LevelReader world, BlockPos root, BlockState rootState) {
     for (BlockPos cell : CropWalls.cells(world, root, rootState)) {
       if (getAge(world.getBlockState(cell)) < adultAge()) {
         return cell;
@@ -329,21 +328,21 @@ public class WalledCropBlock extends RegrowingCropBlock {
   }
 
   /** Advances one cell by one age, on a roll the plant's own bed decides. */
-  private void grow(ServerWorld world, BlockPos root, BlockPos pos, Random random) {
+  private void grow(ServerLevel world, BlockPos root, BlockPos pos, RandomSource random) {
     if (!rolls(world, root, random)) {
       return;
     }
 
     BlockState state = world.getBlockState(pos);
 
-    world.setBlockState(pos, state.with(getAgeProperty(), getAge(state) + 1), Block.NOTIFY_LISTENERS);
+    world.setBlock(pos, state.setValue(getAgeProperty(), getAge(state) + 1), Block.UPDATE_CLIENTS);
   }
 
   /** The same, for bone meal, and never past the age where the plant decides to spread. */
-  private void feed(World world, BlockPos pos, BlockState state) {
-    int fed = Math.min(getAge(state) + getGrowthAmount(world), adultAge());
+  private void feed(Level world, BlockPos pos, BlockState state) {
+    int fed = Math.min(getAge(state) + getBonemealAgeIncrease(world), adultAge());
 
-    world.setBlockState(pos, state.with(getAgeProperty(), fed), Block.NOTIFY_LISTENERS);
+    world.setBlock(pos, state.setValue(getAgeProperty(), fed), Block.UPDATE_CLIENTS);
   }
 
   /**
@@ -353,8 +352,8 @@ public class WalledCropBlock extends RegrowingCropBlock {
    * another panel, or whatever the wall happens to be standing on. Reading it at the root means the
    * plant grows at the rate its one bed allows however far it has spread.
    */
-  private boolean rolls(ServerWorld world, BlockPos pos, Random random) {
-    float moisture = getAvailableMoisture(this, world, pos);
+  private boolean rolls(ServerLevel world, BlockPos pos, RandomSource random) {
+    float moisture = getGrowthSpeed(this, world, pos);
 
     return random.nextInt((int) (25.0F / moisture) + 1) == 0;
   }
@@ -366,24 +365,24 @@ public class WalledCropBlock extends RegrowingCropBlock {
    * grown is what would make a covered wall look assembled rather than grown, and starting from
    * nothing is also what pays for the coverage: the shoot has to fill in before anything ripens.
    */
-  private void spread(World world, BlockPos root, BlockState rootState, BlockPos target) {
-    Direction.Axis axis = rootState.get(CropWalls.AXIS);
+  private void spread(Level world, BlockPos root, BlockState rootState, BlockPos target) {
+    Direction.Axis axis = rootState.getValue(CropWalls.AXIS);
     int offset = axis == Direction.Axis.X ? target.getX() - root.getX() : target.getZ() - root.getZ();
 
     // The joins are worked out here as well as on neighbour update, because a neighbour update reaches
     // the blocks around a change and never the change itself.
-    world.setBlockState(target, CropWalls.joins(world, target, getDefaultState()
-            .with(CropWalls.AXIS, axis)
-            .with(CropWalls.ARM, WallArm.at(offset))
-            .with(CropWalls.ROW, target.getY() - root.getY())), Block.NOTIFY_ALL);
+    world.setBlock(target, CropWalls.joins(world, target, defaultBlockState()
+            .setValue(CropWalls.AXIS, axis)
+            .setValue(CropWalls.ARM, WallArm.at(offset))
+            .setValue(CropWalls.ROW, target.getY() - root.getY())), Block.UPDATE_ALL);
   }
 
   /** Writes one age to every cell, so the plant is never caught half ripe. */
-  private void setPlantAge(World world, BlockPos root, BlockState rootState, int age) {
+  private void setPlantAge(Level world, BlockPos root, BlockState rootState, int age) {
     for (BlockPos cell : CropWalls.cells(world, root, rootState)) {
       BlockState state = world.getBlockState(cell);
 
-      world.setBlockState(cell, state.with(getAgeProperty(), age), Block.NOTIFY_LISTENERS);
+      world.setBlock(cell, state.setValue(getAgeProperty(), age), Block.UPDATE_CLIENTS);
     }
   }
 

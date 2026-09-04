@@ -3,11 +3,11 @@ package net.abakath.rpg4fools.mixin;
 import net.abakath.rpg4fools.world.CompostGrowth;
 import net.abakath.rpg4fools.world.CropTransition;
 import net.abakath.rpg4fools.world.CurrentSeason;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -32,10 +32,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * is a set membership test against the block's registry entry, and every block that is not a crop
  * pays only that.
  */
-@Mixin(AbstractBlock.AbstractBlockState.class)
+@Mixin(BlockBehaviour.BlockStateBase.class)
 public class BlockStateRandomTickMixin {
   @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
-  private void rpg4fools$settleOutOfSeasonCrops(ServerWorld world, BlockPos pos, Random random, CallbackInfo info) {
+  private void rpg4fools$settleOutOfSeasonCrops(ServerLevel world, BlockPos pos, RandomSource random, CallbackInfo info) {
     BlockState state = (BlockState) (Object) this;
 
     // Cancelled only when the block was replaced. Whatever is standing there now is not the block
