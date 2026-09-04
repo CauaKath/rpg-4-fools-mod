@@ -35,6 +35,9 @@ SITE = "https://cauakath.github.io/rpg-4-fools-mod/"
 
 # Newest first, which is the order the index lists them in.
 VERSIONS = [
+    ("0.5.2", "What the shears take",
+     "Shears clear the remains of a plant that died on a trellis, one plant's worth per snip, and "
+     "leave the sticks and panels standing."),
     ("0.5.1", "Vine, timber and soil",
      "A cucumber with a stick through it, compost soil that read as a different block, dead growth "
      "that kept none of the plant's shape, and a trellis that was a ladder. Four sprite passes, no "
@@ -139,6 +142,21 @@ def content(name):
     return (HERE / "content" / (name + ".html")).read_text().strip()
 
 
+# The release the mod moved to 26.2 in. Anything earlier ran on 1.20.6 and its page should go on
+# saying so - a footer that claims otherwise is a page telling you to try it on a game it will not
+# load on.
+PORT = (0, 5, 0)
+
+
+def game(version):
+    if version is None:
+        return "Minecraft 26.2"
+
+    numbers = tuple(int(part) for part in version.split("."))
+
+    return "Minecraft 26.2" if numbers >= PORT else "Minecraft 1.20.6"
+
+
 def footer(version):
     left = "RPG 4 Fools" if version is None else "RPG 4 Fools " + version
     notes = "" if version is None else "\n    <span>Block sprites shown at 4×, items at 2×</span>"
@@ -146,7 +164,7 @@ def footer(version):
     return (
         '  <footer>\n'
         '    <span>' + left + '</span>\n'
-        '    <span>Minecraft 1.20.6 · Fabric</span>' + notes + '\n'
+        '    <span>' + game(version) + ' · Fabric</span>' + notes + '\n'
         '    <span><a href="' + REPO + '">Source on GitHub</a></span>\n'
         '  </footer>'
     )
