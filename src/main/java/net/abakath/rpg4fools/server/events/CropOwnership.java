@@ -73,7 +73,7 @@ public final class CropOwnership {
   }
 
   /** Records the foot of whatever grew or was built here, if anything did. */
-  private static void claim(ServerLevel world, BlockPos pos) {
+  public static void claim(ServerLevel world, BlockPos pos) {
     BlockState state = world.getBlockState(pos);
 
     if (CropSticks.isColumn(state)) {
