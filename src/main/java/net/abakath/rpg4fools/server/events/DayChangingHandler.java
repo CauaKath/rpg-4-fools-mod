@@ -53,7 +53,7 @@ public class DayChangingHandler implements ServerTickEvents.StartTick {
                 return;
             }
 
-            long time = server.overworld().getDayTime();
+            long time = server.overworld().getOverworldClockTime();
 
             if (time <= 0) {
                 return;
@@ -72,7 +72,7 @@ public class DayChangingHandler implements ServerTickEvents.StartTick {
                 lastSeason = null;
             }
 
-            long time = server.overworld().getDayTime();
+            long time = server.overworld().getOverworldClockTime();
 
             if (time <= 0) {
                 return;

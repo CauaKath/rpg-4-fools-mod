@@ -65,13 +65,12 @@ public class SeasonPlantingGate {
    * gets to run.
    */
   private static InteractionResult refuse(Player player, Level world, BlockState crop, Season season, String key) {
-    player.displayClientMessage(
+    player.sendOverlayMessage(
             Component.translatable(
                     key,
                     crop.getBlock().getName(),
                     Component.literal(season.getName()).withStyle(season.getColor())
-            ),
-            true
+            )
     );
 
     return InteractionResult.FAIL;

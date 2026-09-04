@@ -1,11 +1,10 @@
 {
   "required": true,
   "package": "net.abakath.rpg4fools.mixin.client",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "client": [
-    "ClientLevelSkyColorMixin",
-    "FogRendererFogColorMixin",
-    "FogRendererFogDistanceMixin"
+    "AtmosphericFogEnvironmentMixin",
+    "EnvironmentAttributeProbeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

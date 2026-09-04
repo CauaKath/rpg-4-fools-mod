@@ -1,6 +1,6 @@
 package net.abakath.rpg4fools.enums;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public enum Holiday {
   CHRISTMAS("Christmas", 25, 12),
@@ -20,10 +20,10 @@ public enum Holiday {
     return name;
   }
 
-  public ResourceLocation getHolidayTexture() {
+  public Identifier getHolidayTexture() {
     return switch (this) {
-      case CHRISTMAS -> new ResourceLocation("rpg4fools", "textures/gui/christmas.png");
-      case HALLOWEEN -> new ResourceLocation("rpg4fools", "textures/gui/halloween.png");
+      case CHRISTMAS -> Identifier.fromNamespaceAndPath("rpg4fools", "textures/gui/christmas.png");
+      case HALLOWEEN -> Identifier.fromNamespaceAndPath("rpg4fools", "textures/gui/halloween.png");
     };
   }
 

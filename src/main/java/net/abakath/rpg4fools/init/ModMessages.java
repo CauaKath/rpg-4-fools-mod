@@ -15,6 +15,6 @@ public class ModMessages {
    * client.
    */
   public static void registerS2CPackets() {
-    PayloadTypeRegistry.playS2C().register(SeasonUpdatePacket.ID, SeasonUpdatePacket.CODEC);
+    PayloadTypeRegistry.clientboundPlay().register(SeasonUpdatePacket.ID, SeasonUpdatePacket.CODEC);
   }
 }

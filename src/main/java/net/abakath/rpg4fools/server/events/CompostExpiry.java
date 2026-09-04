@@ -71,7 +71,7 @@ public final class CompostExpiry {
       WAITING.clear();
     });
 
-    ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
+    ServerChunkEvents.CHUNK_LOAD.register((world, chunk, generated) -> {
       if (!swept || CompostedChunks.get(world).current(chunk.getPos())) {
         return;
       }

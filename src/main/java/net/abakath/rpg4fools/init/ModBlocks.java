@@ -13,7 +13,9 @@ import net.abakath.rpg4fools.world.StickedCropBlock;
 import net.abakath.rpg4fools.world.WalledCropBlock;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -23,6 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Blocks the mod adds.
@@ -32,34 +35,34 @@ import java.util.Map;
  * built from {@link ModCrops} are the opposite, and their items are registered in {@link ModItems}.
  */
 public class ModBlocks {
-  public static final Block DEAD_CROP = register("dead_crop", new DeadCropBlock(
+  public static final Block DEAD_CROP = register("dead_crop", DeadCropBlock::new,
           BlockBehaviour.Properties.of()
                   // Ticks so a village farm nobody had loaded when spring came can still be sown
                   // again on its first tick, the way an out of season crop is settled late.
                   .randomTicks()
                   .instabreak()
-                  .noCollission()
+                  .noCollision()
                   // No loot table of its own. A dead crop is a loss, not a harvest, and saying so
                   // here avoids shipping an empty loot table file.
                   .noLootTable()
                   .sound(SoundType.CROP)
                   .pushReaction(PushReaction.DESTROY)
-  ));
+  );
 
   /**
    * The off season form of a sweet berry bush. Sits in the crops tag, unlike DEAD_CROP, because the
    * season hook has to keep looking at it: that hook is the only thing that can revive it.
    */
-  public static final Block DORMANT_SWEET_BERRY_BUSH = register("dormant_sweet_berry_bush", new DormantBerryBushBlock(
+  public static final Block DORMANT_SWEET_BERRY_BUSH = register("dormant_sweet_berry_bush", DormantBerryBushBlock::new,
           BlockBehaviour.Properties.of()
                   // Still ticks. Revival is decided at the head of the random tick, so a block that
                   // stopped ticking would never come back.
                   .randomTicks()
-                  .noCollission()
+                  .noCollision()
                   .noLootTable()
                   .sound(SoundType.SWEET_BERRY_BUSH)
                   .pushReaction(PushReaction.DESTROY)
-  ));
+  );
 
   /**
    * A trellis with nothing on it. Gets a BlockItem, unlike the two blocks above: this one is a thing
@@ -69,14 +72,14 @@ public class ModBlocks {
    * hook has no business looking at it - an empty stick is what a sticked crop becomes when its
    * season ends, not something a season can do anything to.
    */
-  public static final Block CROP_STICK = register("crop_stick", new CropStickBlock(
+  public static final Block CROP_STICK = register("crop_stick", CropStickBlock::new,
           BlockBehaviour.Properties.of()
-                  .noCollission()
+                  .noCollision()
                   .instabreak()
                   .noOcclusion()
                   .sound(SoundType.WOOD)
                   .pushReaction(PushReaction.DESTROY)
-  ));
+  );
 
   /**
    * A trellis panel. Gets a BlockItem for the same reason the stick does, and like the stick it is
@@ -85,14 +88,14 @@ public class ModBlocks {
    * <p>Asks nothing of the world it is placed in - no support, no farmland, no size limit - because
    * half of what it is for is being scenery. See {@link CropWallBlock}.
    */
-  public static final Block CROP_WALL = register("crop_wall", new CropWallBlock(
+  public static final Block CROP_WALL = register("crop_wall", CropWallBlock::new,
           BlockBehaviour.Properties.of()
-                  .noCollission()
+                  .noCollision()
                   .instabreak()
                   .noOcclusion()
                   .sound(SoundType.WOOD)
                   .pushReaction(PushReaction.DESTROY)
-  ));
+  );
 
   private static final Map<CropDefinition, Block> LIVE = new LinkedHashMap<>();
   private static final Map<CropDefinition, Block> DORMANT = new LinkedHashMap<>();
@@ -105,7 +108,7 @@ public class ModBlocks {
       if (definition.kind() == CropDefinition.Kind.FARMLAND) {
         BlockBehaviour.Properties settings = BlockBehaviour.Properties.of()
                 .randomTicks()
-                .noCollission()
+                .noCollision()
                 .instabreak()
                 .sound(SoundType.CROP)
                 .pushReaction(PushReaction.DESTROY);
@@ -113,56 +116,56 @@ public class ModBlocks {
         // Same crop in every way a farmland crop is asked about; the roster only decides whether
         // picking it leaves the plant standing.
         register(definition, LIVE, definition.blockName(),
-                definition.regrows() ? new RegrowingCropBlock(settings) : new ModCropBlock(settings));
+                definition.regrows() ? RegrowingCropBlock::new : ModCropBlock::new, settings);
 
         // The same crop again, as it grows on a trellis. A second block rather than a property on
         // the first: which one the player is looking at decides the models, the loot and whether a
         // season leaves sticks behind, and none of that is a state the plain crop should carry.
         if (definition.sticked()) {
-          register(definition, STICKED, definition.stickedBlockName(), new StickedCropBlock(
+          register(definition, STICKED, definition.stickedBlockName(), StickedCropBlock::new,
                   BlockBehaviour.Properties.of()
                           .randomTicks()
-                          .noCollission()
+                          .noCollision()
                           .instabreak()
                           .sound(SoundType.CROP)
                           .pushReaction(PushReaction.DESTROY)
-          ));
+          );
         }
 
         // And again, as it spreads over a wall. A separate block for the same reasons the sticked
         // form is one, plus a rule the sticked form has no need of: a cell of this block turns back
         // into the panel it grew on, rather than dropping, when it loses its root.
         if (definition.walled()) {
-          register(definition, WALLED, definition.walledBlockName(), new WalledCropBlock(
+          register(definition, WALLED, definition.walledBlockName(), WalledCropBlock::new,
                   BlockBehaviour.Properties.of()
                           .randomTicks()
-                          .noCollission()
+                          .noCollision()
                           .instabreak()
                           .sound(SoundType.CROP)
                           .pushReaction(PushReaction.DESTROY)
-          ));
+          );
         }
 
         continue;
       }
 
-      register(definition, LIVE, definition.blockName(), new ModBerryBushBlock(
+      register(definition, LIVE, definition.blockName(), ModBerryBushBlock::new,
               BlockBehaviour.Properties.of()
                       .randomTicks()
-                      .noCollission()
+                      .noCollision()
                       .sound(SoundType.SWEET_BERRY_BUSH)
                       .pushReaction(PushReaction.DESTROY)
-      ));
+      );
 
       // Dormant bushes drop nothing, matching the dormant sweet berry bush this mod already ships.
-      register(definition, DORMANT, definition.dormantBlockName(), new DormantBerryBushBlock(
+      register(definition, DORMANT, definition.dormantBlockName(), DormantBerryBushBlock::new,
               BlockBehaviour.Properties.of()
                       .randomTicks()
-                      .noCollission()
+                      .noCollision()
                       .noLootTable()
                       .sound(SoundType.SWEET_BERRY_BUSH)
                       .pushReaction(PushReaction.DESTROY)
-      ));
+      );
     }
   }
 
@@ -225,15 +228,25 @@ public class ModBlocks {
     return blocks;
   }
 
-  private static void register(CropDefinition definition, Map<CropDefinition, Block> into, String name, Block block) {
-    Block registered = register(name, block);
+  private static void register(CropDefinition definition, Map<CropDefinition, Block> into, String name,
+                              Function<BlockBehaviour.Properties, Block> factory,
+                              BlockBehaviour.Properties settings) {
+    Block registered = register(name, factory, settings);
 
     into.put(definition, registered);
     BY_BLOCK.put(registered, definition);
   }
 
-  private static Block register(String name, Block block) {
-    return Registry.register(BuiltInRegistries.BLOCK, new ResourceLocation(RPG4Fools.MOD_ID, name), block);
+  /**
+   * A block has to be told its own registry key before it is constructed, so the key is built here
+   * and the block is made from a factory rather than handed over already built.
+   */
+  private static Block register(String name, Function<BlockBehaviour.Properties, Block> factory,
+                                BlockBehaviour.Properties settings) {
+    ResourceKey<Block> key =
+            ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, name));
+
+    return Registry.register(BuiltInRegistries.BLOCK, key, factory.apply(settings.setId(key)));
   }
 
   /**

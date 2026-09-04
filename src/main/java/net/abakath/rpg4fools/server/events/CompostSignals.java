@@ -6,7 +6,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import org.joml.Vector3f;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -31,7 +30,7 @@ public class CompostSignals implements ServerTickEvents.EndTick {
   /** Ticks between puffs. Often enough to look continuous, rare enough to be free. */
   private static final int INTERVAL = 20;
 
-  private static final Map<Compost, Vector3f> COLOURS = new EnumMap<>(Compost.class);
+  private static final Map<Compost, Integer> COLOURS = new EnumMap<>(Compost.class);
 
   static {
     COLOURS.put(Compost.RICH, colour(186, 162, 94));
@@ -47,7 +46,7 @@ public class CompostSignals implements ServerTickEvents.EndTick {
 
     for (ServerLevel world : server.getAllLevels()) {
       PendingCompost.get(world).forEach(world, (pos, kind) -> {
-        Vector3f colour = COLOURS.get(kind);
+        Integer colour = COLOURS.get(kind);
 
         if (colour == null) {
           return;
@@ -60,7 +59,8 @@ public class CompostSignals implements ServerTickEvents.EndTick {
     }
   }
 
-  private static Vector3f colour(int red, int green, int blue) {
-    return new Vector3f(red / 255.0F, green / 255.0F, blue / 255.0F);
+  /** Packed 0xRRGGBB, which is what DustParticleOptions takes now instead of a vector. */
+  private static int colour(int red, int green, int blue) {
+    return (red << 16) | (green << 8) | blue;
   }
 }

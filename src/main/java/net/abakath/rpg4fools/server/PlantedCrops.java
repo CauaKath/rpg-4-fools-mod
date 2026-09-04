@@ -1,15 +1,20 @@
 package net.abakath.rpg4fools.server;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.world.CropSeasons;
 import net.abakath.rpg4fools.world.CropSticks;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import java.util.stream.LongStream;
 
 /**
  * Which crops a player put in the ground.
@@ -32,30 +37,32 @@ public class PlantedCrops extends SavedData {
 
   private final LongOpenHashSet positions = new LongOpenHashSet();
 
-  private static final Factory<PlantedCrops> type = new Factory<>(
+  private static final Codec<PlantedCrops> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+          Codec.LONG_STREAM.optionalFieldOf(KEY, LongStream.empty()).forGetter(state -> LongStream.of(state.positions.toLongArray()))
+  ).apply(instance, PlantedCrops::fromPositions));
+
+  private static final SavedDataType<PlantedCrops> TYPE = new SavedDataType<>(
+          Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "planted_crops"),
           PlantedCrops::new,
-          PlantedCrops::createFromNbt,
-          null
+          CODEC,
+          // Not null. SavedDataStorage calls update on this without checking, so a null one throws
+          // the moment a saved file actually exists - which is every load after the first save.
+          // No vanilla type describes a mod's own data, so this is the one with the least to do:
+          // its schema is a bare long array, and the fixers only run at all when the stored data
+          // version is older than the current one.
+          DataFixTypes.SAVED_DATA_FORCED_CHUNKS
   );
 
   public static PlantedCrops get(ServerLevel world) {
-    return world.getDataStorage().computeIfAbsent(type, "rpg4fools_planted_crops");
+    return world.getDataStorage().computeIfAbsent(TYPE);
   }
 
-  public static PlantedCrops createFromNbt(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+  private static PlantedCrops fromPositions(LongStream stored) {
     PlantedCrops planted = new PlantedCrops();
 
-    for (long position : nbt.getLongArray(KEY)) {
-      planted.positions.add(position);
-    }
+    stored.forEach(planted.positions::add);
 
     return planted;
-  }
-
-  @Override
-  public CompoundTag save(CompoundTag nbt, HolderLookup.Provider registryLookup) {
-    nbt.putLongArray(KEY, positions.toLongArray());
-    return nbt;
   }
 
   public void remember(BlockPos pos) {

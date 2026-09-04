@@ -122,31 +122,27 @@ public final class ClientSeasonState {
     // rebuilt chunks would come back carrying the previous day's colours.
     world.clearTintCaches();
 
-    // Every section the storage holds, marked one at a time.
+    // Every section the storage holds, marked in one range call.
     //
-    // Not WorldRenderer#scheduleBlockRenders, which reads as the obvious fit and is not. It takes
-    // block coordinates and shifts them down to sections itself, so a whole view distance handed to
-    // it would loop over every block in the world height, hundreds of millions of iterations for
-    // the hundred thousand sections underneath them. scheduleBlockRender is the section level entry
-    // point the range version calls once it has done the shifting.
+    // setSectionRangeDirty takes section coordinates and walks them inclusively, marking each one.
+    // Not setBlocksDirty, which reads as the obvious fit and is not: it takes block coordinates and
+    // shifts them down to sections itself, so a whole view distance handed to it would loop over
+    // every block in the world height, hundreds of millions of iterations for the hundred thousand
+    // sections underneath them.
     //
-    // The horizontal span is deliberately 2 * viewDistance + 1, the width of BuiltChunkStorage
+    // The horizontal span is deliberately 2 * viewDistance + 1, the width of the section storage
     // itself. It indexes by coordinate modulo that width, so a run of exactly that many consecutive
     // coordinates lands on every slot once, wherever the storage happens to be centred, and the
     // camera sitting off the player cannot leave a column out. The view distance is read back from
-    // the options because WorldRenderer reloads itself whenever the two disagree.
+    // the options because the level renderer reloads itself whenever the two disagree.
+    //
+    // getMaxSectionY is the last section rather than one past it, which is what the inclusive
+    // bounds of setSectionRangeDirty want.
     int radius = client.options.getEffectiveRenderDistance();
     ChunkPos center = client.player.chunkPosition();
 
-    int bottom = world.getMinSection();
-    int top = world.getMaxSection();
-
-    for (int x = center.x - radius; x <= center.x + radius; x++) {
-      for (int z = center.z - radius; z <= center.z + radius; z++) {
-        for (int y = bottom; y < top; y++) {
-          client.levelRenderer.setSectionDirty(x, y, z);
-        }
-      }
-    }
+    world.setSectionRangeDirty(
+            center.x() - radius, world.getMinSectionY(), center.z() - radius,
+            center.x() + radius, world.getMaxSectionY(), center.z() + radius);
   }
 }

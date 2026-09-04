@@ -2,16 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "SSS",
-    "SSS"
+    "SS",
+    "SS"
   ],
   "key": {
-    "S": {
-      "item": "minecraft:stick"
-    }
+    "S": "minecraft:stick"
   },
   "result": {
-    "id": "rpg4fools:crop_wall",
+    "id": "rpg4fools:crop_stick",
     "count": 2
   }
 }

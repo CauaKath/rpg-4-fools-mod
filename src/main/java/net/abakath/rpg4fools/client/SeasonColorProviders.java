@@ -3,12 +3,15 @@ package net.abakath.rpg4fools.client;
 import net.abakath.rpg4fools.enums.SubSeason;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.ItemLike;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import java.util.List;
 
 /**
  * Registers the season aware block and item tints.
@@ -23,18 +26,23 @@ import net.minecraft.world.level.block.Blocks;
  */
 @Environment(EnvType.CLIENT)
 public final class SeasonColorProviders {
-  /** Vanilla tint index for the tinted quads of grass and leaf models. */
-  private static final int TINTED_LAYER = 0;
-
   private static final int DEFAULT_GRASS_COLOR = 0x91BD59;
   private static final int DEFAULT_FOLIAGE_COLOR = 0x48B518;
   private static final int BIRCH_FOLIAGE_COLOR = 0x80A755;
   private static final int SPRUCE_FOLIAGE_COLOR = 0x619961;
-  private static final int MANGROVE_FOLIAGE_COLOR = 0x92C648;
   private static final int LILY_PAD_COLOR = 0x208030;
 
+  /** Vanilla's DryFoliageColor.FOLIAGE_DRY_DEFAULT, for leaf litter with no position to sample. */
+  private static final int DEFAULT_DRY_FOLIAGE_COLOR = 0x5C3C32;
 
-  /** Blocks vanilla tints from the biome grass colour. */
+
+  /**
+   * Blocks vanilla tints from the biome grass colour.
+   *
+   * <p>Mirrors what BlockColors.createDefault hands the grass, grassBlock, doubleTallGrass and
+   * sugarCane sources, all of which read that one colour. Bush, pink petals and wildflowers were
+   * added to that set after 1.20.6.
+   */
   private static final Block[] GRASS_BLOCKS = {
           Blocks.GRASS_BLOCK,
           Blocks.SHORT_GRASS,
@@ -42,10 +50,18 @@ public final class SeasonColorProviders {
           Blocks.FERN,
           Blocks.LARGE_FERN,
           Blocks.POTTED_FERN,
-          Blocks.SUGAR_CANE
+          Blocks.SUGAR_CANE,
+          Blocks.BUSH,
+          Blocks.PINK_PETALS,
+          Blocks.WILDFLOWERS
   };
 
-  /** Blocks vanilla tints from the biome foliage colour. */
+  /**
+   * Blocks vanilla tints from the biome foliage colour.
+   *
+   * <p>Still exactly the six vanilla hands its foliage source. Pale oak, cherry and azalea leaves
+   * are deliberately absent, because vanilla gives them no tint source at all.
+   */
   private static final Block[] FOLIAGE_BLOCKS = {
           Blocks.OAK_LEAVES,
           Blocks.JUNGLE_LEAVES,
@@ -84,30 +100,40 @@ public final class SeasonColorProviders {
 
   public static void register() {
     registerBiomeTintedBlocks();
+    registerDryFoliageBlocks();
     registerFixedColorBlocks();
-    registerItems();
   }
 
+  /**
+   * A block's tints are a list of sources now, one per tint index, and these models only tint at
+   * index 0 - hence the single element. Each source answers twice: colorInWorld for a block in the
+   * world, and color for one with no position to sample, which is the inventory icon and the
+   * fallback the old provider handled with a null check.
+   */
   private static void registerBiomeTintedBlocks() {
-    ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) -> {
-      if (tintIndex != TINTED_LAYER) {
-        return -1;
-      }
-      if (world == null || pos == null) {
+    BlockColorRegistry.register(List.of(new BlockTintSource() {
+      @Override
+      public int color(BlockState state) {
         return applySeasonTint(DEFAULT_GRASS_COLOR);
       }
-      return applySeasonTint(BiomeColors.getAverageGrassColor(world, pos));
-    }, GRASS_BLOCKS);
 
-    ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) -> {
-      if (tintIndex != TINTED_LAYER) {
-        return -1;
+      @Override
+      public int colorInWorld(BlockState state, BlockAndTintGetter world, BlockPos pos) {
+        return applySeasonTint(BiomeColors.getAverageGrassColor(world, pos));
       }
-      if (world == null || pos == null) {
+    }), GRASS_BLOCKS);
+
+    BlockColorRegistry.register(List.of(new BlockTintSource() {
+      @Override
+      public int color(BlockState state) {
         return applySeasonTint(DEFAULT_FOLIAGE_COLOR);
       }
-      return applySeasonTint(BiomeColors.getAverageFoliageColor(world, pos));
-    }, FOLIAGE_BLOCKS);
+
+      @Override
+      public int colorInWorld(BlockState state, BlockAndTintGetter world, BlockPos pos) {
+        return applySeasonTint(BiomeColors.getAverageFoliageColor(world, pos));
+      }
+    }), FOLIAGE_BLOCKS);
   }
 
   /**
@@ -118,6 +144,25 @@ public final class SeasonColorProviders {
    * colour provider would never be consulted. Tinting them means shipping model overrides, which is
    * left for a follow up. The same applies to flowers.
    */
+  /**
+   * Leaf litter reads the dry foliage colour, a separate biome colour added after 1.20.6. Its own
+   * source rather than a foliage one, so a badlands keeps the brown vanilla intends and the season
+   * grade rides on top of that instead of on a green.
+   */
+  private static void registerDryFoliageBlocks() {
+    BlockColorRegistry.register(List.of(new BlockTintSource() {
+      @Override
+      public int color(BlockState state) {
+        return applySeasonTint(DEFAULT_DRY_FOLIAGE_COLOR);
+      }
+
+      @Override
+      public int colorInWorld(BlockState state, BlockAndTintGetter world, BlockPos pos) {
+        return applySeasonTint(BiomeColors.getAverageDryFoliageColor(world, pos));
+      }
+    }), Blocks.LEAF_LITTER);
+  }
+
   private static void registerFixedColorBlocks() {
     registerFixedColorBlock(Blocks.BIRCH_LEAVES, BIRCH_FOLIAGE_COLOR);
     registerFixedColorBlock(Blocks.SPRUCE_LEAVES, SPRUCE_FOLIAGE_COLOR);
@@ -125,31 +170,13 @@ public final class SeasonColorProviders {
   }
 
   private static void registerFixedColorBlock(Block block, int baseColor) {
-    ColorProviderRegistry.BLOCK.register(
-            (state, world, pos, tintIndex) -> tintIndex == TINTED_LAYER ? applySeasonTint(baseColor) : -1,
-            block
-    );
+    BlockColorRegistry.register(List.of((BlockTintSource) state -> applySeasonTint(baseColor)), block);
   }
 
-  /**
-   * Inventory icons follow the season too. Previously the grass items were pinned to a constant and
-   * the leaf items to their vanilla colour, so the inventory disagreed with the world.
-   */
-  private static void registerItems() {
-    registerFixedColorItem(DEFAULT_GRASS_COLOR, Items.GRASS_BLOCK, Items.SHORT_GRASS, Items.TALL_GRASS, Items.FERN, Items.LARGE_FERN, Items.SUGAR_CANE);
-    registerFixedColorItem(DEFAULT_FOLIAGE_COLOR, Items.OAK_LEAVES, Items.JUNGLE_LEAVES, Items.ACACIA_LEAVES, Items.DARK_OAK_LEAVES, Items.VINE);
-    registerFixedColorItem(BIRCH_FOLIAGE_COLOR, Items.BIRCH_LEAVES);
-    registerFixedColorItem(SPRUCE_FOLIAGE_COLOR, Items.SPRUCE_LEAVES);
-    registerFixedColorItem(MANGROVE_FOLIAGE_COLOR, Items.MANGROVE_LEAVES);
-    registerFixedColorItem(LILY_PAD_COLOR, Items.LILY_PAD);
-  }
-
-  private static void registerFixedColorItem(int baseColor, ItemLike... items) {
-    ColorProviderRegistry.ITEM.register(
-            (stack, tintIndex) -> tintIndex == TINTED_LAYER ? applySeasonTint(baseColor) : -1,
-            items
-    );
-  }
+  // Inventory icons no longer follow the season. Item tinting moved out of code entirely: a tint is
+  // an ItemTintSource named by an item model definition, so grading these would mean registering a
+  // custom source type and shipping model overrides for every vanilla item involved. That is a
+  // feature rather than a port step, so it is left for a follow up and the world is graded alone.
 
   /**
    * Grades a biome colour by the current season. The tint is interpolated between the current sub
@@ -162,11 +189,11 @@ public final class SeasonColorProviders {
     float[] hsb = HSB_SCRATCH.get();
     ColorMath.rgbToHsb(rgb, hsb);
 
-    return ColorMath.hsbToRgb(
+    return ColorMath.opaque(ColorMath.hsbToRgb(
             hsb[0] + current.hueShift(),
             hsb[1] * current.saturationFactor(),
             hsb[2] * current.brightnessFactor()
-    );
+    ));
   }
 
   /** The grade for the current date, recomputed only when the date has moved since the last call. */

@@ -8,6 +8,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -41,14 +42,15 @@ public class ModBerryBushBlock extends SweetBerryBushBlock {
   }
 
   @Override
-  public ItemStack getCloneItemStack(LevelReader world, BlockPos pos, BlockState state) {
+  protected ItemStack getCloneItemStack(LevelReader world, BlockPos pos, BlockState state, boolean includeData) {
     return new ItemStack(ModItems.berryFor(this));
   }
 
   @Override
-  public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity) {
+  protected void entityInside(BlockState state, Level world, BlockPos pos, Entity entity,
+                              InsideBlockEffectApplier effects, boolean flag) {
     if (ModBlocks.isThorny(this)) {
-      super.entityInside(state, world, pos, entity);
+      super.entityInside(state, world, pos, entity, effects, flag);
     }
   }
 
@@ -61,16 +63,16 @@ public class ModBerryBushBlock extends SweetBerryBushBlock {
       return super.useWithoutItem(state, world, pos, player, hit);
     }
 
-    int picked = 1 + world.random.nextInt(2) + (age == MAX_AGE ? 1 : 0);
+    int picked = 1 + world.getRandom().nextInt(2) + (age == MAX_AGE ? 1 : 0);
     popResource(world, pos, new ItemStack(ModItems.berryFor(this), picked));
     world.playSound(null, pos, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS,
-            1.0F, 0.8F + world.random.nextFloat() * 0.4F);
+            1.0F, 0.8F + world.getRandom().nextFloat() * 0.4F);
 
     // Back to leafy rather than bare, the way vanilla leaves a picked bush.
     BlockState picking = state.setValue(AGE, 1);
     world.setBlock(pos, picking, Block.UPDATE_CLIENTS);
     world.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, picking));
 
-    return InteractionResult.sidedSuccess(world.isClientSide);
+    return InteractionResult.SUCCESS;
   }
 }

@@ -4,11 +4,18 @@ import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import net.abakath.rpg4fools.world.Compost;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.abakath.rpg4fools.RPG4Fools;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.LongStream;
 import java.util.function.BiConsumer;
 
 /**
@@ -32,47 +39,61 @@ public class PendingCompost extends SavedData {
 
   private final Long2ByteMap marks = new Long2ByteOpenHashMap();
 
-  private static final Factory<PendingCompost> type = new Factory<>(
+  private static final Codec<PendingCompost> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+          Codec.LONG_STREAM.optionalFieldOf(POSITIONS, LongStream.empty()).forGetter(PendingCompost::storedPositions),
+          Codec.BYTE.listOf().optionalFieldOf(KINDS, List.of()).forGetter(PendingCompost::storedKinds)
+  ).apply(instance, PendingCompost::fromStored));
+
+  private static final SavedDataType<PendingCompost> TYPE = new SavedDataType<>(
+          Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "pending_compost"),
           PendingCompost::new,
-          PendingCompost::createFromNbt,
-          null
+          CODEC,
+          // Not null. SavedDataStorage calls update on this without checking, so a null one throws
+          // the moment a saved file actually exists - which is every load after the first save.
+          // No vanilla type describes a mod's own data, so this is the one with the least to do:
+          // its schema is a bare long array, and the fixers only run at all when the stored data
+          // version is older than the current one.
+          DataFixTypes.SAVED_DATA_FORCED_CHUNKS
   );
 
   public static PendingCompost get(ServerLevel world) {
-    return world.getDataStorage().computeIfAbsent(type, "rpg4fools_pending_compost");
+    return world.getDataStorage().computeIfAbsent(TYPE);
   }
 
-  public static PendingCompost createFromNbt(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+  private static PendingCompost fromStored(LongStream storedPositions, List<Byte> kinds) {
     PendingCompost pending = new PendingCompost();
 
-    long[] positions = nbt.getLongArray(POSITIONS);
-    byte[] kinds = nbt.getByteArray(KINDS);
+    long[] positions = storedPositions.toArray();
 
-    // Two arrays that have to line up. A save truncated between them is not worth crashing over -
+    // Two lists that have to line up. A save truncated between them is not worth crashing over -
     // the worst a short read costs is a label, and the player still has the composter.
-    for (int i = 0; i < Math.min(positions.length, kinds.length); i++) {
-      pending.marks.put(positions[i], kinds[i]);
+    for (int i = 0; i < Math.min(positions.length, kinds.size()); i++) {
+      pending.marks.put(positions[i], kinds.get(i).byteValue());
     }
 
     return pending;
   }
 
-  @Override
-  public CompoundTag save(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+  private LongStream storedPositions() {
     long[] positions = new long[marks.size()];
-    byte[] kinds = new byte[marks.size()];
     int index = 0;
 
     for (Long2ByteMap.Entry entry : marks.long2ByteEntrySet()) {
-      positions[index] = entry.getLongKey();
-      kinds[index] = entry.getByteValue();
-      index++;
+      positions[index++] = entry.getLongKey();
     }
 
-    nbt.putLongArray(POSITIONS, positions);
-    nbt.putByteArray(KINDS, kinds);
+    return LongStream.of(positions);
+  }
 
-    return nbt;
+  /** Ordered to match storedPositions, which is what makes the two line up on the way back in. */
+  private List<Byte> storedKinds() {
+    List<Byte> kinds = new ArrayList<>(marks.size());
+
+    for (Long2ByteMap.Entry entry : marks.long2ByteEntrySet()) {
+      kinds.add(entry.getByteValue());
+    }
+
+    return kinds;
   }
 
   public void mark(BlockPos pos, Compost kind) {

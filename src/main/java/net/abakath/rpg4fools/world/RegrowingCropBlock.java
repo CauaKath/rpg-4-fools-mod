@@ -57,13 +57,13 @@ public class RegrowingCropBlock extends ModCropBlock {
       return InteractionResult.SUCCESS;
     }
 
-    CropHarvest.drop(serverWorld, pos, pos.below(), new ItemStack(produce(), 1 + serverWorld.random.nextInt(3)));
+    CropHarvest.drop(serverWorld, pos, pos.below(), new ItemStack(produce(), 1 + serverWorld.getRandom().nextInt(3)));
 
     BlockState picked = pick(state);
     serverWorld.setBlock(pos, picked, Block.UPDATE_CLIENTS);
     serverWorld.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, picked));
     serverWorld.playSound(null, pos, SoundEvents.CROP_BREAK, SoundSource.BLOCKS,
-            1.0F, 0.8F + serverWorld.random.nextFloat() * 0.4F);
+            1.0F, 0.8F + serverWorld.getRandom().nextFloat() * 0.4F);
 
     return InteractionResult.SUCCESS;
   }

@@ -1,13 +1,16 @@
 package net.abakath.rpg4fools.server;
 
 import net.abakath.rpg4fools.RPG4Fools;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.abakath.rpg4fools.enums.SubSeason;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import net.minecraft.world.level.storage.SavedDataStorage;
 import java.util.Objects;
 
 public class SeasonData extends SavedData {
@@ -20,27 +23,34 @@ public class SeasonData extends SavedData {
    */
   private SubSeason subSeason = DEFAULT_SUB_SEASON;
 
-  private static final Factory<SeasonData> type = new Factory<>(
+  /**
+   * Stored as an ordinal rather than a name, as it was under the NBT serialisation this replaces.
+   * An out of range value decays to the default instead of failing the whole read, so a save
+   * written by a build with a different SubSeason list still loads.
+   */
+  private static final Codec<SeasonData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+          Codec.INT.optionalFieldOf(KEY, DEFAULT_SUB_SEASON.ordinal()).forGetter(data -> data.subSeason.ordinal())
+  ).apply(instance, SeasonData::fromOrdinal));
+
+  private static final SavedDataType<SeasonData> TYPE = new SavedDataType<>(
+          Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "season"),
           SeasonData::new,
-          SeasonData::createFromNbt,
-          null
+          CODEC,
+          // Not null. SavedDataStorage calls update on this without checking, so a null one throws
+          // the moment a saved file actually exists - which is every load after the first save.
+          // No vanilla type describes a mod's own data, so this is the one with the least to do:
+          // its schema is a bare long array, and the fixers only run at all when the stored data
+          // version is older than the current one.
+          DataFixTypes.SAVED_DATA_FORCED_CHUNKS
   );
 
-  public static SeasonData createFromNbt(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+  private static SeasonData fromOrdinal(int ordinal) {
     SeasonData seasonData = new SeasonData();
-
-    int ordinal = nbt.getInt(KEY);
     SubSeason[] values = SubSeason.values();
 
     seasonData.subSeason = ordinal >= 0 && ordinal < values.length ? values[ordinal] : DEFAULT_SUB_SEASON;
 
     return seasonData;
-  }
-
-  @Override
-  public CompoundTag save(CompoundTag nbt, HolderLookup.Provider registryLookup) {
-    nbt.putInt(KEY, subSeason.ordinal());
-    return nbt;
   }
 
   public SubSeason getSubSeason() {
@@ -61,8 +71,8 @@ public class SeasonData extends SavedData {
   }
 
   public static SeasonData getServerState(MinecraftServer server) {
-    DimensionDataStorage persistentStateManager = Objects.requireNonNull(server.getLevel(Level.OVERWORLD)).getDataStorage();
+    SavedDataStorage storage = Objects.requireNonNull(server.getLevel(Level.OVERWORLD)).getDataStorage();
 
-    return persistentStateManager.computeIfAbsent(type, RPG4Fools.MOD_ID);
+    return storage.computeIfAbsent(TYPE);
   }
 }

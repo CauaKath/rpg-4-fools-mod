@@ -2,7 +2,7 @@ package net.abakath.rpg4fools.mixin;
 
 import net.abakath.rpg4fools.world.Compost;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.FarmBlock;
+import net.minecraft.world.level.block.FarmlandBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * <p>Trampling costs nothing to handle either: farmland that is jumped on becomes dirt, and dirt has
  * no compost on it to worry about.
  */
-@Mixin(FarmBlock.class)
+@Mixin(FarmlandBlock.class)
 public class FarmlandCompostMixin {
   @Inject(method = "createBlockStateDefinition", at = @At("TAIL"))
   private void rpg4fools$addCompost(StateDefinition.Builder<Block, BlockState> builder, CallbackInfo info) {

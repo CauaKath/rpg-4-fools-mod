@@ -15,9 +15,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.HoeItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CropBlock;
@@ -74,11 +74,11 @@ public final class HoeAreaHarvest {
 
     ItemStack tool = player.getItemInHand(hand);
 
-    if (!(tool.getItem() instanceof HoeItem hoe)) {
+    if (!(tool.getItem() instanceof HoeItem)) {
       return InteractionResult.PASS;
     }
 
-    int radius = reachOf(hoe);
+    int radius = reachOf(tool);
 
     if (radius == 0) {
       return InteractionResult.PASS;
@@ -93,7 +93,7 @@ public final class HoeAreaHarvest {
     }
 
     if (sweep(serverWorld, player, hand, clicked, radius)) {
-      tool.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
+      tool.hurtAndBreak(1, player, hand);
     }
 
     return InteractionResult.SUCCESS;
@@ -107,30 +107,35 @@ public final class HoeAreaHarvest {
    * with iron rather than with wood because it is an iron tier tool everywhere else it matters, and
    * a golden hoe that harvested like a wooden one would only read as an oversight.
    *
-   * <p>A material this mod has never heard of is placed by its durability, the one number every tool
-   * material has to give. It puts a modded hoe somewhere sensible on the ladder instead of at the
-   * bottom, and the tiers above are still what decide the vanilla ones.
+   * <p>A hoe no longer carries its tool material where anything can read it, so the vanilla six are
+   * named outright and everything else falls to durability, the one number every tool has to give.
+   * That puts a modded hoe somewhere sensible on the ladder instead of at the bottom. It also takes
+   * copper, which did not exist when these rungs were written, at its durability rather than
+   * guessing - which is the same treatment any other material this mod has not heard of gets.
+   *
+   * <p>Gold has to be named because it is the one vanilla hoe the durability ladder gets wrong: 32
+   * uses would put it below wood, where an iron tier tool everywhere else does not belong.
    */
-  private static int reachOf(HoeItem hoe) {
-    Tier material = hoe.getTier();
+  private static int reachOf(ItemStack tool) {
+    Item hoe = tool.getItem();
 
-    if (material == Tiers.WOOD || material == Tiers.STONE) {
+    if (hoe == Items.WOODEN_HOE || hoe == Items.STONE_HOE) {
       return 0;
     }
 
-    if (material == Tiers.IRON || material == Tiers.GOLD) {
+    if (hoe == Items.IRON_HOE || hoe == Items.GOLDEN_HOE) {
       return 1;
     }
 
-    if (material == Tiers.DIAMOND) {
+    if (hoe == Items.DIAMOND_HOE) {
       return 2;
     }
 
-    if (material == Tiers.NETHERITE) {
+    if (hoe == Items.NETHERITE_HOE) {
       return 3;
     }
 
-    return byDurability(material.getUses());
+    return byDurability(tool.getMaxDamage());
   }
 
   private static int byDurability(int durability) {

@@ -32,10 +32,17 @@ public final class SeasonAtmosphere {
 
   /**
    * Shift used to key the biome cache. 2 gives a 4 block cell. It does not need to be finer than
-   * that: FogTransition eases between whatever this reports, so continuity comes from the easing
-   * rather than from resampling more often.
+   * that: the environment probe blends biomes spatially and interpolates between ticks, so
+   * continuity comes from there rather than from resampling more often.
    */
   private static final int CACHE_CELL_SHIFT = 2;
+
+  /**
+   * Horizontal offsets, in blocks, that the sky test is averaged over. Nine samples spanning eight
+   * blocks: enough that a canopy edge takes a few paces to cross, few enough to stay a handful of
+   * heightmap reads.
+   */
+  private static final int[] SKY_SAMPLE_OFFSETS = {-4, 0, 4};
 
   /** At or above this Y the cave atmosphere never applies, even with no sky overhead. */
   private static final int CAVE_FADE_TOP = 60;
@@ -194,7 +201,7 @@ public final class SeasonAtmosphere {
    * which change far faster than the cache cell.
    */
   private static float caveFactor(LevelReader world, BlockPos pos) {
-    if (world == null || pos == null || world.canSeeSky(pos)) {
+    if (world == null || pos == null) {
       return 0.0f;
     }
 
@@ -204,11 +211,41 @@ public final class SeasonAtmosphere {
       return 0.0f;
     }
 
-    if (y <= CAVE_FADE_BOTTOM) {
-      return 1.0f;
+    float depth = y <= CAVE_FADE_BOTTOM
+            ? 1.0f
+            : (float) (CAVE_FADE_TOP - y) / (CAVE_FADE_TOP - CAVE_FADE_BOTTOM);
+
+    return depth * skyOcclusion(world, pos);
+  }
+
+  /**
+   * How much of the sky is shut out around a position, from 0 under open sky to 1 with none of it
+   * left.
+   *
+   * <p>Sampled across a span rather than read at the one column the camera stands in. A single
+   * canSeeSky is a yes or no, so walking out from under a canopy flipped the cave atmosphere on and
+   * off in a single step, which read as the fog blinking rather than as leaving cover. Averaging
+   * across the span turns that edge into a walk of several blocks.
+   *
+   * <p>Spatial rather than eased over time on purpose. The answer depends only on where you are, so
+   * it is the same however often it is asked and from wherever - which an easer holding state
+   * between frames would not be, and this is asked from more than one place.
+   */
+  private static float skyOcclusion(LevelReader world, BlockPos pos) {
+    BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+    int covered = 0;
+
+    for (int dx : SKY_SAMPLE_OFFSETS) {
+      for (int dz : SKY_SAMPLE_OFFSETS) {
+        cursor.set(pos.getX() + dx, pos.getY(), pos.getZ() + dz);
+
+        if (!world.canSeeSky(cursor)) {
+          covered++;
+        }
+      }
     }
 
-    return (float) (CAVE_FADE_TOP - y) / (CAVE_FADE_TOP - CAVE_FADE_BOTTOM);
+    return (float) covered / (SKY_SAMPLE_OFFSETS.length * SKY_SAMPLE_OFFSETS.length);
   }
 
   /**
@@ -223,7 +260,7 @@ public final class SeasonAtmosphere {
     cachedAggregateCellKey = Long.MIN_VALUE;
     cachedAggregate = null;
     BiomeAtmosphere.clearCache();
-    FogTransition.reset();
+    FogEasing.reset();
   }
 
   private static BiomeAggregate aggregateFor(LevelReader world, BlockPos pos) {

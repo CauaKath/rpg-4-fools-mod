@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModCrops;
-import net.abakath.rpg4fools.init.ModProcessors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -17,7 +16,6 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +32,7 @@ import java.util.List;
  * turned to tomato is left alone and the carrot and potato rates are untouched - the same bargain
  * the appended rules struck, kept by ordering instead.
  */
-public class SeasonalFarmCrops extends StructureProcessor {
+public class SeasonalFarmCrops implements StructureProcessor {
   /**
    * How wide a lane is, in template columns.
    *
@@ -51,13 +49,13 @@ public class SeasonalFarmCrops extends StructureProcessor {
   private static final float LANE_CHANCE = 1.0F / 3.0F;
 
   @Override
-  protected StructureProcessorType<? extends StructureProcessor> getType() {
-    return ModProcessors.SEASONAL_FARM_CROPS;
+  public MapCodec<? extends StructureProcessor> codec() {
+    return CODEC;
   }
 
   @Override
   public StructureTemplate.StructureBlockInfo processBlock(LevelReader world, BlockPos origin, BlockPos pivot,
-                                                      StructureTemplate.StructureBlockInfo original,
+                                                      BlockPos templatePos,
                                                       StructureTemplate.StructureBlockInfo current,
                                                       StructurePlaceSettings data) {
     if (!current.state().is(Blocks.WHEAT)) {

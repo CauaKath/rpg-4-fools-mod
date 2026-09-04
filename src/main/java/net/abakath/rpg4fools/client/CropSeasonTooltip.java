@@ -8,7 +8,6 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +41,7 @@ public final class CropSeasonTooltip {
       return;
     }
 
-    if (!Screen.hasShiftDown()) {
+    if (!Minecraft.getInstance().hasShiftDown()) {
       lines.add(Component.translatable("tooltip.rpg4fools.hold_shift").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
       return;
     }

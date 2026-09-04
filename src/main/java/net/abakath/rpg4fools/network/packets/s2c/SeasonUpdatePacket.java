@@ -5,7 +5,7 @@ import net.abakath.rpg4fools.models.DayData;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Sends the current in game date to a player. This class is loaded on both sides, so it must not
@@ -15,7 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 public class SeasonUpdatePacket implements CustomPacketPayload {
   public DayData dayData;
 
-  public static final Type<SeasonUpdatePacket> ID = CustomPacketPayload.createType(new ResourceLocation(RPG4Fools.MOD_ID, "season_update").toString());
+  public static final Type<SeasonUpdatePacket> ID = new Type<>(Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "season_update"));
   public static final StreamCodec<FriendlyByteBuf, SeasonUpdatePacket> CODEC = StreamCodec.ofMember((value, buf) -> {
     buf.writeNullable(value.dayData, (buffer, data) -> {
       buffer.writeInt(data.getYear());

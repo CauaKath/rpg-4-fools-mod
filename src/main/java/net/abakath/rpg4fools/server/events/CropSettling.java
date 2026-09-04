@@ -52,7 +52,7 @@ public final class CropSettling {
   }
 
   public static void register() {
-    ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> enqueue(world, collect(chunk)));
+    ServerChunkEvents.CHUNK_LOAD.register((world, chunk, generated) -> enqueue(world, collect(chunk)));
     ServerTickEvents.END_SERVER_TICK.register(CropSettling::settle);
   }
 

@@ -69,7 +69,7 @@ public final class WeatherFog {
     }
 
     Biome biome = world.getBiome(pos).value();
-    boolean snowing = biome.getPrecipitationAt(pos) == Biome.Precipitation.SNOW;
+    boolean snowing = biome.getPrecipitationAt(pos, world.getSeaLevel()) == Biome.Precipitation.SNOW;
 
     return multiplier(rainGradient, world.getThunderLevel(1.0f), snowing);
   }

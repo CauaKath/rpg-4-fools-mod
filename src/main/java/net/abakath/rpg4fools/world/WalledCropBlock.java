@@ -17,6 +17,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -143,8 +144,9 @@ public class WalledCropBlock extends RegrowingCropBlock {
    * neighbour is updated in turn.
    */
   @Override
-  public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
-                                             LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+  public BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess tickAccess,
+                                BlockPos pos, Direction direction, BlockPos neighborPos,
+                                BlockState neighborState, RandomSource random) {
     if (!state.canSurvive(world, pos)) {
       return CropWalls.wall(world, pos, false);
     }
@@ -296,7 +298,7 @@ public class WalledCropBlock extends RegrowingCropBlock {
     int picked = 0;
 
     for (int cell = 0; cell < cells; cell++) {
-      picked += 1 + serverWorld.random.nextInt(3);
+      picked += 1 + serverWorld.getRandom().nextInt(3);
     }
 
     CropHarvest.drop(serverWorld, root, root.below(), new ItemStack(produce(), picked));
@@ -305,7 +307,7 @@ public class WalledCropBlock extends RegrowingCropBlock {
     serverWorld.gameEvent(GameEvent.BLOCK_CHANGE, root,
             GameEvent.Context.of(player, serverWorld.getBlockState(root)));
     serverWorld.playSound(null, root, SoundEvents.CROP_BREAK, SoundSource.BLOCKS,
-            1.0F, 0.8F + serverWorld.random.nextFloat() * 0.4F);
+            1.0F, 0.8F + serverWorld.getRandom().nextFloat() * 0.4F);
 
     return InteractionResult.SUCCESS;
   }

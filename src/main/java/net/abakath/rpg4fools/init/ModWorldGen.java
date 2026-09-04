@@ -9,7 +9,7 @@ import net.fabricmc.fabric.api.biome.v1.ModificationPhase;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.placement.VegetationPlacements;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
@@ -63,7 +63,7 @@ public final class ModWorldGen {
    * does not grow there, and there is nothing to split.
    */
   private static void shareTheTaiga() {
-    BiomeModifications.create(new ResourceLocation(RPG4Fools.MOD_ID, "taiga_berries"))
+    BiomeModifications.create(Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, "taiga_berries"))
             .add(ModificationPhase.REMOVALS, TAIGAS, context ->
                     context.getGenerationSettings().removeFeature(
                             GenerationStep.Decoration.VEGETAL_DECORATION,
@@ -88,6 +88,6 @@ public final class ModWorldGen {
   }
 
   private static ResourceKey<PlacedFeature> patch(String name) {
-    return ResourceKey.create(Registries.PLACED_FEATURE, new ResourceLocation(RPG4Fools.MOD_ID, name));
+    return ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(RPG4Fools.MOD_ID, name));
   }
 }

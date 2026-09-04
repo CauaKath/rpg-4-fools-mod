@@ -1,9 +1,7 @@
 {
   "type": "minecraft:smelting",
   "category": "misc",
-  "ingredient": {
-    "tag": "minecraft:saplings"
-  },
+  "ingredient": "#minecraft:leaves",
   "result": {
     "id": "rpg4fools:ash"
   },

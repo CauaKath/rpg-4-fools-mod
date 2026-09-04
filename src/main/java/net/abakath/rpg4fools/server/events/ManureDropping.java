@@ -51,11 +51,11 @@ public class ManureDropping implements ServerTickEvents.EndTick {
 
       // Babies eat and do not graze. Waiting for an animal to grow up before it pays is also what
       // stops a pen of newborns from being a faster source than a pen of adults.
-      if (animal.isBaby() || !animal.getType().is(ModEntityTags.MANURE_PRODUCERS)) {
+      if (animal.isBaby() || !animal.getType().builtInRegistryHolder().is(ModEntityTags.MANURE_PRODUCERS)) {
         continue;
       }
 
-      if (world.random.nextInt(CHANCE) != 0) {
+      if (world.getRandom().nextInt(CHANCE) != 0) {
         continue;
       }
 
