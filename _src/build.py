@@ -35,6 +35,10 @@ SITE = "https://cauakath.github.io/rpg-4-fools-mod/"
 
 # Newest first, which is the order the index lists them in.
 VERSIONS = [
+    ("0.5.1", "Vine, timber and soil",
+     "A cucumber with a stick through it, compost soil that read as a different block, dead growth "
+     "that kept none of the plant's shape, and a trellis that was a ladder. Four sprite passes, no "
+     "behaviour changed."),
     ("0.5.0", "Everything, on the current Minecraft",
      "The mod moves from 1.20.6 to 26.2. Season colour reaches the plants Minecraft has added "
      "since, sulfur caves get an atmosphere of their own, and the sky and fog are rebuilt onto "
@@ -76,10 +80,21 @@ def texture(kind, name, version=None):
 
     path = TEXTURES / kind / (name + ".png")
 
-    if not path.exists():
+    if path.exists():
+        return path
+
+    # The mod's asset folders are nested by feature as of 0.5.1 - textures/block/crop/cucumber and
+    # so on - and a page names a sprite, not a path. So a name that is not where it used to be is
+    # looked for anywhere below its kind, and an ambiguous name is an error rather than a coin toss.
+    found = sorted(p for p in (TEXTURES / kind).rglob(name + ".png"))
+
+    if len(found) > 1:
+        raise SystemExit("ambiguous texture: " + name + " -> " + ", ".join(str(f) for f in found))
+
+    if not found:
         raise SystemExit("missing texture: " + str(path))
 
-    return path
+    return found[0]
 
 
 def inline(version=None):
