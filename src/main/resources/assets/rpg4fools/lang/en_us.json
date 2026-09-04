@@ -1,6 +1,7 @@
 {
   "block.rpg4fools.blackberry_bush": "Blackberry Bush",
   "block.rpg4fools.blueberry_bush": "Blueberry Bush",
+  "block.rpg4fools.cabbage_crop": "Cabbage Crop",
   "block.rpg4fools.crop_stick": "Crop Stick",
   "block.rpg4fools.crop_wall": "Crop Wall",
   "block.rpg4fools.cucumber_crop": "Cucumber Crop",
@@ -17,6 +18,8 @@
   "item.rpg4fools.birch_bark": "Birch Bark",
   "item.rpg4fools.blackberry_berries": "Blackberries",
   "item.rpg4fools.blueberry_berries": "Blueberries",
+  "item.rpg4fools.cabbage": "Cabbage",
+  "item.rpg4fools.cabbage_seeds": "Cabbage Seeds",
   "item.rpg4fools.cherry_bark": "Cherry Bark",
   "item.rpg4fools.creeping_compost": "Creeping Compost",
   "item.rpg4fools.cucumber": "Cucumber",
