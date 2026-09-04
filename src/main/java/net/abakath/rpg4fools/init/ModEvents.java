@@ -11,6 +11,7 @@ import net.abakath.rpg4fools.server.events.crop.CropAutoReplant;
 import net.abakath.rpg4fools.server.events.crop.CropOwnership;
 import net.abakath.rpg4fools.server.events.crop.CropSettling;
 import net.abakath.rpg4fools.server.events.trellis.CropStickHandling;
+import net.abakath.rpg4fools.server.events.trellis.DeadGrowthShearing;
 import net.abakath.rpg4fools.server.events.crop.CropTagValidator;
 import net.abakath.rpg4fools.server.events.trellis.CropWallHandling;
 import net.abakath.rpg4fools.server.events.season.DayChangingHandler;
@@ -33,6 +34,7 @@ public class ModEvents {
     SeasonPlantingGate.register();
     CropStickHandling.register();
     CropWallHandling.register();
+    DeadGrowthShearing.register();
 
     // Before the auto replant, which harvests any ripe crop that is right clicked. The compost
     // handler only claims a click when the player is holding compost or a shovel, and without this

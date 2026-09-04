@@ -130,6 +130,21 @@ public final class CropWalls {
             .setValue(ROW, cell.getValue(ROW)));
   }
 
+  /**
+   * The same panel with last season's remains taken off it.
+   *
+   * <p>The address goes with the debris. {@link #ARM} and {@link #ROW} are only worth reading on a
+   * panel that is {@link #DEAD} - they say which cell of a plant died here - so a cleared panel that
+   * kept them would be carrying the shape of something that is no longer on it.
+   *
+   * <p>The joins are left alone. Nothing moved, so what the panel reaches out to has not changed.
+   */
+  public static BlockState cleared(BlockState wall) {
+    return wall.setValue(DEAD, false)
+            .setValue(ARM, WallArm.CENTER)
+            .setValue(ROW, 0);
+  }
+
   /** The same panel state with its four joins brought into line with what is actually around it. */
   public static BlockState joins(BlockGetter world, BlockPos pos, BlockState wall) {
     BlockState joined = wall;

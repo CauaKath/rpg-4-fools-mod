@@ -59,6 +59,17 @@ public final class CropSticks {
   private CropSticks() {
   }
 
+  /**
+   * The same stick with last season's remains taken off it.
+   *
+   * <p>Only the sprite flag changes. Where the stick sits in its column and whether it is the last
+   * one are still true of it, so clearing the debris is not a placement and nothing about the column
+   * has to be worked out again.
+   */
+  public static BlockState cleared(BlockState stick) {
+    return stick.setValue(DEAD, false);
+  }
+
   /** An empty stick nothing has been sown into. */
   public static boolean isEmpty(BlockState state) {
     return state.is(ModBlocks.CROP_STICK);
