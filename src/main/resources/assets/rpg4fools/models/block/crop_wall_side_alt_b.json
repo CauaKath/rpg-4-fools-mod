@@ -1,0 +1,60 @@
+{
+  "__comment": "The arm on the other side, reaching from the post to the south edge, and mapped to columns 9 to 15 instead of 0 to 6. Two models rather than one rotated model because a single strip sampled twice makes every panel a mirror of itself, whatever is drawn on it. Vanilla panes carry a side_alt for the same reason. One of three tiles.",
+  "ambientocclusion": false,
+  "textures": {
+    "wall": "rpg4fools:block/crop_wall_b",
+    "particle": "rpg4fools:block/crop_wall_b"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        -1,
+        9
+      ],
+      "to": [
+        9,
+        15,
+        16
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            9,
+            0,
+            16,
+            16
+          ],
+          "texture": "#wall"
+        },
+        "east": {
+          "uv": [
+            9,
+            0,
+            16,
+            16
+          ],
+          "texture": "#wall"
+        },
+        "up": {
+          "uv": [
+            9,
+            7,
+            16,
+            9
+          ],
+          "texture": "#wall"
+        },
+        "down": {
+          "uv": [
+            9,
+            7,
+            16,
+            9
+          ],
+          "texture": "#wall"
+        }
+      }
+    }
+  ]
+}
