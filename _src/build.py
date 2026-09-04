@@ -35,6 +35,10 @@ SITE = "https://cauakath.github.io/rpg-4-fools-mod/"
 
 # Newest first, which is the order the index lists them in.
 VERSIONS = [
+    ("0.5.0", "Everything, on the current Minecraft",
+     "The mod moves from 1.20.6 to 26.2. Season colour reaches the plants Minecraft has added "
+     "since, sulfur caves get an atmosphere of their own, and the sky and fog are rebuilt onto "
+     "the way 26.2 resolves them."),
     ("0.4.2", "What the wall keeps",
      "A plant that dies on a wall leaves all of itself behind, shaped the way it grew, instead of "
      "most of it being swept away as the wall puts itself back in order."),

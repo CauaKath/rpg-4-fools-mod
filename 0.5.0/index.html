@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RPG 4 Fools 0.5.0</title>
+<meta name="description" content="The mod moves from 1.20.6 to 26.2. Season colour reaches the plants Minecraft has added since, sulfur caves get an atmosphere of their own, and the sky and fog are rebuilt onto the way 26.2 resolves them.">
+<meta property="og:title" content="RPG 4 Fools 0.5.0">
+<meta property="og:description" content="The mod moves from 1.20.6 to 26.2. Season colour reaches the plants Minecraft has added since, sulfur caves get an atmosphere of their own, and the sky and fog are rebuilt onto the way 26.2 resolves them.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="../assets/site.css?v=edb3bfc7">
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <a class="back" href="../">&larr; All versions</a>
+  </div>
+
+  <header class="masthead">
+    <span class="version">0.5.0 · Released 4 Sep 2026</span>
+    <h1>Everything, on the current Minecraft</h1>
+    <p class="standfirst">
+      The mod moves from 1.20.6 to 26.2, thirteen releases of Minecraft in one step. Nothing was
+      added on purpose; the work was making what already existed keep working, on a game that
+      renamed a good deal of itself and rebuilt how the sky, the fog and the ground get their
+      colour.
+    </p>
+    <div class="ribbon" aria-hidden="true"><div></div><div></div><div></div><div></div></div>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">One</span>
+      <h2>A new Minecraft, and a new Java to run it</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      26.2 needs Java 25, where 1.20.6 needed 21. That is not a setting inside the mod — the game
+      itself will not start on the older one, so a launcher pointed at Java 21 has to be moved
+      before anything here matters.
+    </p>
+    <p>
+      Minecraft also stopped hiding its own names this year, and renamed a great many of them on
+      the way out. None of that is visible in play, but it is why this release touches nearly every
+      file while changing almost nothing you can see.
+    </p>
+    <div class="yield">
+      <span class="note">Needs Fabric Loader 0.19.3 or newer and Fabric API for 26.2. A 0.4.2 jar
+        will not load on 26.2, and this one will not load on 1.20.6 — the two lines are separate
+        and neither is a drop-in for the other.</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Two</span>
+      <h2>Season colour reaches the newer plants</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      The list of plants that take the season's colour had not been looked at since 1.20.6, so
+      everything Minecraft has added to its grass and leaf tinting since then was being left at its
+      ordinary colour while the grass beside it turned. Four plants join the season now: bushes,
+      pink petals and wildflowers follow the grass, and leaf litter follows a colour of its own.
+    </p>
+    <p>
+      Leaf litter is deliberately not treated as foliage. Minecraft gives it a separate dry colour
+      so it comes out brown in a badlands rather than green, and the season grade now rides on top
+      of that instead of replacing it.
+    </p>
+    <p>
+      Sulfur caves — a biome that did not exist when the cave atmospheres were written — were coming
+      out the same grey as any unnamed cave. They get their own: thick, close, and the yellow-green
+      the game already paints them with, so the fog and the biome agree rather than pulling against
+      each other.
+    </p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="label">Three</span>
+      <h2>The sky and the fog, rebuilt underneath</h2>
+      <div class="rule"></div>
+    </div>
+    <p>
+      Fog colour, fog distance and sky colour used to be three separate things to reach into, and
+      this release grades all three through the one place 26.2 resolves them. The look is meant to
+      be identical: the same seasonal tint, the same biome families, the same swamp closing in
+      around you. Only the plumbing moved.
+    </p>
+    <p>
+      One thing genuinely improved on the way. Walking out from under a canopy used to change the
+      fog between two adjacent blocks, because the question "can this spot see the sky" is a yes or
+      no. It is asked across a span of nine columns now, so leaving cover takes a few paces instead
+      of one step.
+    </p>
+
+    <div class="also">
+      <div>
+        <h3>Inventory icons lost the season</h3>
+        <p>Grass and leaf items in your inventory no longer take the season's colour. Minecraft
+          moved item tinting out of code entirely, and putting it back means shipping model
+          overrides for every vanilla item involved. The world is still graded; the icons are a
+          later job.</p>
+      </div>
+      <div>
+        <h3>Existing worlds start the seasons over</h3>
+        <p>The four things the mod remembers per world — the date, which chunks are composted,
+          which composters are waiting, which crops you planted — are stored under a new path.
+          A world carried forward keeps its blocks and forgets those four.</p>
+      </div>
+      <div>
+        <h3>Snow, ice and weather agree again</h3>
+        <p>Minecraft split the one decision about rain against snow into three. Snow was falling
+          and settling in winter while standing water quietly refused to freeze; all three follow
+          the season together now.</p>
+      </div>
+      <div>
+        <h3>Recipes and drops read correctly</h3>
+        <p>Ash from leaves and saplings, and the crop stick and crop wall recipes, are written the
+          way 26.2 reads them. On the old format all four silently failed to load, which meant none
+          of them could be crafted.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>RPG 4 Fools 0.5.0</span>
+    <span>Minecraft 1.20.6 · Fabric</span>
+    <span>Block sprites shown at 4×, items at 2×</span>
+    <span><a href="https://github.com/CauaKath/rpg-4-fools-mod">Source on GitHub</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
