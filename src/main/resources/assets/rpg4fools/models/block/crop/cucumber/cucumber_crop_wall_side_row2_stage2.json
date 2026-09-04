@@ -1,0 +1,7 @@
+{
+  "__comment": "One cell of a plant spread over a wall, drawn as vanilla draws a crop. The sheet carries its own stems, so cells join in every direction; the cross is what gives it the volume every crop in the game has.",
+  "parent": "rpg4fools:block/template/crop_cross",
+  "textures": {
+    "cross": "rpg4fools:block/crop/cucumber/cucumber_crop_wall_side_row2_stage2"
+  }
+}

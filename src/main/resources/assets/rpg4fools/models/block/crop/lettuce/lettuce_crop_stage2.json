@@ -1,0 +1,6 @@
+{
+  "parent": "rpg4fools:block/template/crop_cross",
+  "textures": {
+    "cross": "rpg4fools:block/crop/lettuce/lettuce_crop_stage2"
+  }
+}

@@ -1,0 +1,214 @@
+{
+  "__comment": "The post as it is drawn when nothing joins it, which is a post with two short pegs on it. Unjoined, this block used to be a bare two by two stake and read as one: nothing told a player it was a trellis until it had a neighbour, and placing the first panel is exactly when that needs saying. The pegs sample the arm strip the tile already carries, so they cost no art, and they sit at different heights on opposite sides so the post is not its own mirror. Applied only when all four sides are false, in place of crop_wall_post.",
+  "ambientocclusion": false,
+  "textures": {
+    "wall": "rpg4fools:block/trellis/crop_wall_c",
+    "particle": "rpg4fools:block/trellis/crop_wall_c"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        -1,
+        7
+      ],
+      "to": [
+        9,
+        15,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ],
+          "texture": "#wall"
+        },
+        "south": {
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ],
+          "texture": "#wall"
+        },
+        "west": {
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ],
+          "texture": "#wall"
+        },
+        "east": {
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ],
+          "texture": "#wall"
+        },
+        "up": {
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ],
+          "texture": "#wall"
+        },
+        "down": {
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ],
+          "texture": "#wall"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        5,
+        7
+      ],
+      "to": [
+        7,
+        7,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            9,
+            7,
+            11
+          ],
+          "texture": "#wall"
+        },
+        "south": {
+          "uv": [
+            4,
+            9,
+            7,
+            11
+          ],
+          "texture": "#wall"
+        },
+        "west": {
+          "uv": [
+            4,
+            9,
+            7,
+            11
+          ],
+          "texture": "#wall"
+        },
+        "east": {
+          "uv": [
+            4,
+            9,
+            7,
+            11
+          ],
+          "texture": "#wall"
+        },
+        "up": {
+          "uv": [
+            4,
+            7,
+            7,
+            9
+          ],
+          "texture": "#wall"
+        },
+        "down": {
+          "uv": [
+            4,
+            7,
+            7,
+            9
+          ],
+          "texture": "#wall"
+        }
+      }
+    },
+    {
+      "from": [
+        9,
+        10,
+        7
+      ],
+      "to": [
+        12,
+        12,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            4,
+            12,
+            6
+          ],
+          "texture": "#wall"
+        },
+        "south": {
+          "uv": [
+            9,
+            4,
+            12,
+            6
+          ],
+          "texture": "#wall"
+        },
+        "west": {
+          "uv": [
+            9,
+            4,
+            12,
+            6
+          ],
+          "texture": "#wall"
+        },
+        "east": {
+          "uv": [
+            9,
+            4,
+            12,
+            6
+          ],
+          "texture": "#wall"
+        },
+        "up": {
+          "uv": [
+            9,
+            7,
+            12,
+            9
+          ],
+          "texture": "#wall"
+        },
+        "down": {
+          "uv": [
+            9,
+            7,
+            12,
+            9
+          ],
+          "texture": "#wall"
+        }
+      }
+    }
+  ]
+}

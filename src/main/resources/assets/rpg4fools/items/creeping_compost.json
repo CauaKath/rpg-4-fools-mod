@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "rpg4fools:item/creeping_compost"
+    "model": "rpg4fools:item/compost/creeping_compost"
   }
 }
