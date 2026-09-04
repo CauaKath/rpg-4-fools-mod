@@ -14,13 +14,13 @@ import java.util.Set;
  * <p>Names are derived rather than stored. A crop that spelled its block one way and its seed
  * another would still compile, and the mistake would only show up as a missing texture.
  *
- * @param sticked whether crop sticks can carry this crop. A flag rather than something read off
- *     {@link #regrows()}, which would have taken cucumber along with tomato: sticks are models and
- *     a texture per crop, not a rule that follows from fruiting twice.
- * @param walled whether a crop wall can carry this crop. Separate from {@link #sticked()} rather
- *     than one "climbs things" flag: the two supports have different shapes, different art and
- *     different rules about where a plant may spread, and a crop with the art for one has no art
- *     for the other.
+ * @param support what holds this crop up, and so which extra block it gets. One field rather than a
+ *     flag per shape: the shapes are mutually exclusive, and as flags most of the combinations would
+ *     have been nonsense the compiler was happy to accept. Each shape needs its own block,
+ *     blockstate and a model per age, so what this field really says is which art the crop has -
+ *     which is why nothing about it follows from anything else on the crop. A vine that sheets
+ *     across a trellis, a plant that climbs a post and a stalk that holds itself up are three
+ *     different pictures.
  */
 public record CropDefinition(
         String id,
@@ -30,8 +30,7 @@ public record CropDefinition(
         float saturation,
         boolean thorny,
         int regrowAge,
-        boolean sticked,
-        boolean walled
+        Support support
 ) {
   /**
    * Whether picking this crop leaves the plant standing.
@@ -44,11 +43,39 @@ public record CropDefinition(
     return regrowAge > 0;
   }
 
+  /** Whether crop sticks can carry this crop. */
+  public boolean sticked() {
+    return support == Support.STICKED;
+  }
+
+  /** Whether a crop wall can carry this crop. */
+  public boolean walled() {
+    return support == Support.WALLED;
+  }
+
   public enum Kind {
     /** Sown on farmland, grows through eight ages, dies when its season ends. */
     FARMLAND,
     /** Planted where a bush can stand, four ages, goes dormant instead of dying. */
     BUSH
+  }
+
+  /**
+   * What carries a crop, and so which second block it is registered with.
+   *
+   * <p>Read as an either-or rather than a set of flags. A crop drawn for one of these has no art for
+   * any of the others, and the two supports also differ in where a plant may spread, so a crop
+   * offered a support it was not drawn for is a missing texture at best.
+   */
+  public enum Support {
+    /** Stands on its own, one block tall. What most farmland crops are, and every bush. */
+    NONE,
+    /** Climbs a trellis of crop sticks, up to three sections tall. */
+    STICKED,
+    /** Spreads over the panels of a crop wall. */
+    WALLED,
+    /** Holds itself up, two sections tall, with no support to build. */
+    TALL
   }
 
   public String blockName() {
