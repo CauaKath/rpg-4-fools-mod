@@ -4,7 +4,9 @@ import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.init.ModBlockTags;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModCrops;
+import net.abakath.rpg4fools.world.crop.BushCrop;
 import net.abakath.rpg4fools.world.crop.CropDefinition;
+import net.abakath.rpg4fools.world.crop.FarmlandCrop;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.minecraft.core.HolderLookup;
@@ -59,8 +61,8 @@ public class SeasonCropTagProvider extends FabricTagsProvider.BlockTagsProvider 
     TagAppender<Block> survivesWinter = builder(ModBlockTags.SURVIVES_WINTER);
 
     for (CropDefinition definition : ModCrops.ALL) {
-      if (definition.survivesWinter()) {
-        survivesWinter.add(ModBlocks.blockFor(definition).builtInRegistryHolder().key());
+      if (definition instanceof FarmlandCrop crop && crop.survivesWinter()) {
+        survivesWinter.add(ModBlocks.blockFor(crop).builtInRegistryHolder().key());
       }
     }
 
@@ -107,19 +109,19 @@ public class SeasonCropTagProvider extends FabricTagsProvider.BlockTagsProvider 
       // it, and the season hook has to keep looking at it: that hook is what returns the column to
       // bare sticks when summer ends. The empty stick itself is left untagged, having nothing to
       // grow and no season to be out of.
-      if (definition.sticked()) {
-        seasons.put(ModBlocks.stickedFor(definition), definition.seasons());
+      if (definition instanceof FarmlandCrop crop && crop.sticked()) {
+        seasons.put(ModBlocks.stickedFor(crop), crop.seasons());
       }
 
       // The walled form, for the same reason: the hook is what strips a wall back to bare panels
       // when the season ends, and it only looks at what the crops tag names. The panel itself stays
       // untagged, having nothing to grow and no season to be out of.
-      if (definition.walled()) {
-        seasons.put(ModBlocks.walledFor(definition), definition.seasons());
+      if (definition instanceof FarmlandCrop crop && crop.walled()) {
+        seasons.put(ModBlocks.walledFor(crop), crop.seasons());
       }
 
-      if (definition.kind() == CropDefinition.Kind.BUSH) {
-        seasons.put(ModBlocks.dormantFor(definition), definition.seasons());
+      if (definition instanceof BushCrop bush) {
+        seasons.put(ModBlocks.dormantFor(bush), bush.seasons());
       }
     }
 

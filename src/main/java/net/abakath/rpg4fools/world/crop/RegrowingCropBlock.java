@@ -73,7 +73,7 @@ public class RegrowingCropBlock extends ModCropBlock {
    * survives being picked. withAge would not: it starts from the default state and would drop it.
    */
   private BlockState pick(BlockState state) {
-    return state.setValue(getAgeProperty(), ModBlocks.definitionFor(this).regrowAge());
+    return state.setValue(getAgeProperty(), ModBlocks.farmlandFor(this).regrowAge());
   }
 
   private Item produce() {

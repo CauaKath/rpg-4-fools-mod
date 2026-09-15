@@ -3,8 +3,8 @@ package net.abakath.rpg4fools.server.events.trellis;
 import net.abakath.rpg4fools.server.events.season.SeasonPlantingGate;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModItems;
-import net.abakath.rpg4fools.world.crop.CropDefinition;
 import net.abakath.rpg4fools.world.crop.CropItems;
+import net.abakath.rpg4fools.world.crop.FarmlandCrop;
 import net.abakath.rpg4fools.world.trellis.CropWalls;
 import net.abakath.rpg4fools.world.trellis.WallArm;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
@@ -87,7 +87,7 @@ public class CropWallHandling {
    */
   private static InteractionResult wall(ServerLevel world, Player player, ItemStack stack,
                                    BlockPos pos, BlockState state) {
-    CropDefinition definition = ModBlocks.definitionFor(state.getBlock());
+    FarmlandCrop definition = ModBlocks.farmlandFor(state.getBlock());
 
     if (definition == null || !definition.walled()) {
       return InteractionResult.PASS;
@@ -142,7 +142,7 @@ public class CropWallHandling {
       return InteractionResult.PASS;
     }
 
-    CropDefinition definition = ModBlocks.definitionFor(planted.get().getBlock());
+    FarmlandCrop definition = ModBlocks.farmlandFor(planted.get().getBlock());
 
     if (definition == null || !definition.walled()) {
       return InteractionResult.PASS;
@@ -165,7 +165,7 @@ public class CropWallHandling {
    * but an update reaches the blocks around a change and never the change itself - so without this a
    * newly sown cell would draw no arms at all until something else disturbed the wall.
    */
-  private static BlockState root(ServerLevel world, BlockPos pos, CropDefinition definition, Direction.Axis fallback) {
+  private static BlockState root(ServerLevel world, BlockPos pos, FarmlandCrop definition, Direction.Axis fallback) {
     return CropWalls.joins(world, pos, ModBlocks.walledFor(definition).defaultBlockState()
             .setValue(CropWalls.AXIS, CropWalls.axisAt(world, pos, fallback))
             .setValue(CropWalls.ARM, WallArm.CENTER)

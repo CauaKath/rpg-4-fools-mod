@@ -1,5 +1,6 @@
 package net.abakath.rpg4fools.world.bush;
 
+import net.abakath.rpg4fools.world.crop.BushCrop;
 import net.abakath.rpg4fools.world.crop.CropDefinition;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModCrops;
@@ -23,8 +24,8 @@ public final class DormantBushes {
     pair(Blocks.SWEET_BERRY_BUSH, ModBlocks.DORMANT_SWEET_BERRY_BUSH);
 
     for (CropDefinition definition : ModCrops.ALL) {
-      if (definition.kind() == CropDefinition.Kind.BUSH) {
-        pair(ModBlocks.blockFor(definition), ModBlocks.dormantFor(definition));
+      if (definition instanceof BushCrop bush) {
+        pair(ModBlocks.blockFor(bush), ModBlocks.dormantFor(bush));
       }
     }
   }

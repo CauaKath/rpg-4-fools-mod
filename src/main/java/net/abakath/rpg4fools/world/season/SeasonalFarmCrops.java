@@ -1,6 +1,7 @@
 package net.abakath.rpg4fools.world.season;
 
 import net.abakath.rpg4fools.world.crop.CropDefinition;
+import net.abakath.rpg4fools.world.crop.FarmlandCrop;
 import com.mojang.serialization.MapCodec;
 import net.abakath.rpg4fools.enums.Season;
 import net.abakath.rpg4fools.init.ModBlocks;
@@ -119,7 +120,7 @@ public class SeasonalFarmCrops implements StructureProcessor {
     List<Block> crops = new ArrayList<>();
 
     for (CropDefinition definition : ModCrops.ALL) {
-      if (definition.kind() != CropDefinition.Kind.FARMLAND) {
+      if (!(definition instanceof FarmlandCrop)) {
         continue;
       }
 

@@ -96,7 +96,7 @@ public final class Resowing {
             Math.floorDiv(pos.getX(), PATCH), season.ordinal(), Math.floorDiv(pos.getZ(), PATCH)));
 
     Block crop = pool.get(patch.nextInt(pool.size()));
-    CropDefinition definition = ModBlocks.definitionFor(crop);
+    FarmlandCrop definition = ModBlocks.farmlandFor(crop);
 
     if (definition == null || !definition.sticked()) {
       return Optional.of(new Sowing(crop.defaultBlockState(), 0));

@@ -398,7 +398,7 @@ public class WalledCropBlock extends RegrowingCropBlock {
    * needs nothing added to this class.
    */
   private int adultAge() {
-    return ModBlocks.definitionFor(this).regrowAge();
+    return ModBlocks.farmlandFor(this).regrowAge();
   }
 
   private Item produce() {

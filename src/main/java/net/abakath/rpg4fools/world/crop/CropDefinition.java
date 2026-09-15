@@ -11,109 +11,36 @@ import java.util.Set;
  * registered without a season or given an item its block does not know about. Adding a plant is one
  * entry in {@link net.abakath.rpg4fools.init.ModCrops}.
  *
+ * <p>Two shapes, and they are different plants rather than one plant with a flag. A farmland crop is
+ * sown, grows through eight ages, can be picked back to a lower one and dies when its season ends; a
+ * bush is planted, grows through four, gives a berry that replants it and sits a winter out as a
+ * dormant block. What they share is what is here: a name, the seasons they grow in, and what eating
+ * them is worth.
+ *
+ * <p>Everything else belongs to one shape or the other, which is why this is sealed rather than one
+ * record carrying every field. A bush has no trellis to climb and no age to be picked back to; a
+ * farmland crop has no thorns and no dormant block. Held as one type those absences were arguments
+ * every crop had to pass and every reader had to know to ignore - and the one pairing that was
+ * actually dangerous, a bush claiming to survive winter, could only be caught by a check at
+ * construction. Split, the compiler catches all of it: there is no field to pass wrongly.
+ *
  * <p>Names are derived rather than stored. A crop that spelled its block one way and its seed
  * another would still compile, and the mistake would only show up as a missing texture.
- *
- * @param support what holds this crop up, and so which extra block it gets. One field rather than a
- *     flag per shape: the shapes are mutually exclusive, and as flags most of the combinations would
- *     have been nonsense the compiler was happy to accept. Each shape needs its own block,
- *     blockstate and a model per age, so what this field really says is which art the crop has -
- *     which is why nothing about it follows from anything else on the crop. A vine that sheets
- *     across a trellis, a plant that climbs a post and a stalk that holds itself up are three
- *     different pictures.
- * @param survivesWinter whether this crop stands through winter instead of dying. Farmland only: a
- *     bush already has its own way of sitting a winter out, swapping for a dormant block, and one
- *     that claimed both would be asking two rules for two different answers. The compact
- *     constructor refuses that pairing rather than letting it be discovered in game.
  */
-public record CropDefinition(
-        String id,
-        Kind kind,
-        Set<Season> seasons,
-        int nutrition,
-        float saturation,
-        boolean thorny,
-        int regrowAge,
-        Support support,
-        boolean survivesWinter
-) {
-  public CropDefinition {
-    if (survivesWinter && kind == Kind.BUSH) {
-      throw new IllegalArgumentException(
-              id + " is a bush and cannot also survive winter; bushes go dormant instead");
-    }
-  }
+public sealed interface CropDefinition permits FarmlandCrop, BushCrop {
+  /** The plant's own name, and the stem every other name here grows from. */
+  String id();
 
-  /**
-   * Whether picking this crop leaves the plant standing.
-   *
-   * <p>Not a {@link Kind} of its own. A tomato that fruits twice is still sown on farmland, still
-   * has a seed and produce, still dies when its season ends; every place that asks about FARMLAND
-   * means it too. Regrowth is one more thing a farmland crop can do, so it is one more field.
-   */
-  public boolean regrows() {
-    return regrowAge > 0;
-  }
+  /** The seasons this plant grows in. Nothing grows in winter. */
+  Set<Season> seasons();
 
-  /** Whether crop sticks can carry this crop. */
-  public boolean sticked() {
-    return support == Support.STICKED;
-  }
+  int nutrition();
 
-  /** Whether a crop wall can carry this crop. */
-  public boolean walled() {
-    return support == Support.WALLED;
-  }
+  float saturation();
 
-  public enum Kind {
-    /** Sown on farmland, grows through eight ages, dies when its season ends. */
-    FARMLAND,
-    /** Planted where a bush can stand, four ages, goes dormant instead of dying. */
-    BUSH
-  }
+  /** The block this plant is, standing in the ground. */
+  String blockName();
 
-  /**
-   * What carries a crop, and so which second block it is registered with.
-   *
-   * <p>Read as an either-or rather than a set of flags. A crop drawn for one of these has no art for
-   * any of the others, and the two supports also differ in where a plant may spread, so a crop
-   * offered a support it was not drawn for is a missing texture at best.
-   */
-  public enum Support {
-    /** Stands on its own, one block tall. What most farmland crops are, and every bush. */
-    NONE,
-    /** Climbs a trellis of crop sticks, up to three sections tall. */
-    STICKED,
-    /** Spreads over the panels of a crop wall. */
-    WALLED,
-    /** Holds itself up, two sections tall, with no support to build. */
-    TALL
-  }
-
-  public String blockName() {
-    return kind == Kind.FARMLAND ? id + "_crop" : id + "_bush";
-  }
-
-  public String dormantBlockName() {
-    return "dormant_" + id + "_bush";
-  }
-
-  /** The sticked form of this crop's block. Only meaningful when {@link #sticked()}. */
-  public String stickedBlockName() {
-    return id + "_crop_stick";
-  }
-
-  /** The walled form of this crop's block. Only meaningful when {@link #walled()}. */
-  public String walledBlockName() {
-    return id + "_crop_wall";
-  }
-
-  public String seedName() {
-    return id + "_seeds";
-  }
-
-  /** For a bush this is also the seed: a berry plants the bush it came from, as sweet berries do. */
-  public String produceName() {
-    return kind == Kind.FARMLAND ? id : id + "_berries";
-  }
+  /** What harvesting this plant gives: the crop itself, or a bush's berry. */
+  String produceName();
 }

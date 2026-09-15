@@ -92,7 +92,7 @@ public class CropItems {
     // The mod's own produce. A tomato is not its crop's BlockItem, so it needs the same treatment
     // wheat and beetroot get. Bush berries are left out on purpose: they are BlockItems already.
     for (CropDefinition definition : ModCrops.ALL) {
-      if (definition.kind() == CropDefinition.Kind.FARMLAND) {
+      if (definition instanceof FarmlandCrop) {
         produce.put(ModItems.produceItem(definition), ModBlocks.blockFor(definition));
       }
     }
