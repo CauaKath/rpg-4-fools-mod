@@ -35,6 +35,9 @@ SITE = "https://cauakath.github.io/rpg-4-fools-mod/"
 
 # Newest first, which is the order the index lists them in.
 VERSIONS = [
+    ("0.6.0", "Greens for the colder half of the year",
+     "Cabbage, kale and spinach fill out spring and autumn, kale is the first plant a winter "
+     "leaves standing rather than kills, and lettuce is redrawn to match the three of them."),
     ("0.5.2", "What the shears take",
      "Shears clear the remains of a plant that died on a trellis, one plant's worth per snip, and "
      "leave the sticks and panels standing."),
