@@ -1,0 +1,7 @@
+{
+  "__comment": "A root crop, drawn the way vanilla draws its own: four planes rather than the mod's 45 degree cross. A cross gives a rosette volume from every angle and folds a shoulder sitting on the ground into a sheet.",
+  "parent": "minecraft:block/crop",
+  "textures": {
+    "crop": "rpg4fools:block/crop/radish/radish_crop_stage1"
+  }
+}
