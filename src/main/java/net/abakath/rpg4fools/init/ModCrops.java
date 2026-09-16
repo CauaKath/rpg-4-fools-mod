@@ -38,13 +38,13 @@ import java.util.Set;
 public final class ModCrops {
   /**
    * The crops a winter leaves standing, frozen at whatever age they reached and growing again in
-   * spring. Kale is sown in autumn for exactly this; turnip and garlic want the same thing in the
-   * batches after it.
+   * spring. Kale and turnip are both sown in autumn for exactly this; garlic wants the same thing
+   * in the batch after them.
    *
    * <p>Farmland only. A bush has its own way of sitting a winter out, so there is no
    * {@code survivesWinter} to give one - see {@link net.abakath.rpg4fools.world.crop.BushCrop}.
    */
-  private static final Set<String> SURVIVES_WINTER = Set.of("kale");
+  private static final Set<String> SURVIVES_WINTER = Set.of("kale", "turnip");
 
   /**
    * The bushes that hurt to walk through, the way the vanilla sweet berry bush does. It suits a
@@ -70,6 +70,12 @@ public final class ModCrops {
   public static final FarmlandCrop SPINACH =
           farmland("spinach", seasons(Season.SPRING, Season.AUTUMN), 1, 0.3f, 5, Support.NONE);
 
+  public static final FarmlandCrop TURNIP =
+          farmland("turnip", seasons(Season.AUTUMN), 3, 0.3f, 0, Support.NONE);
+
+  public static final FarmlandCrop RADISH =
+          farmland("radish", seasons(Season.SPRING, Season.AUTUMN), 1, 0.2f, 0, Support.NONE);
+
   public static final BushCrop STRAWBERRY =
           bush("strawberry", seasons(Season.SPRING, Season.SUMMER), 2, 0.2f);
 
@@ -81,7 +87,8 @@ public final class ModCrops {
 
   /** Ordered, because the generated tag files follow this order and are committed. */
   public static final List<CropDefinition> ALL =
-          List.of(TOMATO, CUCUMBER, LETTUCE, CABBAGE, KALE, SPINACH, STRAWBERRY, BLACKBERRY, BLUEBERRY);
+          List.of(TOMATO, CUCUMBER, LETTUCE, CABBAGE, KALE, SPINACH, TURNIP, RADISH,
+                  STRAWBERRY, BLACKBERRY, BLUEBERRY);
 
   static {
     check();
