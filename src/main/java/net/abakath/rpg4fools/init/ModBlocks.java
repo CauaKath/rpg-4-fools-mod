@@ -1,7 +1,9 @@
 package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.RPG4Fools;
+import net.abakath.rpg4fools.world.crop.BushCrop;
 import net.abakath.rpg4fools.world.crop.CropDefinition;
+import net.abakath.rpg4fools.world.crop.FarmlandCrop;
 import net.abakath.rpg4fools.world.trellis.CropStickBlock;
 import net.abakath.rpg4fools.world.trellis.CropWallBlock;
 import net.abakath.rpg4fools.world.crop.DeadCropBlock;
@@ -104,91 +106,110 @@ public class ModBlocks {
   private static final Map<Block, CropDefinition> BY_BLOCK = new HashMap<>();
 
   static {
+    // Exhaustive rather than an if with a fallthrough: the two shapes are the whole of what a crop
+    // can be, and a third would be a compile error here rather than a plant that registers nothing.
     for (CropDefinition definition : ModCrops.ALL) {
-      if (definition.kind() == CropDefinition.Kind.FARMLAND) {
-        BlockBehaviour.Properties settings = BlockBehaviour.Properties.of()
-                .randomTicks()
-                .noCollision()
-                .instabreak()
-                .sound(SoundType.CROP)
-                .pushReaction(PushReaction.DESTROY);
-
-        // Same crop in every way a farmland crop is asked about; the roster only decides whether
-        // picking it leaves the plant standing.
-        register(definition, LIVE, definition.blockName(),
-                definition.regrows() ? RegrowingCropBlock::new : ModCropBlock::new, settings);
-
-        // The same crop again, as it grows on a trellis. A second block rather than a property on
-        // the first: which one the player is looking at decides the models, the loot and whether a
-        // season leaves sticks behind, and none of that is a state the plain crop should carry.
-        if (definition.sticked()) {
-          register(definition, STICKED, definition.stickedBlockName(), StickedCropBlock::new,
-                  BlockBehaviour.Properties.of()
-                          .randomTicks()
-                          .noCollision()
-                          .instabreak()
-                          .sound(SoundType.CROP)
-                          .pushReaction(PushReaction.DESTROY)
-          );
-        }
-
-        // And again, as it spreads over a wall. A separate block for the same reasons the sticked
-        // form is one, plus a rule the sticked form has no need of: a cell of this block turns back
-        // into the panel it grew on, rather than dropping, when it loses its root.
-        if (definition.walled()) {
-          register(definition, WALLED, definition.walledBlockName(), WalledCropBlock::new,
-                  BlockBehaviour.Properties.of()
-                          .randomTicks()
-                          .noCollision()
-                          .instabreak()
-                          .sound(SoundType.CROP)
-                          .pushReaction(PushReaction.DESTROY)
-          );
-        }
-
-        continue;
+      switch (definition) {
+        case FarmlandCrop crop -> registerFarmland(crop);
+        case BushCrop bush -> registerBush(bush);
       }
+    }
+  }
 
-      register(definition, LIVE, definition.blockName(), ModBerryBushBlock::new,
+  private static void registerFarmland(FarmlandCrop crop) {
+    BlockBehaviour.Properties settings = BlockBehaviour.Properties.of()
+            .randomTicks()
+            .noCollision()
+            .instabreak()
+            .sound(SoundType.CROP)
+            .pushReaction(PushReaction.DESTROY);
+
+    // Same crop in every way a farmland crop is asked about; the roster only decides whether
+    // picking it leaves the plant standing.
+    register(crop, LIVE, crop.blockName(),
+            crop.regrows() ? RegrowingCropBlock::new : ModCropBlock::new, settings);
+
+    // The same crop again, as it grows on a trellis. A second block rather than a property on
+    // the first: which one the player is looking at decides the models, the loot and whether a
+    // season leaves sticks behind, and none of that is a state the plain crop should carry.
+    if (crop.sticked()) {
+      register(crop, STICKED, crop.stickedBlockName(), StickedCropBlock::new,
               BlockBehaviour.Properties.of()
                       .randomTicks()
                       .noCollision()
-                      .sound(SoundType.SWEET_BERRY_BUSH)
-                      .pushReaction(PushReaction.DESTROY)
-      );
-
-      // Dormant bushes drop nothing, matching the dormant sweet berry bush this mod already ships.
-      register(definition, DORMANT, definition.dormantBlockName(), DormantBerryBushBlock::new,
-              BlockBehaviour.Properties.of()
-                      .randomTicks()
-                      .noCollision()
-                      .noLootTable()
-                      .sound(SoundType.SWEET_BERRY_BUSH)
+                      .instabreak()
+                      .sound(SoundType.CROP)
                       .pushReaction(PushReaction.DESTROY)
       );
     }
+
+    // And again, as it spreads over a wall. A separate block for the same reasons the sticked
+    // form is one, plus a rule the sticked form has no need of: a cell of this block turns back
+    // into the panel it grew on, rather than dropping, when it loses its root.
+    if (crop.walled()) {
+      register(crop, WALLED, crop.walledBlockName(), WalledCropBlock::new,
+              BlockBehaviour.Properties.of()
+                      .randomTicks()
+                      .noCollision()
+                      .instabreak()
+                      .sound(SoundType.CROP)
+                      .pushReaction(PushReaction.DESTROY)
+      );
+    }
+  }
+
+  private static void registerBush(BushCrop bush) {
+    register(bush, LIVE, bush.blockName(), ModBerryBushBlock::new,
+            BlockBehaviour.Properties.of()
+                    .randomTicks()
+                    .noCollision()
+                    .sound(SoundType.SWEET_BERRY_BUSH)
+                    .pushReaction(PushReaction.DESTROY)
+    );
+
+    // Dormant bushes drop nothing, matching the dormant sweet berry bush this mod already ships.
+    register(bush, DORMANT, bush.dormantBlockName(), DormantBerryBushBlock::new,
+            BlockBehaviour.Properties.of()
+                    .randomTicks()
+                    .noCollision()
+                    .noLootTable()
+                    .sound(SoundType.SWEET_BERRY_BUSH)
+                    .pushReaction(PushReaction.DESTROY)
+    );
   }
 
   public static Block blockFor(CropDefinition definition) {
     return LIVE.get(definition);
   }
 
-  public static Block dormantFor(CropDefinition definition) {
-    return DORMANT.get(definition);
+  public static Block dormantFor(BushCrop bush) {
+    return DORMANT.get(bush);
   }
 
   /** This crop as it grows on a trellis, or null for a crop no sticks were made for. */
-  public static Block stickedFor(CropDefinition definition) {
-    return STICKED.get(definition);
+  public static Block stickedFor(FarmlandCrop crop) {
+    return STICKED.get(crop);
   }
 
   /** This crop as it grows on a wall, or null for a crop no wall art was made for. */
-  public static Block walledFor(CropDefinition definition) {
-    return WALLED.get(definition);
+  public static Block walledFor(FarmlandCrop crop) {
+    return WALLED.get(crop);
   }
 
   public static CropDefinition definitionFor(Block block) {
     return BY_BLOCK.get(block);
+  }
+
+  /**
+   * The roster entry for a block that is a farmland crop, or null for anything else.
+   *
+   * <p>Most callers of {@link #definitionFor(Block)} go straight on to ask something only a farmland
+   * crop can answer - a regrow age, a support - and a bush reaching them would be a bug in the
+   * caller rather than a state to handle. This answers them in one lookup and leaves a bush, a
+   * vanilla block and an unregistered one all as the same null.
+   */
+  public static FarmlandCrop farmlandFor(Block block) {
+    return BY_BLOCK.get(block) instanceof FarmlandCrop crop ? crop : null;
   }
 
   /**
@@ -199,7 +220,12 @@ public class ModBlocks {
    */
   public static boolean isThorny(Block block) {
     CropDefinition definition = BY_BLOCK.get(block);
-    return definition == null || definition.thorny();
+
+    if (definition == null) {
+      return true;
+    }
+
+    return definition instanceof BushCrop bush && bush.thorny();
   }
 
   /**

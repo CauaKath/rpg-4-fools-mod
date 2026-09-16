@@ -2,6 +2,7 @@ package net.abakath.rpg4fools.init;
 
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.world.crop.CropDefinition;
+import net.abakath.rpg4fools.world.crop.FarmlandCrop;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -39,7 +40,7 @@ public final class ModItemGroups {
                         entries.accept(ModItems.seedItem(definition));
 
                         // A bush's berry is its seed, so adding both would show it twice.
-                        if (definition.kind() == CropDefinition.Kind.FARMLAND) {
+                        if (definition instanceof FarmlandCrop) {
                           entries.accept(ModItems.produceItem(definition));
                         }
                       }

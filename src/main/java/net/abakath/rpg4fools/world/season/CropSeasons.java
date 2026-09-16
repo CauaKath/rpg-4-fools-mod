@@ -45,6 +45,16 @@ public class CropSeasons {
     return seasons.isEmpty() ? EnumSet.allOf(Season.class) : seasons;
   }
 
+  /**
+   * Whether a winter leaves this crop standing rather than killing it.
+   *
+   * <p>Says nothing about growth. A crop that survives a winter is still out of season through it;
+   * consumers decide what that costs, exactly as they do for the season tags.
+   */
+  public static boolean survivesWinter(BlockState state) {
+    return state.is(ModBlockTags.SURVIVES_WINTER);
+  }
+
   public static boolean isInSeason(BlockState state, Season season) {
     return state.is(ModBlockTags.forSeason(season)) || hasNoSeason(state);
   }

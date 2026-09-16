@@ -31,6 +31,15 @@ public class ModBlockTags {
   public static final TagKey<Block> GROWS_IN_AUTUMN = of("grows_in_autumn");
   public static final TagKey<Block> GROWS_IN_WINTER = of("grows_in_winter");
 
+  /**
+   * Crops a winter leaves standing.
+   *
+   * <p>Not a fifth grows_in_ tag. A crop that grew in winter could be sown in winter and would ripen
+   * through it; this one does neither. It is out of season like every other crop, and the only thing
+   * that changes is what being out of season costs it.
+   */
+  public static final TagKey<Block> SURVIVES_WINTER = of("survives_winter");
+
   /** Exhaustive over Season, so adding a season to the enum will not compile until tagged here. */
   public static TagKey<Block> forSeason(Season season) {
     return switch (season) {

@@ -5,6 +5,7 @@ import net.abakath.rpg4fools.server.events.trellis.CropWallHandling;
 import net.abakath.rpg4fools.world.crop.CropItems;
 import net.abakath.rpg4fools.RPG4Fools;
 import net.abakath.rpg4fools.world.crop.CropDefinition;
+import net.abakath.rpg4fools.world.crop.FarmlandCrop;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -61,9 +62,9 @@ public final class ModItems {
     for (CropDefinition definition : ModCrops.ALL) {
       Block block = ModBlocks.blockFor(definition);
 
-      if (definition.kind() == CropDefinition.Kind.FARMLAND) {
-        SEEDS.put(definition, register(definition.seedName(), props -> new BlockItem(block, props.useItemDescriptionPrefix())));
-        PRODUCE.put(definition, register(definition.produceName(), props -> new Item(props.food(food(definition)))));
+      if (definition instanceof FarmlandCrop crop) {
+        SEEDS.put(definition, register(crop.seedName(), props -> new BlockItem(block, props.useItemDescriptionPrefix())));
+        PRODUCE.put(definition, register(crop.produceName(), props -> new Item(props.food(food(definition)))));
         continue;
       }
 

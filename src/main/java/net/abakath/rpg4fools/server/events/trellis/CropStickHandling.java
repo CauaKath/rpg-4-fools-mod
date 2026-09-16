@@ -5,8 +5,8 @@ import net.abakath.rpg4fools.world.season.CropTransition;
 import net.abakath.rpg4fools.init.ModBlocks;
 import net.abakath.rpg4fools.init.ModItems;
 import net.abakath.rpg4fools.server.PlantedCrops;
-import net.abakath.rpg4fools.world.crop.CropDefinition;
 import net.abakath.rpg4fools.world.crop.CropItems;
+import net.abakath.rpg4fools.world.crop.FarmlandCrop;
 import net.abakath.rpg4fools.world.trellis.CropSticks;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.core.BlockPos;
@@ -95,7 +95,7 @@ public class CropStickHandling {
       return stack(world, player, stack, pos);
     }
 
-    CropDefinition definition = ModBlocks.definitionFor(state.getBlock());
+    FarmlandCrop definition = ModBlocks.farmlandFor(state.getBlock());
 
     if (definition == null || !definition.sticked()) {
       return InteractionResult.PASS;
@@ -173,7 +173,7 @@ public class CropStickHandling {
       return InteractionResult.PASS;
     }
 
-    CropDefinition definition = ModBlocks.definitionFor(planted.get().getBlock());
+    FarmlandCrop definition = ModBlocks.farmlandFor(planted.get().getBlock());
 
     if (definition == null || !definition.sticked()) {
       return InteractionResult.PASS;
